@@ -1,2 +1,2 @@
-# LunaTFCoordination
-Developing Luna Tensorflow API - docs and experiments
+# Luna Tensorflow
+Developing Tensorflow API for Luna
