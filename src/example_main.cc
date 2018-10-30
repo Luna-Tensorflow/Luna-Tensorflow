@@ -1,6 +1,6 @@
 #include <iostream>
-#include <c_api.h>
+#include "tf/version.h"
 
 int main() {
-  std::cout << "Tensorflow version = " << TF_Version() << std::endl;
+  std::cout << "Tensorflow version = " << tf_version() << std::endl;
 }
