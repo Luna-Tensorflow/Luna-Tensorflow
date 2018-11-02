@@ -93,6 +93,8 @@ int main() {
         cout << "\n";
     }
 
+    TF_CloseSession(session, status);
+    if (TF_GetCode(status) != TF_OK) cout << "TF_CloseSession message: " << TF_Message(status) << "\n";
     TF_DeleteSessionOptions(options);
     TF_DeleteSession(session, status);
     if (TF_GetCode(status) != TF_OK) cout << "TF_DeleteSession message: " << TF_Message(status) << "\n";
