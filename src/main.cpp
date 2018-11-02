@@ -10,7 +10,7 @@ int main() {
     int64_t dims[] = {n, m};
     TF_Tensor* tensors[2];
 
-    // Allocating input and output tensors
+    // Allocating input tensors
     tensors[0] = TF_AllocateTensor(TF_INT32, dims, 2, n * m * TF_DataTypeSize(TF_INT32));
     tensors[1] = TF_AllocateTensor(TF_INT32, dims, 2, n * m * TF_DataTypeSize(TF_INT32));
     TF_Tensor* out_tensor;
