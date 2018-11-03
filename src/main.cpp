@@ -17,6 +17,7 @@ int main() {
 
     // Reading input tensor values
     for (auto &tensor : tensors) {
+        cout << "Input tensor: ";
         for (int i = 0; i < n; ++i) {
             for (int j = 0; j < m; ++j) {
                 int64_t index = i * TF_Dim(tensor, 1) + j;
@@ -82,6 +83,8 @@ int main() {
             nullptr,
             status);
     if (TF_GetCode(status) != TF_OK) cout << "TF_SessionRun message: " << TF_Message(status) << "\n";
+
+    cout << "Output:\n";
 
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < m; ++j) {
