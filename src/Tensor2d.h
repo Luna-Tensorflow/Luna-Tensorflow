@@ -16,6 +16,12 @@ public:
         underlying = TF_AllocateTensor(DataTypeLabel, dims, 2, n * m * TF_DataTypeSize(DataTypeLabel));
     }
 
+    Tensor2d(const Tensor2d& other) = delete;
+    Tensor2d(Tensor2d&& other) {
+        underlying = other.underlying;
+        other.underlying = nullptr;
+    }
+
     float& operator()(int x, int y) {
         int64_t index = x * TF_Dim(underlying, 1) + y; // TODO make sure this layout is correct
         char* adr = (char*) TF_TensorData(underlying) + TF_DataTypeSize(DataTypeLabel) * index;
@@ -27,7 +33,9 @@ public:
     }
 
     ~Tensor2d() {
-        TF_DeleteTensor(underlying);
+        if (underlying != nullptr) {
+            TF_DeleteTensor(underlying);
+        }
         underlying = nullptr;
     }
 private:

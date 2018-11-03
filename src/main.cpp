@@ -13,6 +13,16 @@ int main() {
     std::vector<Tensor2d> input_tensors;
     input_tensors.emplace_back(n, m);
     input_tensors.emplace_back(n, m);
+    for (int k = 0; k < 2; ++k) {
+        cout << "Tensor " << k << endl;
+        for (int i = 0; i < n; ++i) {
+            for (int j = 0; j < m; ++j) {
+                float x;
+                cin >> x;
+                input_tensors[k](i, j) = x;
+            }
+        }
+    }
 
     Graph graph;
 
