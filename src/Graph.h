@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include <algorithm>
 #include "Tensor2d.h"
 
 
@@ -77,15 +78,13 @@ public:
         return output;
     }
 
-    void run_session(
+    std::vector<Tensor2d> run_session(
             const std::vector<TF_Output> &inputs,
             const std::vector<Tensor2d> &input_values,
-            const std::vector<TF_Output> &outputs,
-            std::vector<Tensor2d> &output_tensors
+            const std::vector<TF_Output> &outputs
     ) {
 
         if (inputs.size() != input_values.size()) throw std::invalid_argument("Input vectors must have same length");
-        if (outputs.size() != output_tensors.size()) throw std::invalid_argument("Output vectors must have same length");
 
         TF_SessionOptions* options = TF_NewSessionOptions();
         TF_Status *status = TF_NewStatus();
@@ -98,10 +97,7 @@ public:
             input_t.push_back(t.get_underlying());
         }
 
-        std::vector<TF_Tensor*> output_t;
-        for (const Tensor2d& t : output_tensors) {
-            output_t.push_back(t.get_underlying());
-        }
+        std::vector<TF_Tensor*> output_t(outputs.size());
 
         status = TF_NewStatus();
         TF_SessionRun(session,
@@ -111,6 +107,7 @@ public:
                       nullptr, 0, // we could provide some nodes that we want to execute, but don't need their output (it makes sense because of nodes like "Assign")
                       nullptr,
                       status);
+        void* p = TF_TensorData(output_t[0]);
         delete_or_throw(status);
 
         status = TF_NewStatus();
@@ -121,6 +118,10 @@ public:
         status = TF_NewStatus();
         TF_DeleteSession(session, status);
         delete_or_throw(status);
+
+        std::vector<Tensor2d> output_values;
+        std::transform(output_t.begin(), output_t.end(), std::back_inserter(output_values), [](TF_Tensor* tensor){return Tensor2d(tensor);});
+        return output_values;
     }
 
     ~Graph() {

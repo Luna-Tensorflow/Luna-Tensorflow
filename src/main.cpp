@@ -31,22 +31,16 @@ int main() {
 
     auto added = graph.make_addition("Add1", a, b);
 
-    std::vector<Tensor2d> output_tensors;
-    output_tensors.emplace_back(n, m);
-    Tensor2d& out_tensor = output_tensors[0];
-
-    graph.run_session(
+    std::vector<Tensor2d> output_tensors = graph.run_session(
             {a, b},
             input_tensors,
-            {added},
-            output_tensors
+            {added}
             );
-
 
     cout << "Output:\n";
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < m; ++j) {
-            cout << out_tensor(i, j) << " ";
+            cout << output_tensors[0](i, j) << " ";
         }
         cout << "\n";
     }

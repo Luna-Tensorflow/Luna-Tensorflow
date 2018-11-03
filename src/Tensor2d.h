@@ -16,6 +16,9 @@ public:
         underlying = TF_AllocateTensor(DataTypeLabel, dims, 2, n * m * TF_DataTypeSize(DataTypeLabel));
     }
 
+    Tensor2d(TF_Tensor* underlying) : underlying(underlying) {
+    }
+
     Tensor2d(const Tensor2d& other) = delete;
     Tensor2d(Tensor2d&& other) {
         underlying = other.underlying;
