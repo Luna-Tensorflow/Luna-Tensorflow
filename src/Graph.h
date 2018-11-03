@@ -22,7 +22,7 @@ public:
     ~TFException() override {
         TF_DeleteStatus(status);
     }
-    const char* what() const override {
+    const char* what() const noexcept override {
         return TF_Message(status);
     }
 };
@@ -111,6 +111,10 @@ public:
                       nullptr, 0, // we could provide some nodes that we want to execute, but don't need their output (it makes sense because of nodes like "Assign")
                       nullptr,
                       status);
+        delete_or_throw(status);
+
+        status = TF_NewStatus();
+        TF_CloseSession(session, status);
         delete_or_throw(status);
 
         TF_DeleteSessionOptions(options);
