@@ -60,7 +60,7 @@ int main() {
         vector<Tensor2d> new_values = graph.run_session(
                 {x, y},
                 inputs,
-                {A, b, grads[0], grads[1]},
+                {A, b},
                 {update_A, update_b}
                 );
         cout << "Iteration " << i << ": A = " << new_values[0](0, 0) << ", b = " << new_values[1](0, 0) << "\n";
