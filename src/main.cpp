@@ -55,9 +55,24 @@ int main() {
             {}
             );
 
-    cout << "Output: tensor\n";
+    cout << "Output tensor:\n";
     for (int i = 0; i < n; ++i) {
         cout << output_tensors[0](i, 0) << "\n";
     }
+
+    std::vector<TF_Output> grads = graph.make_gradient({Ax_plus_b}, {x});
+
+    std::vector<Tensor2d> out_grad = graph.run_session(
+            {x},
+            inputs,
+            grads,
+            {}
+            );
+
+    cout << "Gradient: \n";
+    for (int i = 0; i < n; ++i) {
+        cout << out_grad[0](0, i) << " ";
+    }
+    cout << "\n";
     return 0;
 }

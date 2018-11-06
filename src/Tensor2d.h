@@ -16,6 +16,11 @@ public:
         underlying = TF_AllocateTensor(DataTypeLabel, dims, 2, n * m * TF_DataTypeSize(DataTypeLabel));
     }
 
+    Tensor2d(int n) {
+        int64_t dims[] = {n};
+        underlying = TF_AllocateTensor(DataTypeLabel, dims, 1, n * TF_DataTypeSize(DataTypeLabel));
+    }
+
     Tensor2d(TF_Tensor* underlying) : underlying(underlying) {
     }
 

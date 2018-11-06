@@ -152,6 +152,16 @@ public:
         return output;
     }
 
+    std::vector<TF_Output> make_gradient(std::vector<TF_Output> ys, std::vector<TF_Output> xs) {
+        std::vector<TF_Output> dys(xs.size());
+
+        TF_Status *status = TF_NewStatus();
+        TF_AddGradients(graph, ys.data(), ys.size(), xs.data(), xs.size(), nullptr, status, dys.data());
+        delete_or_throw(status);
+
+        return dys;
+    }
+
     std::vector<Tensor2d> run_session(
             const std::vector<TF_Output> &inputs,
             const std::vector<Tensor2d> &input_values,
