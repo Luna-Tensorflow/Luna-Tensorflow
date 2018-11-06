@@ -58,15 +58,20 @@ public:
 
         delete_or_throw(status);
 
-        TF_Output output = {
+        return {
                 .oper = operation,
                 .index = 0
         };
-        return output;
     }
 
     TF_Operation* make_variable_init(std::string name, TF_Output variable, const Tensor2d &tensor) {
         TF_Output value = make_constant<TF_FLOAT>(name + "_val", tensor);
+        TF_Operation* operation = make_assign(name + "_assign", variable, value);
+
+        return operation;
+    }
+
+    TF_Operation* make_assign(std::string name, TF_Output variable, TF_Output value) {
         TF_OperationDescription *desc = TF_NewOperation(graph, "Assign", name.c_str());
 
         TF_AddInput(desc, variable);
@@ -74,6 +79,19 @@ public:
 
         TF_Status *status = TF_NewStatus();
         TF_Operation* operation = TF_FinishOperation(desc, status);
+        delete_or_throw(status);
+
+        return operation;
+    }
+
+    TF_Operation* make_assign_sub(std::string name, TF_Output variable, TF_Output value) {
+        TF_OperationDescription *desc = TF_NewOperation(graph, "AssignSub", name.c_str());
+
+        TF_AddInput(desc, variable);
+        TF_AddInput(desc, value);
+
+        TF_Status *status = TF_NewStatus();
+        TF_Operation *operation = TF_FinishOperation(desc, status);
         delete_or_throw(status);
 
         return operation;
@@ -91,12 +109,10 @@ public:
         TF_Operation *operation = TF_FinishOperation(desc, status);
         delete_or_throw(status);
 
-        TF_Output output = {
+        return {
                 .oper = operation,
                 .index = 0
         };
-
-        return output;
     }
 
     template<TF_DataType dtype> TF_Output make_placeholder(std::string name, int n, int m) {
@@ -111,11 +127,10 @@ public:
 
         delete_or_throw(status);
 
-        TF_Output output = {
+        return {
                 .oper = operation,
                 .index = 0
         };
-        return output;
     }
 
     TF_Output make_addition(std::string name, TF_Output a, TF_Output b) {
@@ -128,11 +143,26 @@ public:
         TF_Operation* operation = TF_FinishOperation(desc, status);
         delete_or_throw(status);
 
-        TF_Output output = {
+        return {
                 .oper = operation,
                 .index = 0
         };
-        return output;
+    }
+
+    TF_Output make_substraction(std::string name, TF_Output a, TF_Output b) {
+        TF_OperationDescription* desc = TF_NewOperation(graph, "Sub", name.c_str());
+
+        TF_AddInput(desc, a);
+        TF_AddInput(desc, b);
+
+        TF_Status* status = TF_NewStatus();
+        TF_Operation* operation = TF_FinishOperation(desc, status);
+        delete_or_throw(status);
+
+        return {
+                .oper = operation,
+                .index = 0
+        };
     }
 
     TF_Output make_matmul(std::string name, TF_Output a, TF_Output b) {
@@ -145,11 +175,41 @@ public:
         TF_Operation* operation = TF_FinishOperation(desc, status);
         delete_or_throw(status);
 
-        TF_Output output = {
+        return {
                 .oper = operation,
                 .index = 0
         };
-        return output;
+    }
+
+    TF_Output make_mul(std::string name, TF_Output a, TF_Output b) {
+        TF_OperationDescription* desc = TF_NewOperation(graph, "Mul", name.c_str());
+
+        TF_AddInput(desc, a);
+        TF_AddInput(desc, b);
+
+        TF_Status* status = TF_NewStatus();
+        TF_Operation* operation = TF_FinishOperation(desc, status);
+        delete_or_throw(status);
+
+        return {
+            .oper = operation,
+            .index = 0
+        };
+    }
+
+    TF_Output make_square(std::string name, TF_Output a) {
+        TF_OperationDescription* desc = TF_NewOperation(graph, "Square", name.c_str());
+
+        TF_AddInput(desc, a);
+
+        TF_Status* status = TF_NewStatus();
+        TF_Operation* operation = TF_FinishOperation(desc, status);
+        delete_or_throw(status);
+
+        return {
+                .oper = operation,
+                .index = 0
+        };
     }
 
     std::vector<TF_Output> make_gradient(std::vector<TF_Output> ys, std::vector<TF_Output> xs) {
