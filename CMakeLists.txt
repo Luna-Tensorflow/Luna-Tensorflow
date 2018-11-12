@@ -7,6 +7,6 @@ include_directories(${CMAKE_SOURCE_DIR}/src/)
 include_directories(${CMAKE_SOURCE_DIR}/tensorflow/include/)
 link_directories(${CMAKE_SOURCE_DIR}/tensorflow/lib)
 
-add_executable(tf_example src/main.cpp src/Tensor.h src/Graph.h src/Attr.h src/Attr.cpp src/TFException.h src/TFException.cpp src/TypeLabel.h src/Tensor.cpp)
+add_executable(tf_example src/main.cpp src/Tensor.h src/Graph.h src/Attr.h src/Attr.cpp src/TFException.h src/TFException.cpp src/TypeLabel.h src/Tensor.cpp src/Graph.cpp)
 
 target_link_libraries(tf_example tensorflow)
