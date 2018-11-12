@@ -2,39 +2,19 @@
 // Created by Radek on 03.11.2018.
 //
 
-#ifndef TF_EXAMPLE_OPS_H
-#define TF_EXAMPLE_OPS_H
+#ifndef TF_EXAMPLE_GRAPH_H
+#define TF_EXAMPLE_GRAPH_H
 
 #include <tensorflow/c/c_api.h>
 #include <string>
 #include <vector>
 #include <stdexcept>
 #include <algorithm>
-#include "Tensor2d.h"
+#include <memory>
 
-
-class TFException : public std::exception {
-private:
-    TF_Status* status;
-public:
-    // exception takes ownership of the status
-    TFException(TF_Status* status) : status(status) {}
-
-    ~TFException() override {
-        TF_DeleteStatus(status);
-    }
-    const char* what() const noexcept override {
-        return TF_Message(status);
-    }
-};
-
-void delete_or_throw(TF_Status* status) {
-    if (TF_GetCode(status) == TF_OK) {
-        TF_DeleteStatus(status);
-    } else {
-        throw TFException(status);
-    }
-}
+#include "Tensor.h"
+#include "TFException.h"
+#include "Attr.h"
 
 class Graph {
 public:
@@ -46,170 +26,81 @@ public:
         delete_or_throw(status);
     }
 
-    template<TF_DataType dtype> TF_Output make_variable(std::string name, int n, int m) {
-        TF_OperationDescription *desc = TF_NewOperation(graph, "Variable", name.c_str());
+    TF_Operation* make_operation(const std::string &type, const std::string &name, const std::vector<TF_Output> &inputs, const std::vector<std::shared_ptr<Attr>> &attrs) {
+        TF_OperationDescription *desc = TF_NewOperation(graph, type.c_str(), name.c_str());
 
-        int64_t dims[] = {n,m};
+        for (auto &input : inputs) {
+            TF_AddInput(desc, input);
+        }
 
-        TF_SetAttrShape(desc, "shape", dims, 2);
-        TF_SetAttrType(desc, "dtype", dtype);
-        TF_Status* status = TF_NewStatus();
-        TF_Operation* operation = TF_FinishOperation(desc, status);
-
-        delete_or_throw(status);
-
-        return {
-                .oper = operation,
-                .index = 0
-        };
-    }
-
-    TF_Operation* make_variable_init(std::string name, TF_Output variable, const Tensor2d &tensor) {
-        TF_Output value = make_constant<TF_FLOAT>(name + "_val", tensor);
-        TF_Operation* operation = make_assign(name + "_assign", variable, value);
-
-        return operation;
-    }
-
-    TF_Operation* make_assign(std::string name, TF_Output variable, TF_Output value) {
-        TF_OperationDescription *desc = TF_NewOperation(graph, "Assign", name.c_str());
-
-        TF_AddInput(desc, variable);
-        TF_AddInput(desc, value);
+        for (auto &attr: attrs) {
+            attr->set(desc);
+        }
 
         TF_Status *status = TF_NewStatus();
-        TF_Operation* operation = TF_FinishOperation(desc, status);
+
+        TF_Operation *operation = TF_FinishOperation(desc, status);
+
         delete_or_throw(status);
 
         return operation;
     }
 
-    TF_Operation* make_assign_sub(std::string name, TF_Output variable, TF_Output value) {
-        TF_OperationDescription *desc = TF_NewOperation(graph, "AssignSub", name.c_str());
-
-        TF_AddInput(desc, variable);
-        TF_AddInput(desc, value);
-
-        TF_Status *status = TF_NewStatus();
-        TF_Operation *operation = TF_FinishOperation(desc, status);
-        delete_or_throw(status);
-
-        return operation;
-    }
-
-    template<TF_DataType dtype> TF_Output make_constant(std::string name, const Tensor2d& tensor) {
-        TF_OperationDescription *desc = TF_NewOperation(graph, "Const", name.c_str());
-
-        TF_SetAttrType(desc, "dtype", dtype);
-        TF_Status* status = TF_NewStatus();
-        TF_SetAttrTensor(desc, "value", tensor.get_underlying(), status);
-        delete_or_throw(status);
-
-        status = TF_NewStatus();
-        TF_Operation *operation = TF_FinishOperation(desc, status);
-        delete_or_throw(status);
-
-        return {
-                .oper = operation,
-                .index = 0
-        };
-    }
-
-    template<TF_DataType dtype> TF_Output make_placeholder(std::string name, int n, int m) {
-        TF_OperationDescription *desc = TF_NewOperation(graph, "Placeholder", name.c_str());
-
-        int64_t dims[] = {n,m};
-
-        TF_SetAttrShape(desc, "shape", dims, 2);
-        TF_SetAttrType(desc, "dtype", dtype);
-        TF_Status* status = TF_NewStatus();
-        TF_Operation* operation = TF_FinishOperation(desc, status);
-
-        delete_or_throw(status);
-
-        return {
-                .oper = operation,
-                .index = 0
-        };
-    }
-
-    TF_Output make_addition(std::string name, TF_Output a, TF_Output b) {
-        TF_OperationDescription* desc = TF_NewOperation(graph, "Add", name.c_str());
-
-        TF_AddInput(desc, a);
-        TF_AddInput(desc, b);
-
-        TF_Status* status = TF_NewStatus();
-        TF_Operation* operation = TF_FinishOperation(desc, status);
-        delete_or_throw(status);
-
-        return {
-                .oper = operation,
-                .index = 0
-        };
-    }
-
-    TF_Output make_substraction(std::string name, TF_Output a, TF_Output b) {
-        TF_OperationDescription* desc = TF_NewOperation(graph, "Sub", name.c_str());
-
-        TF_AddInput(desc, a);
-        TF_AddInput(desc, b);
-
-        TF_Status* status = TF_NewStatus();
-        TF_Operation* operation = TF_FinishOperation(desc, status);
-        delete_or_throw(status);
-
-        return {
-                .oper = operation,
-                .index = 0
-        };
-    }
-
-    TF_Output make_matmul(std::string name, TF_Output a, TF_Output b) {
-        TF_OperationDescription* desc = TF_NewOperation(graph, "MatMul", name.c_str());
-
-        TF_AddInput(desc, a);
-        TF_AddInput(desc, b);
-
-        TF_Status* status = TF_NewStatus();
-        TF_Operation* operation = TF_FinishOperation(desc, status);
-        delete_or_throw(status);
-
-        return {
-                .oper = operation,
-                .index = 0
-        };
-    }
-
-    TF_Output make_mul(std::string name, TF_Output a, TF_Output b) {
-        TF_OperationDescription* desc = TF_NewOperation(graph, "Mul", name.c_str());
-
-        TF_AddInput(desc, a);
-        TF_AddInput(desc, b);
-
-        TF_Status* status = TF_NewStatus();
-        TF_Operation* operation = TF_FinishOperation(desc, status);
-        delete_or_throw(status);
-
+    TF_Output get_output(TF_Operation *operation, int index) {
         return {
             .oper = operation,
-            .index = 0
+            .index = index
         };
     }
 
-    TF_Output make_square(std::string name, TF_Output a) {
-        TF_OperationDescription* desc = TF_NewOperation(graph, "Square", name.c_str());
+    TF_Operation* make_variable(const std::string &name, const std::vector<int64_t> &dims, TF_DataType dtype) {
+        return make_operation("Variable", name, {},
+                {std::make_shared<AttrShape>("shape", dims), std::make_shared<AttrType>("dtype", dtype)});
+    }
 
-        TF_AddInput(desc, a);
+    TF_Operation* make_constant(const std::string &name, const Tensor &tensor) {
+        return make_operation("Const", name, {},
+                {std::make_shared<AttrType>("dtype", TF_TensorType(tensor.get_underlying())), std::make_shared<AttrTensor>("value", tensor)});
+    }
 
-        TF_Status* status = TF_NewStatus();
-        TF_Operation* operation = TF_FinishOperation(desc, status);
-        delete_or_throw(status);
+    TF_Operation* make_assign(const std::string &name, TF_Output variable, TF_Output value) {
+        return make_operation("Assign", name,
+                {variable, value}, {});
+    }
 
-        return {
-                .oper = operation,
-                .index = 0
-        };
+    TF_Operation* make_variable_init(std::string name, TF_Output variable, const Tensor &tensor) {
+        TF_Output value = get_output(make_constant(name + "_val", tensor), 0);
+        return make_assign(name + "_assign", variable, value);
+    }
+
+    TF_Operation* make_assign_sub(const std::string &name, TF_Output variable, TF_Output value) {
+        return make_operation("AssignSub", name,
+                              {variable, value}, {});
+    }
+
+    TF_Operation* make_placeholder(const std::string &name, const std::vector<int64_t> &dims, TF_DataType dtype) {
+        return make_operation("Placeholder", name, {},
+                {std::make_shared<AttrShape>("shape", dims), std::make_shared<AttrType>("dtype", dtype)});
+    }
+
+    TF_Operation* make_addition(const std::string &name, TF_Output a, TF_Output b) {
+        return make_operation("Add", name,
+                {a, b}, {});
+    }
+
+    TF_Operation* make_substraction(const std::string &name, TF_Output a, TF_Output b) {
+        return make_operation("Sub", name,
+                              {a, b}, {});
+    }
+
+    TF_Operation* make_mul(const std::string &name, TF_Output a, TF_Output b) {
+        return make_operation("Mul", name,
+                              {a, b}, {});
+    }
+
+    TF_Operation* make_square(const std::string &name, TF_Output a) {
+        return make_operation("Square", name,
+                              {a}, {});
     }
 
     std::vector<TF_Output> make_gradient(std::vector<TF_Output> ys, std::vector<TF_Output> xs) {
@@ -222,9 +113,9 @@ public:
         return dys;
     }
 
-    std::vector<Tensor2d> run_session(
+    std::vector<Tensor> run_session(
             const std::vector<TF_Output> &inputs,
-            const std::vector<Tensor2d> &input_values,
+            const std::vector<Tensor> &input_values,
             const std::vector<TF_Output> &outputs,
             const std::vector<TF_Operation*> &operations
     ) {
@@ -232,7 +123,7 @@ public:
         if (inputs.size() != input_values.size()) throw std::invalid_argument("Input vectors must have same length");
 
         std::vector<TF_Tensor*> input_t;
-        for (const Tensor2d& t : input_values) {
+        for (const Tensor& t : input_values) {
             input_t.push_back(t.get_underlying());
         }
 
@@ -248,8 +139,8 @@ public:
                       status);
         delete_or_throw(status);
 
-        std::vector<Tensor2d> output_values;
-        std::transform(output_t.begin(), output_t.end(), std::back_inserter(output_values), [](TF_Tensor* tensor){return Tensor2d(tensor);});
+        std::vector<Tensor> output_values;
+        std::transform(output_t.begin(), output_t.end(), std::back_inserter(output_values), [](TF_Tensor* tensor){return Tensor(tensor);});
         return output_values;
     }
 
@@ -274,4 +165,4 @@ private:
     TF_SessionOptions *options;
 };
 
-#endif //TF_EXAMPLE_OPS_H
+#endif //TF_EXAMPLE_GRAPH_H
