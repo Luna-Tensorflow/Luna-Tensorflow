@@ -3,7 +3,3 @@
 //
 
 #include "Operation.h"
-
-size_t operation_hashcode(Operation* op) {
-    return op->hashcode();
-}

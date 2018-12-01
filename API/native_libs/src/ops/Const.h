@@ -21,6 +21,4 @@ private:
     std::shared_ptr<TODOType> value;
 };
 
-extern "C" Operation* make_op_const(TODOType* tensor);
-
 #endif //FFITESTHELPER_CONST_H

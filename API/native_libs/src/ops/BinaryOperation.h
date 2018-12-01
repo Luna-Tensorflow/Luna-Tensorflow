@@ -27,6 +27,4 @@ private:
     std::shared_ptr<Operation> arg1, arg2;
 };
 
-extern "C" Operation* make_op_binary(const char* name, Operation* a, Operation* b);
-
 #endif //FFITESTHELPER_BINARYOPERATION_H
