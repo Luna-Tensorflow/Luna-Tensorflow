@@ -1,11 +1,11 @@
-#ifndef FFITESTHELPER_CONST_H
-#define FFITESTHELPER_CONST_H
+#ifndef TFL_CONST_H
+#define TFL_CONST_H
 
 
-#include <API/native_libs/src/utils.h>
 #include <memory>
 #include <utility>
-#include <API/native_libs/src/tensor/Tensor.h>
+#include "../tensor/Tensor.h"
+#include "../utils.h"
 #include "Operation.h"
 
 template <TF_DataType DataTypeLabel>

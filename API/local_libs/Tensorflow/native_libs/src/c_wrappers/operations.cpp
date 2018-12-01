@@ -2,11 +2,11 @@
 
 #include <string>
 #include <memory>
-#include <API/native_libs/src/utils.h>
-#include <API/native_libs/src/ops/Operation.h>
-#include <API/native_libs/src/ops/Const.h>
-#include <API/native_libs/src/LifeTimeManager.h>
-#include <API/native_libs/src/ops/BinaryOperation.h>
+#include "../utils.h"
+#include "../ops/Operation.h"
+#include "../ops/Const.h"
+#include "../ops/BinaryOperation.h"
+#include "../LifeTimeManager.h"
 
 Operation* make_op_binary(const char* name, Operation* a, Operation* b) {
     std::string name_cpp(name);

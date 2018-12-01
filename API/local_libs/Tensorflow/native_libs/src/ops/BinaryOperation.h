@@ -1,11 +1,11 @@
-#ifndef FFITESTHELPER_BINARYOPERATION_H
-#define FFITESTHELPER_BINARYOPERATION_H
+#ifndef TFL_BINARYOPERATION_H
+#define TFL_BINARYOPERATION_H
 
 #include <string>
 #include <memory>
 #include <utility>
-#include <API/native_libs/src/utils.h>
 #include "Operation.h"
+#include "../utils.h"
 
 class BinaryOperation : public Operation {
 public:

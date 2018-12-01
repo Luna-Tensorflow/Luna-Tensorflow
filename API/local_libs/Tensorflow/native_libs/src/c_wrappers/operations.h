@@ -2,8 +2,8 @@
 // Created by radeusgd on 01.12.18.
 //
 
-#ifndef FFITESTHELPER_OPERATIONS_H
-#define FFITESTHELPER_OPERATIONS_H
+#ifndef TFL_OPERATIONS_H
+#define TFL_OPERATIONS_H
 
 #include <cstddef>
 #include <tensorflow/c/c_api.h>

@@ -6,7 +6,7 @@
 #include <cstring>
 #include <cstddef>
 
-#include "API/native_libs/src/utils.h"
+#include "../utils.h"
 #include "TypeLabel.h"
 
 template<TF_DataType DataTypeLabel>

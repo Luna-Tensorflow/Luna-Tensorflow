@@ -1,5 +1,5 @@
-#ifndef FFITESTHELPER_OPERATION_H
-#define FFITESTHELPER_OPERATION_H
+#ifndef TFL_OPERATION_H
+#define TFL_OPERATION_H
 
 
 #include <cstddef>
