@@ -2,8 +2,8 @@
 // Created by Radek on 03.11.2018.
 //
 
-#ifndef TF_EXAMPLE_TENSOR_H
-#define TF_EXAMPLE_TENSOR_H
+#ifndef TENSOR_H
+#define TENSOR_H
 
 #include <vector>
 #include <tensorflow/c/c_api.h>
@@ -44,4 +44,4 @@ public:
 };
 
 
-#endif //TF_EXAMPLE_TENSOR_H
+#endif //TENSOR_H

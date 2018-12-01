@@ -1,0 +1,37 @@
+import Std.Base
+import Std.Foreign
+import Std.Foreign.C.Value
+
+def checkAdd:
+    print "checkAdd:"
+    number = 42
+    print ("number: " + number.toText)
+
+    add1 = lookupSymbol "FfiTestHelper" "add1"
+    cResult = add1.call CInt32 [CInt32.fromInt(number).toCArg]
+    result = cResult.toInt
+    print ("number + 1: " + result.toText)
+    None
+
+def checkLifetime:
+    print "checkLifeTime:"
+    number = 3
+    print ("number: " + number.toText)
+
+    getPtr = lookupSymbol "FfiTestHelper" "getPtr"
+    ptr = getPtr.call (Pointer CInt32) [CInt32.fromInt(number).toCArg]
+
+    releaseMethod = lookupSymbol "FfiTestHelper" "release"
+    managedPtr = ManagedPointer None . fromPointer releaseMethod ptr
+
+    getValue = lookupSymbol "FfiTestHelper" "getValue"
+
+    cVal = getValue.call CInt32 [managedPtr.toCArg]
+    val = cVal.toInt
+    print ("restored value: " + val.toText)
+    None
+
+def main:
+    checkAdd
+    checkLifetime
+    None

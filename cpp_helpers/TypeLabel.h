@@ -1,5 +1,5 @@
-#ifndef TF_EXAMPLE_TYPELABEL_H
-#define TF_EXAMPLE_TYPELABEL_H
+#ifndef TYPELABEL_H
+#define TYPELABEL_H
 
 #include <tensorflow/c/c_api.h>
 
@@ -13,4 +13,4 @@ public:
     using type = float;
 };
 
-#endif //TF_EXAMPLE_TYPELABEL_H
+#endif //TYPELABEL_H
