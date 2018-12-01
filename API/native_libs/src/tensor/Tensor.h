@@ -6,6 +6,7 @@
 #include <cstring>
 #include <cstddef>
 
+#include "API/native_libs/src/utils.h"
 #include "TypeLabel.h"
 
 template<TF_DataType DataTypeLabel>
@@ -34,6 +35,8 @@ public:
 	std::vector<int64_t> shape();
 
 	TF_Tensor* get_underlying() const;
+
+	size_t hash() const;
 
 	~Tensor();
 };
@@ -155,5 +158,22 @@ typename Type<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(int64_t const *ind
 	return *(typename Type<DataTypeLabel>::type*)adr;
 }
 
+template<TF_DataType DataTypeLabel>
+size_t Tensor<DataTypeLabel>::hash() const {
+    int64_t len = 1;
+    for (const int64_t &dim: dims) {
+        len *= dim;
+    }
+    len *= TF_DataTypeSize(DataTypeLabel);
+
+    char* data = (char*) TF_TensorData(underlying);
+    size_t hash = std::hash<char>()(*data);
+    for (int64_t i = 1; i < len; ++i) {
+        ++data;
+        hash = hash_combine(hash, *data);
+    }
+
+    return hash;
+}
 
 #endif //TFL_TENSOR_H
