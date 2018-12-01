@@ -44,7 +44,7 @@ template <TF_DataType DataTypeLabel>
 Tensor<DataTypeLabel>::Tensor(const Tensor<DataTypeLabel> &other) {
 	TF_Tensor *other_underlying = other.get_underlying();
 	std::vector<int64_t> other_dims(TF_NumDims(other_underlying));
-	int data_size = TF_TensorByteSize(other_underlying);
+	auto data_size = TF_TensorByteSize(other_underlying);
 	for (int i = 0; i < other_dims.size(); ++i) {
 		other_dims[i] = TF_Dim(other_underlying, i);
 	}
