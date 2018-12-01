@@ -12,7 +12,7 @@ template <TF_DataType DataTypeLabel>
 class Const : public Operation {
 public:
     explicit Const(std::shared_ptr<Tensor<DataTypeLabel>> tensor) : value(std::move(tensor)) {
-        hash = 0xdeadbeef; // TODO
+        hash = value->hash();
     }
 
     size_t hashcode() override {

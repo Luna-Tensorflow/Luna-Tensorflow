@@ -1,0 +1,49 @@
+import Tensorflow.CWrappers.Operations
+import Tensorflow.Tensor
+
+class Const:
+    ptr :: ManagedPtr None
+
+    def eval:
+        self.ptr.eval
+
+    def toJSON:
+        self.eval.toJSON
+
+    def + other:
+        add self other
+
+    def * other:
+        mul self other
+
+# not sure if we want separate classes for each op type or one class for all?
+class TFOperation:
+    ptr :: ManagedPtr None
+
+    def eval:
+        self.ptr.eval
+
+    def toJSON:
+        self.eval.toJSON
+
+    def + other:
+        add self other
+
+    def * other:
+        mul self other
+
+def makeConst tensor:
+    Const (makeConstWrapper tensor)
+
+def constFromList list:
+    makeConst (tensorFromList list)
+
+def constFromScalar x:
+    constFromList [x]
+
+def add a b:
+    TFOperation (makeBinaryOpWrapper "Add" a b)
+
+def mul a b:
+    TFOperation (makeBinaryOpWrapper "Mul" a b)
+
