@@ -98,6 +98,7 @@ Tensor<DataTypeLabel>::Tensor(const std::vector<std::vector<Tensor::type>> &arra
 template<TF_DataType DataTypeLabel>
 Tensor<DataTypeLabel>::Tensor(const Tensor &other)
 {
+	// TODO DEBUG THIS, it likely segfaults
 	TF_Tensor *other_underlying = other.get_underlying();
 	std::vector<int64_t> other_dims(TF_NumDims(other_underlying));
 	auto data_size = TF_TensorByteSize(other_underlying);
@@ -154,7 +155,7 @@ typename Type<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(int64_t const *ind
 	}
 
 	char* adr = (char*) TF_TensorData(underlying) + TF_DataTypeSize(DataTypeLabel) * index;
-
+	
 	return *(typename Type<DataTypeLabel>::type*)adr;
 }
 
