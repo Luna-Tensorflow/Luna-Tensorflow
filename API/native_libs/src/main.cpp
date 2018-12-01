@@ -18,11 +18,4 @@ extern "C" {
     int32_t getValue(int32_t *ptr) {
         return *LifetimeManager::instance().accessOwned(ptr);
     }
-
-
-    // RESOURCE MANAGEMENT
-    void release(void *handle) noexcept
-    {
-        LifetimeManager::instance().releaseOwnership(handle);
-    }
 }
