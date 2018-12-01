@@ -1,5 +1,5 @@
-#ifndef TF_EXAMPLE_TYPELABEL_H
-#define TF_EXAMPLE_TYPELABEL_H
+#ifndef TFL_TYPELABEL_H
+#define TFL_TYPELABEL_H
 
 #include <tensorflow/c/c_api.h>
 
@@ -13,4 +13,42 @@ public:
 	using type = float;
 };
 
-#endif //TF_EXAMPLE_TYPELABEL_H
+template<>
+class Type<TF_DOUBLE> {
+public:
+	using type = double;
+};
+
+
+template<>
+class Type<TF_INT8> {
+public:
+	using type = int8_t;
+};
+
+template<>
+class Type<TF_INT16> {
+public:
+	using type = int16_t;
+};
+
+template<>
+class Type<TF_INT32> {
+public:
+	using type = int32_t;
+};
+
+template<>
+class Type<TF_UINT32> {
+public:
+	using type = uint32_t;
+};
+
+template<>
+class Type<TF_UINT64> {
+public:
+	using type = uint64_t;
+};
+
+
+#endif //TFL_TYPELABEL_H

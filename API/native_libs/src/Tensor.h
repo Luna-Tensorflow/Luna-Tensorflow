@@ -1,5 +1,5 @@
-#ifndef TF_EXAMPLE_TENSOR_H
-#define TF_EXAMPLE_TENSOR_H
+#ifndef TFL_TENSOR_H
+#define TFL_TENSOR_H
 
 #include <vector>
 #include <tensorflow/c/c_api.h>
@@ -13,7 +13,6 @@ private:
 	using type = typename Type<DataTypeLabel>::type;
 	std::vector<size_t> dims;
 
-	type& at(const std::vector<int64_t> &indices);
 public:
 	explicit Tensor(const std::vector<type> &vect);
 	explicit Tensor(const std::vector<std::vector<type>> &array);
@@ -24,6 +23,8 @@ public:
 
 	Tensor(Tensor&& other) noexcept;
 
+	type& at(const std::vector<int64_t> &indices);
+
 	std::vector<size_t> shape();
 
 	TF_Tensor* get_underlying() const;
@@ -32,4 +33,4 @@ public:
 };
 
 
-#endif //TF_EXAMPLE_TENSOR_H
+#endif //TFL_TENSOR_H
