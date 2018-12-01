@@ -1,2 +1,2 @@
-native_libs/build/
-native_libs/linux
+Tensorflow/native_libs/build
+Tensorflow/native_libs/linux

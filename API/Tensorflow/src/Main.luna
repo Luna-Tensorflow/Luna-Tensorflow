@@ -16,9 +16,9 @@ def checkOp:
     a = constFromScalar 2.0
     b = constFromScalar 3.0
     print a.toJSON
-#    c = a + b
-#    print c.toJSON
 
+#c = a + b
+#print c.toJSON
 
 def checkAdd:
     print "checkAdd:"
