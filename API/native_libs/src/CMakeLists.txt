@@ -31,9 +31,16 @@ file(GLOB_RECURSE HEADER_FILES ${PROJECT_SOURCE_DIR}/*.h)
 file(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/*.cpp)
 
 # Define the compilation target
-add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SRC_FILES})
+add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SRC_FILES} ops/Operation.cpp ops/Operation.h ops/Const.cpp ops/Const.h utils.h ops/BinaryOperation.cpp ops/BinaryOperation.h utils.cpp)
 target_compile_definitions(${PROJECT_NAME} PRIVATE BUILDING_DATAFRAME_HELPER)
 target_compile_definitions(${PROJECT_NAME} PUBLIC)
+
+# set warning level
+if(MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+else(MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
+endif(MSVC)
 
 # Includes path: project root
 target_include_directories(${PROJECT_NAME} PUBLIC ../../..)
