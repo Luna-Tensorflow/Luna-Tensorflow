@@ -14,8 +14,8 @@ public:
                     std::shared_ptr<Operation> b)
         : operation_name(std::move(name)), arg1(std::move(a)), arg2(std::move(b)) {
         hash = std::hash<std::string>()(operation_name);
-        hash = hash_combine(hash, a->hashcode());
-        hash = hash_combine(hash, b->hashcode());
+        hash = hash_combine(hash, arg1->hashcode());
+        hash = hash_combine(hash, arg2->hashcode());
     }
 
     size_t hashcode() override {
