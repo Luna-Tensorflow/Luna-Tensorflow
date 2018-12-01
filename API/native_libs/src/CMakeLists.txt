@@ -24,14 +24,14 @@ else()
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${OUT_DIR})
 endif()
 
-project(FfiTestHelper)
+project(TFL)
 
 # Glob for the project files
 file(GLOB_RECURSE HEADER_FILES ${PROJECT_SOURCE_DIR}/*.h)
 file(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/*.cpp)
 
 # Define the compilation target
-add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SRC_FILES} ops/Operation.cpp ops/Operation.h ops/Const.cpp ops/Const.h utils.h ops/BinaryOperation.cpp ops/BinaryOperation.h utils.cpp Tensor.cpp Tensor.h TypeLabel.h c_wrappers/memory.h c_wrappers/memory.cpp c_wrappers/operations.h c_wrappers/operations.cpp)
+add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SRC_FILES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE BUILDING_DATAFRAME_HELPER)
 target_compile_definitions(${PROJECT_NAME} PUBLIC)
 

@@ -14,7 +14,9 @@ private:
 	std::vector<size_t> dims;
 
 public:
-	explicit Tensor(const std::vector<type> &vect);
+	explicit Tensor(const type* array, size_t len);
+	explicit Tensor(const type** array, size_t width, size_t height);
+	explicit Tensor(const std::vector<type> &vect) : Tensor(vect.data(), vect.size()) {}
 	explicit Tensor(const std::vector<std::vector<type>> &array);
 
 	explicit Tensor(TF_Tensor* underlying);
