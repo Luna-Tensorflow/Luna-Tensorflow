@@ -3,8 +3,8 @@
 //
 
 #include "tensors.h"
-#include <API/native_libs/src/tensor/Tensor.h>
-#include <API/native_libs/src/LifeTimeManager.h>
+#include "../tensor/Tensor.h"
+#include "../LifeTimeManager.h"
 
 #include <vector>
 #include <memory>

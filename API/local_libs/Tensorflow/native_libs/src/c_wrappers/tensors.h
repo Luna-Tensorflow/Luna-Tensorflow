@@ -5,7 +5,7 @@
 #ifndef TFL_TENSOR_WRAPPER_H
 #define TFL_TENSOR_WRAPPER_H
 
-#include <API/native_libs/src/tensor/Tensor.h>
+#include "../tensor/Tensor.h"
 
 #ifdef __cplusplus
 extern "C"

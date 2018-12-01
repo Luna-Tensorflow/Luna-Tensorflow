@@ -1,5 +1,5 @@
-#ifndef FFITESTHELPER_UTILS_H
-#define FFITESTHELPER_UTILS_H
+#ifndef TFL_UTILS_H
+#define TFL_UTILS_H
 
 #include <cstddef>
 #include <stdexcept>
