@@ -1,0 +1,26 @@
+import Std.Foreign
+import Std.Foreign.C.Value
+
+class OperationWrapper:
+    ptr :: ManagedPointer None
+    #typename :: Text # TODO
+
+    def toCArg:
+        self.ptr.toCArg
+
+    def eval:
+        [] # TODO
+
+def makeConstWrapper tensor:
+    makeOp = lookupSymbol "TFL" ("make_op_const_float")
+    releaseMethod = lookupSymbol "TFL" "release"
+    op = makeOp.call (Pointer None) [tensor.ptr.toCArg]
+    managedOp = ManagedPointer None . fromPointer releaseMethod op
+    OperationWrapper managedOp
+
+def makeBinaryOpWrapper name a b:
+    makeOp = lookupSymbol "TFL" ("make_op_binary")
+    releaseMethod = lookupSymbol "TFL" "release"
+    op = makeOp.call (Pointer None) [(CString.fromText name).toCArg, a.ptr.toCArg, b.ptr.toCArg]
+    managedOp = ManagedPointer None . fromPointer releaseMethod op
+    OperationWrapper managedOp

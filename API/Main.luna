@@ -2,12 +2,23 @@ import Std.Base
 import Std.Foreign
 import Std.Foreign.C.Value
 import Tensorflow.Tensor
+import Tensorflow.Operations
 
 def checkTensor:
+    print "checkTensor"
     print (0.upto 10)
     t = tensorFromList [1.0, 2.0, 3.0]
     print t.length
     print t.toJSON
+
+def checkOp:
+    print "checkOp"
+    a = constFromScalar 2.0
+    b = constFromScalar 3.0
+    print a.toJSON
+#    c = a + b
+#    print c.toJSON
+
 
 def checkAdd:
     print "checkAdd:"
@@ -59,6 +70,7 @@ def checkTensorPtr:
 
 def main:
     checkTensor
+    checkOp
     checkAdd
     checkLifetime
     checkTensorPtr

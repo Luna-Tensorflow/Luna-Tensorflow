@@ -12,14 +12,16 @@ Operation* make_op_binary(const char* name, Operation* a, Operation* b) {
     std::string name_cpp(name);
     std::shared_ptr<Operation> a_cpp = LifetimeManager::instance().accessOwned(a);
     std::shared_ptr<Operation> b_cpp = LifetimeManager::instance().accessOwned(b);
-    std::shared_ptr<BinaryOperation> op = std::make_shared<BinaryOperation>(name_cpp, a_cpp, b_cpp);
-    return LifetimeManager::instance().addOwnership(std::move(op));
+    auto op = std::make_shared<BinaryOperation>(name_cpp, a_cpp, b_cpp);
+    auto opBase = std::dynamic_pointer_cast<Operation>(op);
+    return LifetimeManager::instance().addOwnership(std::move(opBase));
 }
 
 template<TF_DataType DT> Operation* make_op_const(Tensor<DT>* tensor) {
     std::shared_ptr<Tensor<DT>> tensor_cpp = LifetimeManager::instance().accessOwned(tensor);
-    std::shared_ptr<Const<DT>> constant = std::make_shared<Const<DT>>(tensor_cpp);
-    return LifetimeManager::instance().addOwnership(std::move(constant));
+    auto constant = std::make_shared<Const<DT>>(tensor_cpp);
+    auto constantBase = std::dynamic_pointer_cast<Operation>(constant);
+    return LifetimeManager::instance().addOwnership(std::move(constantBase));
 }
 
 Operation* make_op_const_float(Tensor<TF_FLOAT>* tensor) {
