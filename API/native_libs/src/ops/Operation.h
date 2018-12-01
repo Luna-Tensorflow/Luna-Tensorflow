@@ -10,7 +10,5 @@ public:
     virtual ~Operation() = default;
 };
 
-extern "C" size_t operation_hashcode(Operation*);
-
 
 #endif //FFITESTHELPER_OPERATION_H

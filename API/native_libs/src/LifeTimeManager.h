@@ -104,5 +104,3 @@ public:
         return manager;
     }
 };
-
-extern "C" void release(void *handle) noexcept;
