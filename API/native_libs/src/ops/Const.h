@@ -1,7 +1,3 @@
-//
-// Created by radeusgd on 01.12.18.
-//
-
 #ifndef FFITESTHELPER_CONST_H
 #define FFITESTHELPER_CONST_H
 
