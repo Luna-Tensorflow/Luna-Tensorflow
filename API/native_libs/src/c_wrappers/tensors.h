@@ -11,9 +11,9 @@
 extern "C"
 {
 #endif
-	Tensor<TF_FLOAT> *make_float_tensor(const float*, int);
-	Tensor<TF_FLOAT> *make_float_tensor_arr(const float**, int, int);
-	Tensor<TF_INT32> *make_int_tensor(const int32_t*, int);
+	Tensor<TF_FLOAT> *make_float_tensor(float const*, int64_t);
+	Tensor<TF_FLOAT> *make_float_tensor_arr(float const**, int64_t, int64_t);
+	Tensor<TF_INT32> *make_int_tensor(int32_t const*, int64_t);
 
 
 #ifdef __cplusplus
