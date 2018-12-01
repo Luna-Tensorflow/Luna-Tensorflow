@@ -1,6 +1,13 @@
 import Std.Base
 import Std.Foreign
 import Std.Foreign.C.Value
+import Tensorflow.Tensor
+
+def checkTensor:
+    print (0.upto 10)
+    t = tensorFromList [1.0, 2.0, 3.0]
+    print t.length
+    print t.toJSON
 
 def checkAdd:
     print "checkAdd:"
@@ -51,6 +58,7 @@ def checkTensorPtr:
     None
 
 def main:
+    checkTensor
     checkAdd
     checkLifetime
     checkTensorPtr

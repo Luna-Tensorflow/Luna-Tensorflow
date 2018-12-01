@@ -18,8 +18,11 @@ extern "C"
 	float get_tensor1d_float_value_at(Tensor<TF_FLOAT> *, int64_t);
 	float get_tensor_float_value_at(Tensor<TF_FLOAT> *, int64_t*, size_t);
 
-	int get_tensor1d_int_value_at(Tensor<TF_INT32> *, int64_t);
-	int get_tensor_int_value_at(Tensor<TF_INT32> *, int64_t*, size_t);
+	int32_t get_tensor1d_int_value_at(Tensor<TF_INT32> *, int64_t);
+   int32_t get_tensor_int_value_at(Tensor<TF_INT32> *, int64_t*, size_t);
+
+    int64_t tensor_float_length(Tensor<TF_FLOAT> *);
+
 #ifdef __cplusplus
 };
 #endif

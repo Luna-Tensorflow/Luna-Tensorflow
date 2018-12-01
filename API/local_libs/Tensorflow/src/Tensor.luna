@@ -1,0 +1,24 @@
+import Tensorflow.CWrappers.Tensor
+
+# For now we assume tensors are 1D
+class Tensor:
+    ptr :: ManagedPointer None
+
+    def length:
+        self.ptr.length
+
+    def atMulti indices:
+        self.ptr.at indices
+
+    def at index:
+        self.atMulti [index]
+
+    def toList:
+        indices = 0.upto (self.length - 1)
+        indices.map self.at
+
+    def toJSON:
+        self.toList.toJSON
+
+def tensorFromList list:
+    Tensor (create1dTensorWrapper list)
