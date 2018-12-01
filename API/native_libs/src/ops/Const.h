@@ -5,7 +5,7 @@
 #include <API/native_libs/src/utils.h>
 #include <memory>
 #include <utility>
-#include <API/native_libs/src/Tensor.h>
+#include <API/native_libs/src/tensor/Tensor.h>
 #include "Operation.h"
 
 template <TF_DataType DataTypeLabel>
