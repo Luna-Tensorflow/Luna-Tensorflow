@@ -7,7 +7,7 @@ def checkAdd:
     number = 42
     print ("number: " + number.toText)
 
-    add1 = lookupSymbol "FfiTestHelper" "add1"
+    add1 = lookupSymbol "libTFL" "add1"
     cResult = add1.call CInt32 [CInt32.fromInt(number).toCArg]
     result = cResult.toInt
     print ("number + 1: " + result.toText)
@@ -18,13 +18,13 @@ def checkLifetime:
     number = 3
     print ("number: " + number.toText)
 
-    getPtr = lookupSymbol "FfiTestHelper" "getPtr"
+    getPtr = lookupSymbol "libTFL" "getPtr"
     ptr = getPtr.call (Pointer CInt32) [CInt32.fromInt(number).toCArg]
 
-    releaseMethod = lookupSymbol "FfiTestHelper" "release"
+    releaseMethod = lookupSymbol "libTFL" "release"
     managedPtr = ManagedPointer None . fromPointer releaseMethod ptr
 
-    getValue = lookupSymbol "FfiTestHelper" "getValue"
+    getValue = lookupSymbol "libTFL" "getValue"
 
     cVal = getValue.call CInt32 [managedPtr.toCArg]
     val = cVal.toInt
@@ -36,8 +36,8 @@ def checkTensorPtr:
     values = [1, 2, 3, 4]
     print ("values: " + values.toText)
 
-    tensorFloatFromArray = lookupSymbol "FfiTestHelper" "tensorFloatFromArray"
-    tensor = tensorFloatFromArray.call (Pointer None) [CArray.fromList(values).toCArg, values.length]
+    tensorFloatFromArray = lookupSymbol "libTFL" "make_float_tensor"
+    tensor = tensorFloatFromArray.call (Pointer None) [Array.fromList(values).toCArg, values.length]
 
     None
 

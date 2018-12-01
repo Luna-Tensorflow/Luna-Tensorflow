@@ -9,7 +9,7 @@
 #include <vector>
 #include <memory>
 
-Tensor<TF_FLOAT> *make_float_tensor(const float* array, size_t len)
+Tensor<TF_FLOAT> *make_float_tensor(float const* array, int64_t len)
 {
 	Tensor<TF_FLOAT> tensor(array, len);
 	auto tensor_ptr = std::make_shared<Tensor<TF_FLOAT>>(tensor);
@@ -17,7 +17,7 @@ Tensor<TF_FLOAT> *make_float_tensor(const float* array, size_t len)
 	return LifetimeManager::instance().addOwnership(std::move(tensor_ptr));
 }
 
-Tensor<TF_FLOAT> *make_float_tensor_arr(const float** array, size_t width, size_t height)
+Tensor<TF_FLOAT> *make_float_tensor_arr(float const** array, int64_t width, int64_t height)
 {
 	Tensor<TF_FLOAT> tensor(array, width, height);
 	auto tensor_ptr = std::make_shared<Tensor<TF_FLOAT>>(tensor);
@@ -25,7 +25,7 @@ Tensor<TF_FLOAT> *make_float_tensor_arr(const float** array, size_t width, size_
 	return LifetimeManager::instance().addOwnership(std::move(tensor_ptr));
 }
 
-Tensor<TF_INT32> *make_int_tensor(const int32_t* array, size_t len)
+Tensor<TF_INT32> *make_int_tensor(const int32_t* array, int64_t len)
 {
 	Tensor<TF_INT32> tensor(array, len);
 	auto tensor_ptr = std::make_shared<Tensor<TF_INT32>>(tensor);
