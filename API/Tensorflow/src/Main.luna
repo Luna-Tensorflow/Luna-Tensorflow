@@ -10,15 +10,16 @@ def checkTensor:
     t = tensorFromList [1.0, 2.0, 3.0]
     print t.length
     print t.toJSON
+    None
 
 def checkOp:
     print "checkOp"
     a = constFromScalar 2.0
     b = constFromScalar 3.0
     print a.toJSON
-
-#c = a + b
-#print c.toJSON
+    c = a + b
+    print c.toJSON
+    None
 
 def checkAdd:
     print "checkAdd:"
