@@ -5,11 +5,13 @@
 #include <API/native_libs/src/utils.h>
 #include <memory>
 #include <utility>
+#include <API/native_libs/src/Tensor.h>
 #include "Operation.h"
 
+template <TF_DataType DataTypeLabel>
 class Const : public Operation {
 public:
-    explicit Const(std::shared_ptr<TODOType> tensor) : value(std::move(tensor)) {
+    explicit Const(std::shared_ptr<Tensor<DataTypeLabel>> tensor) : value(std::move(tensor)) {
         hash = 0xdeadbeef; // TODO
     }
 
@@ -18,7 +20,7 @@ public:
     }
 private:
     size_t hash;
-    std::shared_ptr<TODOType> value;
+    std::shared_ptr<Tensor<DataTypeLabel>> value;
 };
 
 #endif //FFITESTHELPER_CONST_H
