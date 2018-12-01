@@ -32,3 +32,24 @@ Tensor<TF_INT32> *make_int_tensor(const int32_t* array, int64_t len)
 
 	return LifetimeManager::instance().addOwnership(std::move(tensor_ptr));
 }
+
+float get_tensor1d_float_value_at(Tensor<TF_FLOAT> *tensor, int64_t idx)
+{
+	return get_tensor_float_value_at(tensor, &idx, 1);
+}
+
+float get_tensor_float_value_at(Tensor<TF_FLOAT> *tensor, int64_t *idxs, size_t len)
+{
+	return LifetimeManager::instance().accessOwned(tensor)->at(idxs, len);
+}
+
+int get_tensor1d_int_value_at(Tensor<TF_INT32> *tensor, int64_t idx)
+{
+	return get_tensor_int_value_at(tensor, &idx, 1);
+}
+
+int get_tensor_int_value_at(Tensor<TF_INT32> *tensor, int64_t *idxs, size_t len)
+{
+	return LifetimeManager::instance().accessOwned(tensor)->at(idxs, len);
+}
+

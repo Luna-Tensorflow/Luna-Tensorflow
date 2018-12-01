@@ -17,11 +17,9 @@ private:
 
 public:
 	explicit Tensor(const type* vect, int64_t len);
-
 	explicit Tensor(const type** array, int64_t width, int64_t height);
 
 	explicit Tensor(const std::vector<type> &vect);
-
 	explicit Tensor(const std::vector<std::vector<type>> &array);
 
 	explicit Tensor(TF_Tensor* underlying) : underlying(underlying) {}
@@ -30,6 +28,7 @@ public:
 
 	Tensor(Tensor&& other) noexcept;
 
+	type& at(int64_t const* indices, size_t len);
 	type& at(const std::vector<int64_t> &indices);
 
 	std::vector<int64_t> shape();
@@ -66,7 +65,7 @@ Tensor<DataTypeLabel>::Tensor(const Tensor::type **array, int64_t width, int64_t
 	{
 		for(auto j=0; j<height; ++j)
 		{
-			*((type*) adr) = array[i][j];
+			*((type*) adr) = array[j][i];
 			adr += data_size;
 		}
 	}
@@ -116,17 +115,7 @@ Tensor<DataTypeLabel>::Tensor(Tensor &&other) noexcept
 template<TF_DataType DataTypeLabel>
 typename Type<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(const std::vector<int64_t> &indices)
 {
-	int64_t index = indices.back();
-	int64_t multiplier = 1;
-
-	for (size_t i = indices.size() - 2; i >= 0; --i) {
-		multiplier *= TF_Dim(underlying, i + 1);
-		index += indices[i] * multiplier;
-	}
-
-	char* adr = (char*) TF_TensorData(underlying) + TF_DataTypeSize(DataTypeLabel) * index;
-
-	return *(typename Type<DataTypeLabel>::type*)adr;
+	return at(indices.data(), indices.size());
 }
 
 template<TF_DataType DataTypeLabel>
@@ -148,6 +137,22 @@ Tensor<DataTypeLabel>::~Tensor()
 		TF_DeleteTensor(underlying);
 	}
 	underlying = nullptr;
+}
+
+template<TF_DataType DataTypeLabel>
+typename Type<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(int64_t const *indices, size_t len)
+{
+	int64_t index = indices[len-1];
+	int64_t multiplier = 1;
+
+	for (size_t i = len - 2; i >= 0; --i) {
+		multiplier *= TF_Dim(underlying, i + 1);
+		index += indices[i] * multiplier;
+	}
+
+	char* adr = (char*) TF_TensorData(underlying) + TF_DataTypeSize(DataTypeLabel) * index;
+
+	return *(typename Type<DataTypeLabel>::type*)adr;
 }
 
 
