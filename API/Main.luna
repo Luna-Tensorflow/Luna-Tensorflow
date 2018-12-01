@@ -7,7 +7,7 @@ def checkAdd:
     number = 42
     print ("number: " + number.toText)
 
-    add1 = lookupSymbol "libTFL" "add1"
+    add1 = lookupSymbol "TFL" "add1"
     cResult = add1.call CInt32 [CInt32.fromInt(number).toCArg]
     result = cResult.toInt
     print ("number + 1: " + result.toText)
@@ -18,13 +18,13 @@ def checkLifetime:
     number = 3
     print ("number: " + number.toText)
 
-    getPtr = lookupSymbol "libTFL" "getPtr"
+    getPtr = lookupSymbol "TFL" "getPtr"
     ptr = getPtr.call (Pointer CInt32) [CInt32.fromInt(number).toCArg]
 
-    releaseMethod = lookupSymbol "libTFL" "release"
+    releaseMethod = lookupSymbol "TFL" "release"
     managedPtr = ManagedPointer None . fromPointer releaseMethod ptr
 
-    getValue = lookupSymbol "libTFL" "getValue"
+    getValue = lookupSymbol "TFL" "getValue"
 
     cVal = getValue.call CInt32 [managedPtr.toCArg]
     val = cVal.toInt
@@ -33,15 +33,25 @@ def checkLifetime:
 
 def checkTensorPtr:
     print "checkTensorPtr"
-    values = [1, 2, 3, 4]
+    values = [1.1, 2.5, 3.7, 4.3]
     print ("values: " + values.toText)
+    cvalues = values.map x: CFloat.fromReal x
 
-    tensorFloatFromArray = lookupSymbol "libTFL" "make_float_tensor"
-    tensor = tensorFloatFromArray.call (Pointer None) [Array.fromList(values).toCArg, values.length]
+    makeFloatTensor = lookupSymbol "TFL" "make_float_tensor"
+    tensor = makeFloatTensor.call (Pointer None) [Array CFloat . fromList cvalues . toCArg, CInt64.fromInt cvalues.length . toCArg]
 
+    releaseMethod = lookupSymbol "TFL" "release"
+    managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
+
+    index = 3
+    getTensor1dFloatValueAt = lookupSymbol "TFL" "get_tensor1d_float_value_at"
+    cTensorAt3 = getTensor1dFloatValueAt.call CFloat [managedTensor.toCArg, CInt64.fromInt index . toCArg]
+    tensorAt3 = cTensorAt3.toReal
+    print ("tensor.at({3}): " + tensorAt3.toText)
     None
 
 def main:
     checkAdd
     checkLifetime
+    checkTensorPtr
     None

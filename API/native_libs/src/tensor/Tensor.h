@@ -28,7 +28,7 @@ public:
 
 	Tensor(Tensor&& other) noexcept;
 
-	type& at(int64_t const* indices, size_t len);
+	type& at(int64_t const* indices, int64_t len);
 	type& at(const std::vector<int64_t> &indices);
 
 	std::vector<int64_t> shape();
@@ -140,12 +140,12 @@ Tensor<DataTypeLabel>::~Tensor()
 }
 
 template<TF_DataType DataTypeLabel>
-typename Type<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(int64_t const *indices, size_t len)
+typename Type<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(int64_t const *indices, int64_t len)
 {
 	int64_t index = indices[len-1];
 	int64_t multiplier = 1;
 
-	for (size_t i = len - 2; i >= 0; --i) {
+	for (int64_t i = len - 2; i >= 0; --i) {
 		multiplier *= TF_Dim(underlying, i + 1);
 		index += indices[i] * multiplier;
 	}
