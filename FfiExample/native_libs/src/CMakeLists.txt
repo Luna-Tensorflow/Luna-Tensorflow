@@ -1,3 +1,5 @@
+#Based on: https://github.com/luna/Dataframes/blob/787b733241cd833d140e42effeeede0a2e81fa65/native_libs/src/CMakeLists.txt
+
 cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -32,10 +34,5 @@ file(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/*.cpp)
 
 # Define the compilation target
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SRC_FILES})
-target_compile_definitions(${PROJECT_NAME} PRIVATE BUILDING_DATAFRAME_HELPER)
-target_compile_definitions(${PROJECT_NAME} PUBLIC)
-
-# Includes path: project root
-target_include_directories(${PROJECT_NAME} PUBLIC ../../..)
 
 ###################
