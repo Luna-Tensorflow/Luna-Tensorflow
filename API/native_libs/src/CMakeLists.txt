@@ -31,7 +31,7 @@ file(GLOB_RECURSE HEADER_FILES ${PROJECT_SOURCE_DIR}/*.h)
 file(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/*.cpp)
 
 # Define the compilation target
-add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SRC_FILES} ops/Operation.cpp ops/Operation.h ops/Const.cpp ops/Const.h utils.h ops/BinaryOperation.cpp ops/BinaryOperation.h utils.cpp)
+add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SRC_FILES} ops/Operation.cpp ops/Operation.h ops/Const.cpp ops/Const.h utils.h ops/BinaryOperation.cpp ops/BinaryOperation.h utils.cpp Tensor.cpp Tensor.h TypeLabel.h)
 target_compile_definitions(${PROJECT_NAME} PRIVATE BUILDING_DATAFRAME_HELPER)
 target_compile_definitions(${PROJECT_NAME} PUBLIC)
 
