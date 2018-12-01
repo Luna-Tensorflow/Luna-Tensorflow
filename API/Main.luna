@@ -31,6 +31,16 @@ def checkLifetime:
     print ("restored value: " + val.toText)
     None
 
+def checkTensorPtr:
+    print "checkTensorPtr"
+    values = [1, 2, 3, 4]
+    print ("values: " + values.toText)
+
+    tensorFloatFromArray = lookupSymbol "FfiTestHelper" "tensorFloatFromArray"
+    tensor = tensorFloatFromArray.call (Pointer None) [CArray.fromList(values).toCArg, values.length]
+
+    None
+
 def main:
     checkAdd
     checkLifetime
