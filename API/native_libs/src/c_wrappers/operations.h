@@ -17,5 +17,4 @@ extern "C" Operation* make_op_binary(const char* name, Operation* a, Operation* 
 
 extern "C" size_t operation_hashcode(Operation*);
 
-
 #endif //FFITESTHELPER_OPERATIONS_H
