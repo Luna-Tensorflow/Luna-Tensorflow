@@ -2,10 +2,14 @@ import Tensorflow.CWrappers.Operations
 import Tensorflow.Tensor
 
 class Const:
-    ptr :: ManagedPtr None
+    wrapper :: OperationWrapper
+
+    def ptr:
+        case self of
+            OperationWrapper ptr: ptr
 
     def eval:
-        self.ptr.eval
+        self.wrapper.eval
 
     def toJSON:
         self.eval.toJSON
@@ -18,10 +22,14 @@ class Const:
 
 # not sure if we want separate classes for each op type or one class for all?
 class TFOperation:
-    ptr :: ManagedPtr None
+    wrapper :: OperationWrapper
+
+    def ptr:
+        case self of
+            OperationWrapper ptr: ptr
 
     def eval:
-        self.ptr.eval
+        self.wrapper.eval
 
     def toJSON:
         self.eval.toJSON

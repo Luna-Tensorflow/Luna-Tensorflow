@@ -6,7 +6,7 @@
 #include <cstring>
 #include <cstddef>
 
-#include "../utils.h"
+#include "../helpers/utils.h"
 #include "TypeLabel.h"
 
 template<TF_DataType DataTypeLabel>
@@ -23,7 +23,7 @@ public:
 	explicit Tensor(const std::vector<type> &vect);
 	explicit Tensor(const std::vector<std::vector<type>> &array);
 
-	explicit Tensor(TF_Tensor* underlying) : underlying(underlying) {}
+	explicit Tensor(TF_Tensor* underlying);
 
 	explicit Tensor(const Tensor& other);
 
@@ -96,6 +96,13 @@ Tensor<DataTypeLabel>::Tensor(const std::vector<std::vector<Tensor::type>> &arra
 }
 
 template<TF_DataType DataTypeLabel>
+Tensor<DataTypeLabel>::Tensor(TF_Tensor* underlying) : underlying(underlying), dims(TF_NumDims(underlying)) {
+    for (size_t i = 0; i < dims.size(); ++i) {
+        dims[i] = TF_Dim(underlying, i);
+    }
+}
+
+template<TF_DataType DataTypeLabel>
 Tensor<DataTypeLabel>::Tensor(const Tensor &other)
 {
 	// TODO DEBUG THIS, it likely segfaults
@@ -155,7 +162,7 @@ typename Type<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(int64_t const *ind
 	}
 
 	char* adr = (char*) TF_TensorData(underlying) + TF_DataTypeSize(DataTypeLabel) * index;
-	
+
 	return *(typename Type<DataTypeLabel>::type*)adr;
 }
 

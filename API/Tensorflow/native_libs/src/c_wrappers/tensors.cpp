@@ -4,7 +4,7 @@
 
 #include "tensors.h"
 #include "../tensor/Tensor.h"
-#include "../LifeTimeManager.h"
+#include "../helpers/LifeTimeManager.h"
 
 #include <vector>
 #include <memory>
