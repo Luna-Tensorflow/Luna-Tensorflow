@@ -1,7 +1,7 @@
 #include <cstdint>
 #include <memory>
 
-#include "LifeTimeManager.h"
+#include "helpers/LifeTimeManager.h"
 #include "tensorflow/c/c_api.h"
 
 using namespace std;

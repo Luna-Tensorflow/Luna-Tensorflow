@@ -1,5 +1,7 @@
 import Std.Foreign
 import Std.Foreign.C.Value
+import Tensorflow.Tensor
+import Tensorflow.CWrappers.Tensor
 
 class OperationWrapper:
     ptr :: ManagedPointer None
@@ -9,18 +11,24 @@ class OperationWrapper:
         self.ptr.toCArg
 
     def eval:
-        [] # TODO
+        evalOp = lookupSymbol "TFL" "eval_op_float"
+        releaseMethod = lookupSymbol "TFL" "release"
+        tensorPtr = evalOp.call (Pointer None) [self.toCArg]
+        managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
+
+        Tensor (TensorWrapper managedTensorPtr) . toList
+
 
 def makeConstWrapper tensor:
     makeOp = lookupSymbol "TFL" ("make_op_const_float")
     releaseMethod = lookupSymbol "TFL" "release"
-    op = makeOp.call (Pointer None) [tensor.ptr.toCArg]
+    op = makeOp.call (Pointer None) [tensor.wrapper.toCArg]
     managedOp = ManagedPointer None . fromPointer releaseMethod op
     OperationWrapper managedOp
 
 def makeBinaryOpWrapper name a b:
-    makeOp = lookupSymbol "TFL" ("make_op_binary")
+    makeOp = lookupSymbol "TFL" ("make_op_binary_float")
     releaseMethod = lookupSymbol "TFL" "release"
-    op = makeOp.call (Pointer None) [(CString.fromText name).toCArg, a.ptr.toCArg, b.ptr.toCArg]
+    op = makeOp.call (Pointer None) [(CString.fromText name).toCArg, a.wrapper.toCArg, b.wrapper.toCArg]
     managedOp = ManagedPointer None . fromPointer releaseMethod op
     OperationWrapper managedOp

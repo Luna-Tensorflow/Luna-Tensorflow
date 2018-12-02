@@ -2,13 +2,17 @@ import Tensorflow.CWrappers.Tensor
 
 # For now we assume tensors are 1D
 class Tensor:
-    ptr :: ManagedPointer None
+    wrapper :: TensorWrapper
+
+    def ptr:
+        case self of
+            TensorWrapper ptr: ptr
 
     def length:
-        self.ptr.length
+        self.wrapper.length
 
     def atMulti indices:
-        self.ptr.at indices
+        self.wrapper.at indices
 
     def at index:
         self.atMulti [index]
