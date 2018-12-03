@@ -16,19 +16,20 @@ class OperationWrapper:
         tensorPtr = evalOp.call (Pointer None) [self.toCArg]
         managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
 
-        Tensor (TensorWrapper managedTensorPtr) . toList
+        wrapper = TensorWrapper managedTensorPtr
+        Tensor wrapper
 
 
 def makeConstWrapper tensor:
     makeOp = lookupSymbol "TFL" ("make_op_const_float")
     releaseMethod = lookupSymbol "TFL" "release"
-    op = makeOp.call (Pointer None) [tensor.wrapper.toCArg]
+    op = makeOp.call (Pointer None) [tensor.ptr.toCArg]
     managedOp = ManagedPointer None . fromPointer releaseMethod op
     OperationWrapper managedOp
 
 def makeBinaryOpWrapper name a b:
     makeOp = lookupSymbol "TFL" ("make_op_binary_float")
     releaseMethod = lookupSymbol "TFL" "release"
-    op = makeOp.call (Pointer None) [(CString.fromText name).toCArg, a.wrapper.toCArg, b.wrapper.toCArg]
+    op = makeOp.call (Pointer None) [(CString.fromText name).toCArg, a.ptr.toCArg, b.ptr.toCArg]
     managedOp = ManagedPointer None . fromPointer releaseMethod op
     OperationWrapper managedOp

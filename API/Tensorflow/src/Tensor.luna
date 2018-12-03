@@ -5,8 +5,7 @@ class Tensor:
     wrapper :: TensorWrapper
 
     def ptr:
-        case self of
-            TensorWrapper ptr: ptr
+        self.wrapper.ptr
 
     def length:
         self.wrapper.length
@@ -25,4 +24,5 @@ class Tensor:
         self.toList.toJSON
 
 def tensorFromList list:
-    Tensor (create1dTensorWrapper list)
+    wrapper = create1dTensorWrapper list
+    Tensor wrapper
