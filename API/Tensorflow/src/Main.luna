@@ -19,6 +19,8 @@ def checkOp:
     print a.toJSON
     c = a + b
     print c.toJSON
+    c2 = a - b
+    print c2.toJSON
     None
 
 def checkAdd:
