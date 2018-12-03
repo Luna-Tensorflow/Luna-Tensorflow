@@ -19,6 +19,9 @@ class Const:
     def * other:
         mul self other
 
+    def - other:
+        sub self other
+
 # not sure if we want separate classes for each op type or one class for all?
 class TFOperation:
     wrapper :: OperationWrapper
@@ -38,6 +41,9 @@ class TFOperation:
     def * other:
         mul self other
 
+    def - other:
+        sub self other
+
 def makeConst tensor:
     wrapper = makeConstWrapper tensor
     Const wrapper
@@ -56,4 +62,7 @@ def add a b:
 def mul a b:
     makeBinaryOpWrapper "Mul" a b
     TFOperation wrapper
+
+def sub a b:
+    TFOperation (makeBinaryOpWrapper "Sub" a b)
 
