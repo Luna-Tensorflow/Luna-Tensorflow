@@ -24,8 +24,7 @@ class TFOperation:
     wrapper :: OperationWrapper
 
     def ptr:
-        case self of
-       self.wrapper.ptr
+        self.wrapper.ptr
 
     def eval:
         self.wrapper.eval
