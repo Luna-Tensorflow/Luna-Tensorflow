@@ -5,8 +5,7 @@ class Const:
     wrapper :: OperationWrapper
 
     def ptr:
-        case self of
-            OperationWrapper ptr: ptr
+        self.wrapper.ptr
 
     def eval:
         self.wrapper.eval
@@ -26,7 +25,7 @@ class TFOperation:
 
     def ptr:
         case self of
-            OperationWrapper ptr: ptr
+       self.wrapper.ptr
 
     def eval:
         self.wrapper.eval
@@ -41,17 +40,21 @@ class TFOperation:
         mul self other
 
 def makeConst tensor:
-    Const (makeConstWrapper tensor)
+    wrapper = makeConstWrapper tensor
+    Const wrapper
 
 def constFromList list:
-    makeConst (tensorFromList list)
+    tensor = tensorFromList list
+    makeConst tensor
 
 def constFromScalar x:
     constFromList [x]
 
 def add a b:
-    TFOperation (makeBinaryOpWrapper "Add" a b)
+    wrapper = makeBinaryOpWrapper "Add" a b
+    TFOperation wrapper
 
 def mul a b:
-    TFOperation (makeBinaryOpWrapper "Mul" a b)
+    makeBinaryOpWrapper "Mul" a b
+    TFOperation wrapper
 
