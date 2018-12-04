@@ -28,6 +28,22 @@ Operation<TF_INT32>* make_op_binary_int(const char* name, Operation<TF_INT32>* a
     return make_op_binary(name, a, b);
 }
 
+
+namespace {
+	template<TF_DataType DT>
+	Operation<DT> *make_op_derivative(Operation<DT> *a, Operation<DT> *b) {
+		std::shared_ptr<Operation<DT>> a_cpp = LifetimeManager::instance().accessOwned(a);
+		std::shared_ptr<Operation<DT>> b_cpp = LifetimeManager::instance().accessOwned(b);
+		auto op = std::make_shared<Gradient<DT>>(a_cpp, b_cpp);
+		auto opBase = std::dynamic_pointer_cast<Operation<DT>>(op);
+		return LifetimeManager::instance().addOwnership(std::move(opBase));
+	}
+}
+
+Operation<TF_FLOAT>* make_op_partial_derivative(Operation<TF_FLOAT>* a, Operation<TF_FLOAT> *b) {
+	return make_op_derivative(a, b);
+}
+
 namespace {
     template<TF_DataType DT>
     Operation<DT> *make_op_const(Tensor<DT> *tensor) {
@@ -74,19 +90,4 @@ Tensor<TF_FLOAT> *eval_op_float(Operation<TF_FLOAT> *op) {
 
 Tensor<TF_INT32> *eval_op_int(Operation<TF_INT32> *op) {
     return eval_op(op);
-}
-
-namespace {
-    template<TF_DataType DT>
-    Operation<DT> *make_op_derivative(Tensor<DT> *a, Tensor<DT> *b) {
-        std::shared_ptr<Operation<DT>> a_cpp = LifetimeManager::instance().accessOwned(make_op_const(a));
-        std::shared_ptr<Operation<DT>> b_cpp = LifetimeManager::instance().accessOwned(make_op_const(b));
-        auto op = std::make_shared<Gradient<DT>>(a_cpp, b_cpp);
-        auto opBase = std::dynamic_pointer_cast<Operation<DT>>(op);
-        return LifetimeManager::instance().addOwnership(std::move(opBase));
-    }
-}
-
-Operation<TF_FLOAT>* make_op_partial_derivative(Tensor<TF_FLOAT>* a, Tensor<TF_FLOAT> *b) {
-    return make_op_derivative(a, b);
 }
