@@ -60,9 +60,14 @@ def add a b:
     TFOperation wrapper
 
 def mul a b:
-    makeBinaryOpWrapper "Mul" a b
+    wrapper = makeBinaryOpWrapper "Mul" a b
     TFOperation wrapper
 
 def sub a b:
-    TFOperation (makeBinaryOpWrapper "Sub" a b)
+    wrapper = makeBinaryOpWrapper "Sub" a b
+    TFOperation wrapper
+
+def partialDerivative a b:
+    wrapper = makePartialDerivativeWrapper a b
+    TFOperation wrapper
 

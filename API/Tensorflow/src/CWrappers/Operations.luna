@@ -33,3 +33,11 @@ def makeBinaryOpWrapper name a b:
     op = makeOp.call (Pointer None) [(CString.fromText name).toCArg, a.ptr.toCArg, b.ptr.toCArg]
     managedOp = ManagedPointer None . fromPointer releaseMethod op
     OperationWrapper managedOp
+
+def makePartialDerivativeWrapper a b:
+    makeOp = lookupSymbol "TFL" ("make_op_partial_derivative")
+    releaseMethod = lookupSymbol "TFL" "release"
+    op = makeOp.call (Pointer None) [a.ptr.toCArg, b.ptr.toCArg]
+    managedOp = ManagedPointer None . fromPointer releaseMethod op
+    OperationWrapper managedOp
+

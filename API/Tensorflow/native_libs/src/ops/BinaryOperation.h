@@ -47,4 +47,31 @@ private:
     std::shared_ptr<Operation<DataTypeLabel>> arg1, arg2;
 };
 
+template<TF_DataType DataTypeLabel>
+class Gradient : public Operation<DataTypeLabel> {
+public:
+    Gradient(std::shared_ptr<Operation<DataTypeLabel>> a,
+                    std::shared_ptr<Operation<DataTypeLabel>> b)
+        : arg1(std::move(a)), arg2(std::move(b)) {
+        hash = std::hash<std::string>()(OPERATION_NAME);
+        hash = hash_combine(hash, arg1->hashcode());
+        hash = hash_combine(hash, arg2->hashcode());
+    }
+
+    size_t hashcode() const override {
+        return hash;
+    }
+
+    TF_Output addToGraph(TF_Graph* graph) const override {
+        TF_Output output1 = arg1->addToGraph(graph);
+        TF_Output output2 = arg2->addToGraph(graph);
+
+        // TODO
+    };
+private:
+    size_t hash;
+    std::string OPERATION_NAME = "Gradient";
+    std::shared_ptr<Operation<DataTypeLabel>> arg1, arg2;
+};
+
 #endif //TFL_BINARYOPERATION_H

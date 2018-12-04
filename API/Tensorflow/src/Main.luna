@@ -12,11 +12,18 @@ def checkTensor:
     print t.toJSON
     None
 
+def checkDerivative:
+    print "checkDerivative"
+    a = tensorFromList [1.0, 2.0, 3.0]
+    b = tensorFromList [4.0, 4.0, 4.0]
+    None#c = partialDerivative a b
+    None#print c.toJSON
+    None
+
 def checkOp:
     print "checkOp"
     a = constFromScalar 2.0
     b = constFromScalar 3.0
-    print a.toJSON
     c = a + b
     print c.toJSON
     c2 = a - b
@@ -73,6 +80,7 @@ def checkTensorPtr:
 
 def main:
     checkTensor
+    checkDerivative
     checkOp
     checkAdd
     checkLifetime
