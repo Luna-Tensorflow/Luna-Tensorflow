@@ -5,6 +5,8 @@
 #include <memory>
 #include <cstdlib>
 #include <tensorflow/c/c_api.h>
+
+#include "../graph/GraphSession.h"
 #include "../helpers/utils.h"
 #include "../tensor/Tensor.h"
 
@@ -18,15 +20,13 @@ public:
         char suppress_tf_log[] = "TF_CPP_MIN_LOG_LEVEL=3";
         putenv(suppress_tf_log);
 
-        TF_Graph *graph = TF_NewGraph();
-        TF_SessionOptions *options = TF_NewSessionOptions();
-        TF_Session *session = run_with_status<TF_Session*>(std::bind(TF_NewSession, graph, options, std::placeholders::_1));
+        GraphSession graph;
         TF_Tensor *output_value;
 
-        TF_Output output = addToGraph(graph);
+        TF_Output output = graph.add(this);
 
         run_with_status<void>(std::bind(TF_SessionRun,
-                                        session,
+                                        graph.get_underlying_session(),
                                         nullptr,
                                         nullptr, nullptr, 0,
                                         &output, &output_value, 1,
@@ -34,14 +34,10 @@ public:
                                         nullptr,
                                         std::placeholders::_1));
 
-        run_with_status<void>(std::bind(TF_DeleteSession, session, std::placeholders::_1));
-        TF_DeleteSessionOptions(options);
-        TF_DeleteGraph(graph);
-
         return std::make_shared<Tensor<DataTypeLabel>>(output_value);
     }
 
-    virtual TF_Output addToGraph(TF_Graph* graph) const = 0;
+    virtual TF_Output add_to_graph(GraphSession& graph) const = 0;
 };
 
 

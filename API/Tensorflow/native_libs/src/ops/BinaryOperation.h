@@ -25,21 +25,24 @@ public:
         return hash;
     }
 
-    TF_Output addToGraph(TF_Graph* graph) const override {
-        TF_OperationDescription *desc = TF_NewOperation(graph, operation_name.c_str(), std::to_string(hashcode()).c_str());
+    TF_Output add_to_graph(GraphSession& graph) const override {
+        TF_OperationDescription *desc = TF_NewOperation(graph.get_underlying(),
+            operation_name.c_str(), std::to_string(hashcode()).c_str());
 
-        TF_Output output1 = arg1->addToGraph(graph);
-        TF_Output output2 = arg2->addToGraph(graph);
+        TF_Output output1 = graph.add(arg1.get());
+        TF_Output output2 = graph.add(arg2.get());
 
         TF_AddInput(desc, output1);
         TF_AddInput(desc, output2);
 
         TF_Operation *operation = run_with_status<TF_Operation*>(std::bind(TF_FinishOperation, desc, std::placeholders::_1));
 
-        return {
+        TF_Output out = {
                 .oper = operation,
                 .index = 0
         };
+        graph.register_output(hashcode(), out);
+        return out;
     };
 protected:
     size_t hash;
@@ -55,13 +58,15 @@ public:
         : BinaryOperation<DataTypeLabel>("Gradient", a, b) {}
 
 
-    TF_Output addToGraph(TF_Graph* graph) const override {
-        TF_Output output1 = this->arg1->addToGraph(graph);
-        TF_Output output2 = this->arg2->addToGraph(graph);
+    TF_Output add_to_graph(GraphSession& graph) const override {
+        TF_Output output1 = graph.add(this->arg1.get());
+        TF_Output output2 = graph.add(this->arg2.get());
 
 
 		TF_Output output;
-		run_with_status<void>(std::bind(TF_AddGradients, graph, &output1, 1, &output2, 1, nullptr, std::placeholders::_1, &output));
+		run_with_status<void>(std::bind(TF_AddGradients, graph.get_underlying(),
+			&output1, 1, &output2, 1, nullptr, std::placeholders::_1, &output));
+		graph.register_output(this->hashcode(), output);
 
 		return output;
     };

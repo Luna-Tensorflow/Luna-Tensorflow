@@ -14,10 +14,10 @@ def checkTensor:
 
 def checkDerivative:
     print "checkDerivative"
-    a = constFromScalar 3.0
-    b = a * a
-    c = partial b a
-    print c.toJSON
+    a = constFromScalar 5.0
+    c = (a * a) * a
+    d = partial c a
+    print d.toJSON
     None
 
 def checkOp:
