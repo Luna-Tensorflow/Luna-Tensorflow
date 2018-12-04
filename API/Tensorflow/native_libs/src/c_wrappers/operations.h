@@ -23,4 +23,6 @@ extern "C" size_t operation_hashcode_int(Operation<TF_INT32>*);
 extern "C" Tensor<TF_FLOAT>* eval_op_float(Operation<TF_FLOAT>* op);
 extern "C" Tensor<TF_INT32>* eval_op_int(Operation<TF_INT32>* op);
 
+extern "C" Operation<TF_FLOAT>* make_op_partial_derivative(Tensor<TF_FLOAT>* a, Tensor<TF_FLOAT>* b);
+
 #endif //FFITESTHELPER_OPERATIONS_H

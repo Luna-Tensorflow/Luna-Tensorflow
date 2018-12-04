@@ -36,6 +36,10 @@ public:
         };
     }
 
+    // std::vector<int64_t> getShape(){
+    //     return value.shape();
+    // }
+
 private:
     size_t hash;
     std::shared_ptr<Tensor<DataTypeLabel>> value;
