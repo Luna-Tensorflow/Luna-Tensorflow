@@ -22,18 +22,27 @@ public:
         return hash;
     }
 
-    TF_Output addToGraph(TF_Graph* graph) const override {
-        TF_OperationDescription *desc = TF_NewOperation(graph, "Const", std::to_string(hashcode()).c_str());
+    TF_Output add_to_graph(GraphSession& graph) const override
+    {
+        if(graph.exists(this))
+            return graph.add(this);
+
+        TF_OperationDescription *desc = TF_NewOperation(graph.get_underlying(),
+        	"Const", std::to_string(hashcode()).c_str());
 
         TF_SetAttrType(desc, "dtype", DataTypeLabel);
         run_with_status<void>(std::bind(TF_SetAttrTensor, desc, "value", value->get_underlying(), std::placeholders::_1));
 
         TF_Operation *operation = run_with_status<TF_Operation*>(std::bind(TF_FinishOperation, desc, std::placeholders::_1));
 
-        return {
+        TF_Output out =
+        {
             .oper = operation,
             .index = 0
         };
+
+        graph.register_output(hashcode(), out);
+        return out;
     }
 
     // std::vector<int64_t> getShape(){
