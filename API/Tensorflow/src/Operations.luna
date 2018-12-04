@@ -67,7 +67,7 @@ def sub a b:
     wrapper = makeBinaryOpWrapper "Sub" a b
     TFOperation wrapper
 
-def partialDerivative a b:
+def partial a b:
     wrapper = makePartialDerivativeWrapper a b
     TFOperation wrapper
 
