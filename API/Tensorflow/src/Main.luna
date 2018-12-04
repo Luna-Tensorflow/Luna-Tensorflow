@@ -78,6 +78,49 @@ def checkTensorPtr:
     print ("tensor.at({3}): " + tensorAt3.toText)
     None
 
+def step aVal bVal xVal yVal:
+    a = constFromScalar aVal
+    b = constFromScalar bVal
+    x = constFromScalar xVal
+    y = constFromScalar yVal
+    gamma = constFromScalar (0.0001.negate)
+    c = a * x
+    d = c + b
+    e = d - y
+    f = e * e
+    dfda = partial f a
+    dfdb = partial f b
+    aDelta = dfda * gamma
+    bDelta = dfdb * gamma
+    aNew = a + aDelta
+    bNew = b + bDelta
+    [aNewVal] = aNew.eval.toList
+    [bNewVal] = bNew.eval.toList
+    [aNewVal, bNewVal]
+
+def runBatch aVal bVal xs ys:
+    case xs of
+        Empty: [aVal, bVal]
+        Prepend x xsRest:
+            Prepend y ysRest = ys
+            [aNewVal, bNewVal] = step aVal bVal x y
+            runBatch aNewVal bNewVal xsRest ysRest
+
+def iter aVal bVal xs ys i:
+    def helper aVal bVal xs ys i:
+        print i
+        print [aVal, bVal]
+        [aNewVal, bNewVal] = runBatch aVal bVal xs ys
+        iter aNewVal bNewVal xs ys (i - 1)
+    if i > 0 then helper aVal bVal xs ys i else [aVal, bVal]
+
+def runRegression:
+    print "Regression"
+    xs = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].map x: x.toReal
+    ys = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].map x: x.toReal
+    [a, b] = iter (-2).toReal 3.toReal xs ys 30
+    print [a, b]
+
 def main:
     checkTensor
     checkDerivative
@@ -85,4 +128,5 @@ def main:
     checkAdd
     checkLifetime
     checkTensorPtr
+    runRegression
     None
