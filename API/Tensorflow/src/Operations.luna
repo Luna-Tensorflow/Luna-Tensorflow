@@ -1,27 +1,6 @@
 import Tensorflow.CWrappers.Operations
 import Tensorflow.Tensor
 
-class Const:
-    wrapper :: OperationWrapper
-
-    def ptr:
-        self.wrapper.ptr
-
-    def eval:
-        self.wrapper.eval
-
-    def toJSON:
-        self.eval.toJSON
-
-    def + other:
-        add self other
-
-    def * other:
-        mul self other
-
-    def - other:
-        sub self other
-
 # not sure if we want separate classes for each op type or one class for all?
 class TFOperation:
     wrapper :: OperationWrapper
@@ -46,7 +25,7 @@ class TFOperation:
 
 def makeConst tensor:
     wrapper = makeConstWrapper tensor
-    Const wrapper
+    TFOperation wrapper
 
 def constFromList list:
     tensor = tensorFromList list

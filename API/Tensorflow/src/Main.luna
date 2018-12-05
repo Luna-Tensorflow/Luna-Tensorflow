@@ -4,129 +4,34 @@ import Std.Foreign.C.Value
 import Tensorflow.Tensor
 import Tensorflow.Operations
 
-def checkTensor:
-    print "checkTensor"
-    print (0.upto 10)
-    t = tensorFromList [1.0, 2.0, 3.0]
-    print t.length
-    print t.toJSON
-    None
+def step (x, y) (a, b):
+    lr = constFromScalar (0.0001 . negate)
+    xscal = constFromScalar x
+    yscal = constFromScalar y
+    diff'' = a * xscal
+    diff' = diff'' + b
+    diff = diff' - yscal
+    meanYerrSq = diff * diff
+    pa'' = partial meanYerrSq a
+    pb'' = partial meanYerrSq b
 
-def checkDerivative:
-    print "checkDerivative"
-    a = constFromScalar 5.0
-    c = (a * a) * a
-    d = partial c a
-    print d.toJSON
-    None
+    pa' = pa'' * lr
+    pb' = pb'' * lr
 
-def checkOp:
-    print "checkOp"
-    a = constFromScalar 2.0
-    b = constFromScalar 3.0
-    c = a + b
-    print c.toJSON
-    c2 = a - b
-    print c2.toJSON
-    None
+    pa = a + pa'
+    pb = b + pb'
 
-def checkAdd:
-    print "checkAdd:"
-    number = 42
-    print ("number: " + number.toText)
+    (pa, pb)
 
-    add1 = lookupSymbol "TFL" "add1"
-    cResult = add1.call CInt32 [CInt32.fromInt(number).toCArg]
-    result = cResult.toInt
-    print ("number + 1: " + result.toText)
-    None
 
-def checkLifetime:
-    print "checkLifeTime:"
-    number = 3
-    print ("number: " + number.toText)
-
-    getPtr = lookupSymbol "TFL" "getPtr"
-    ptr = getPtr.call (Pointer CInt32) [CInt32.fromInt(number).toCArg]
-
-    releaseMethod = lookupSymbol "TFL" "release"
-    managedPtr = ManagedPointer None . fromPointer releaseMethod ptr
-
-    getValue = lookupSymbol "TFL" "getValue"
-
-    cVal = getValue.call CInt32 [managedPtr.toCArg]
-    val = cVal.toInt
-    print ("restored value: " + val.toText)
-    None
-
-def checkTensorPtr:
-    print "checkTensorPtr"
-    values = [1.1, 2.5, 3.7, 4.3]
-    print ("values: " + values.toText)
-    cvalues = values.map x: CFloat.fromReal x
-
-    makeFloatTensor = lookupSymbol "TFL" "make_float_tensor"
-    tensor = makeFloatTensor.call (Pointer None) [Array CFloat . fromList cvalues . toCArg, CInt64.fromInt cvalues.length . toCArg]
-
-    releaseMethod = lookupSymbol "TFL" "release"
-    managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
-
-    index = 3
-    getTensor1dFloatValueAt = lookupSymbol "TFL" "get_tensor1d_float_value_at"
-    cTensorAt3 = getTensor1dFloatValueAt.call CFloat [managedTensor.toCArg, CInt64.fromInt index . toCArg]
-    tensorAt3 = cTensorAt3.toReal
-    print ("tensor.at({3}): " + tensorAt3.toText)
-    None
-
-def step aVal bVal xVal yVal:
-    a = constFromScalar aVal
-    b = constFromScalar bVal
-    x = constFromScalar xVal
-    y = constFromScalar yVal
-    gamma = constFromScalar (0.0001.negate)
-    c = a * x
-    d = c + b
-    e = d - y
-    f = e * e
-    dfda = partial f a
-    dfdb = partial f b
-    aDelta = dfda * gamma
-    bDelta = dfdb * gamma
-    aNew = a + aDelta
-    bNew = b + bDelta
-    [aNewVal] = aNew.eval.toList
-    [bNewVal] = bNew.eval.toList
-    [aNewVal, bNewVal]
-
-def runBatch aVal bVal xs ys:
-    case xs of
-        Empty: [aVal, bVal]
-        Prepend x xsRest:
-            Prepend y ysRest = ys
-            [aNewVal, bNewVal] = step aVal bVal x y
-            runBatch aNewVal bNewVal xsRest ysRest
-
-def iter aVal bVal xs ys i:
-    def helper aVal bVal xs ys i:
-        print i
-        print [aVal, bVal]
-        [aNewVal, bNewVal] = runBatch aVal bVal xs ys
-        iter aNewVal bNewVal xs ys (i - 1)
-    if i > 0 then helper aVal bVal xs ys i else [aVal, bVal]
-
-def runRegression:
+def main:
     print "Regression"
     xs = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].map x: x.toReal
     ys = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].map x: x.toReal
-    [a, b] = iter (-2).toReal 3.toReal xs ys 30
-    print [a, b]
-
-def main:
-    checkTensor
-    checkDerivative
-    checkOp
-    checkAdd
-    checkLifetime
-    checkTensorPtr
-    runRegression
+    zipped = xs . zip ys
+    a0 = constFromScalar 0.0
+    b0 = constFromScalar 0.0
+    (a, b) = zipped . fold (a0, b0) step
+    print a.toJSON
+    print b.toJSON
     None
