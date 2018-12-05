@@ -31,7 +31,7 @@ file(GLOB_RECURSE HEADER_FILES ${PROJECT_SOURCE_DIR}/*.h)
 file(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/*.cpp)
 
 # Define the compilation target
-add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SRC_FILES} graph/GraphSession.cpp graph/GraphSession.h)
+add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SRC_FILES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE BUILDING_DATAFRAME_HELPER)
 target_compile_definitions(${PROJECT_NAME} PUBLIC)
 

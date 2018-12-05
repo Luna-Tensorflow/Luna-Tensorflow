@@ -9,13 +9,14 @@
 #include <tensorflow/c/c_api.h>
 #include "../tensor/Tensor.h"
 #include "../helpers/utils.h"
+#include "../helpers/salter.h"
 #include "Operation.h"
 
 template <TF_DataType DataTypeLabel>
 class Const : public Operation<DataTypeLabel> {
 public:
     explicit Const(std::shared_ptr<Tensor<DataTypeLabel>> tensor) : value(std::move(tensor)) {
-        hash = value->hash();
+    	hash = (value->hash() ^ const_salter.next_salt());
     }
 
     size_t hashcode() const override {
