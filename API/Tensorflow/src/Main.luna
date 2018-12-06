@@ -3,8 +3,9 @@ import Std.Foreign
 import Std.Foreign.C.Value
 import Tensorflow.Tensor
 import Tensorflow.Operations
+import Tensorflow.CWrappers.Operations
 
-def step (x, y) (a, b):
+def step (x, y) [a, b]:
     lr = constFromScalar (0.0001 . negate)
     xscal = constFromScalar x
     yscal = constFromScalar y
@@ -21,7 +22,7 @@ def step (x, y) (a, b):
     pa = a + pa'
     pb = b + pb'
 
-    (pa, pb)
+    [pa, pb]
 
 
 def main:
@@ -31,7 +32,6 @@ def main:
     zipped = xs . zip ys
     a0 = constFromScalar 0.0
     b0 = constFromScalar 0.0
-    (a, b) = zipped . fold (a0, b0) step
-    print a.toJSON
-    print b.toJSON
+    abList = zipped . fold [a0, b0] step
+    print (batchEval abList).toJSON
     None
