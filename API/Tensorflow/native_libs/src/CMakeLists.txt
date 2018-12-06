@@ -24,6 +24,8 @@ else()
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO ${OUT_DIR})
 endif()
 
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+
 project(TFL)
 
 # Glob for the project files
