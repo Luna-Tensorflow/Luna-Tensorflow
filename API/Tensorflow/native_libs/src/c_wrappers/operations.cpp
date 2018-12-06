@@ -2,6 +2,7 @@
 
 #include <string>
 #include <memory>
+#include <cstdio>
 #include "../helpers/utils.h"
 #include "../ops/Operation.h"
 #include "../ops/Const.h"
@@ -90,4 +91,44 @@ Tensor<TF_FLOAT> *eval_op_float(Operation<TF_FLOAT> *op) {
 
 Tensor<TF_INT32> *eval_op_int(Operation<TF_INT32> *op) {
     return eval_op(op);
+}
+
+namespace {
+	template<TF_DataType DT>
+	Tensor<DT>** batch_eval_op(Operation<DT>** ops, size_t count)
+	{
+		char suppress_tf_log[] = "TF_CPP_MIN_LOG_LEVEL=3";
+		putenv(suppress_tf_log);
+
+		GraphSession graph;
+
+		std::vector<TF_Tensor*> output_values(count);
+		std::vector<TF_Output> tf_outputs(count);
+
+		for(unsigned i=0; i<count; ++i)
+			tf_outputs[i] = graph.add(ops[i]);
+
+		run_with_status<void>(std::bind(TF_SessionRun,
+		                                graph.get_underlying_session(),
+		                                nullptr,
+		                                nullptr, nullptr, 0,
+		                                tf_outputs.data(), output_values.data(), count,
+		                                nullptr, 0,
+		                                nullptr,
+		                                std::placeholders::_1));
+
+		auto return_values = (Tensor<DT>**) std::calloc(sizeof(Tensor<DT>*), count);
+
+		for(unsigned i=0; i<count; ++i)
+		{
+			return_values[i] = LifetimeManager::instance().addOwnership(std::make_shared<Tensor<DT>>(output_values[i]));
+		}
+
+		return return_values;
+	}
+}
+
+Tensor<TF_FLOAT>** batch_eval_op_float(Operation<TF_FLOAT>** ops, size_t count)
+{
+	return batch_eval_op(ops, count);
 }
