@@ -28,6 +28,11 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 project(TFL)
 
+if(WIN32)
+    include_directories(${CMAKE_SOURCE_DIR}/../../../../tensorflow/include/)
+    link_directories(${CMAKE_SOURCE_DIR}/../../../../tensorflow/lib)
+endif()
+
 # Glob for the project files
 file(GLOB_RECURSE HEADER_FILES ${PROJECT_SOURCE_DIR}/*.h)
 file(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/*.cpp)
