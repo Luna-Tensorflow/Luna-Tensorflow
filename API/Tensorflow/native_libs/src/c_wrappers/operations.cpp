@@ -22,10 +22,12 @@ namespace {
 }
 
 Operation<TF_FLOAT>* make_op_binary_float(const char* name, Operation<TF_FLOAT>* a, Operation<TF_FLOAT>* b) {
+	 LOG(name, a, b);
     return make_op_binary(name, a, b);
 }
 
 Operation<TF_INT32>* make_op_binary_int(const char* name, Operation<TF_INT32>* a, Operation<TF_INT32>* b) {
+	 LOG(name, a, b);
     return make_op_binary(name, a, b);
 }
 
@@ -42,6 +44,7 @@ namespace {
 }
 
 Operation<TF_FLOAT>* make_op_partial_derivative(Operation<TF_FLOAT>* a, Operation<TF_FLOAT> *b) {
+	LOG(a, b);
 	return make_op_derivative(a, b);
 }
 
@@ -56,10 +59,12 @@ namespace {
 }
 
 Operation<TF_FLOAT>* make_op_const_float(Tensor<TF_FLOAT>* tensor) {
+	 LOG(tensor);
     return make_op_const(tensor);
 }
 
 Operation<TF_INT32>* make_op_const_int(Tensor<TF_INT32>* tensor) {
+	 LOG(tensor);
     return make_op_const(tensor);
 }
 
@@ -71,10 +76,12 @@ namespace {
 }
 
 size_t operation_hashcode_float(Operation<TF_FLOAT>* op) {
+	 LOG(op);
     return operation_hashcode(op);
 }
 
 size_t operation_hashcode_int(Operation<TF_INT32>* op) {
+	 LOG(op);
     return operation_hashcode(op);
 }
 
@@ -86,10 +93,12 @@ namespace {
 }
 
 Tensor<TF_FLOAT> *eval_op_float(Operation<TF_FLOAT> *op) {
+	 LOG(op);
     return eval_op(op);
 }
 
 Tensor<TF_INT32> *eval_op_int(Operation<TF_INT32> *op) {
+	 LOG(op);
     return eval_op(op);
 }
 
@@ -130,5 +139,6 @@ namespace {
 
 Tensor<TF_FLOAT>** batch_eval_op_float(Operation<TF_FLOAT>** ops, size_t count)
 {
+	LOG(ops, count);
 	return batch_eval_op(ops, count);
 }

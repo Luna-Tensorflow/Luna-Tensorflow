@@ -11,6 +11,7 @@
 
 Tensor<TF_FLOAT> *make_float_tensor(float const* array, int64_t len)
 {
+	LOG(array, len);
 	auto tensor_ptr = std::make_shared<Tensor<TF_FLOAT>>(array, len);
 
 	return LifetimeManager::instance().addOwnership(std::move(tensor_ptr));
@@ -18,6 +19,7 @@ Tensor<TF_FLOAT> *make_float_tensor(float const* array, int64_t len)
 
 Tensor<TF_FLOAT> *make_float_tensor_arr(float const** array, int64_t width, int64_t height)
 {
+   LOG(array, width, height);
 	auto tensor_ptr = std::make_shared<Tensor<TF_FLOAT>>(array, width, height);
 
 	return LifetimeManager::instance().addOwnership(std::move(tensor_ptr));
@@ -25,6 +27,7 @@ Tensor<TF_FLOAT> *make_float_tensor_arr(float const** array, int64_t width, int6
 
 Tensor<TF_INT32> *make_int_tensor(const int32_t* array, int64_t len)
 {
+   LOG(array, len);
 	auto tensor_ptr = std::make_shared<Tensor<TF_INT32>>(array, len);
 
 	return LifetimeManager::instance().addOwnership(std::move(tensor_ptr));
@@ -32,24 +35,29 @@ Tensor<TF_INT32> *make_int_tensor(const int32_t* array, int64_t len)
 
 float get_tensor1d_float_value_at(Tensor<TF_FLOAT> *tensor, int64_t idx)
 {
-	return get_tensor_float_value_at(tensor, &idx, 1);
+	auto r = get_tensor_float_value_at(tensor, &idx, 1);
+   LOGANDRETURN(r, tensor, idx);
 }
 
 float get_tensor_float_value_at(Tensor<TF_FLOAT> *tensor, int64_t *idxs, size_t len)
 {
-	return LifetimeManager::instance().accessOwned(tensor)->at(idxs, len);
+	auto r = LifetimeManager::instance().accessOwned(tensor)->at(idxs, len);
+	LOGANDRETURN(r, tensor, idxs, len);
 }
 
 int32_t get_tensor1d_int_value_at(Tensor<TF_INT32> *tensor, int64_t idx)
 {
-	return get_tensor_int_value_at(tensor, &idx, 1);
+	auto r = get_tensor_int_value_at(tensor, &idx, 1);
+   LOGANDRETURN(r, tensor, idx);
 }
 
 int32_t get_tensor_int_value_at(Tensor<TF_INT32> *tensor, int64_t *idxs, size_t len)
 {
-	return LifetimeManager::instance().accessOwned(tensor)->at(idxs, len);
+	auto r = LifetimeManager::instance().accessOwned(tensor)->at(idxs, len);
+   LOGANDRETURN(r, tensor, idxs, len);
 }
 
 int64_t tensor_float_length(Tensor<TF_FLOAT> * tensor) {
-	return LifetimeManager::instance().accessOwned(tensor)->shape()[0];
+	auto r = LifetimeManager::instance().accessOwned(tensor)->shape()[0];
+   LOGANDRETURN(r, tensor);
 }
