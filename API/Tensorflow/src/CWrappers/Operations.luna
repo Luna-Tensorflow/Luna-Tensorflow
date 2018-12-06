@@ -3,6 +3,12 @@ import Std.Foreign.C.Value
 import Tensorflow.Tensor
 import Tensorflow.CWrappers.Tensor
 
+def tensorFromPtr releaseMethod tensorPtr:
+    managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
+
+    wrapper = TensorWrapper managedTensorPtr
+    Tensor wrapper
+
 class OperationWrapper:
     ptr :: ManagedPointer None
     #typename :: Text # TODO
@@ -14,10 +20,24 @@ class OperationWrapper:
         evalOp = lookupSymbol "TFL" "eval_op_float"
         releaseMethod = lookupSymbol "TFL" "release"
         tensorPtr = evalOp.call (Pointer None) [self.toCArg]
-        managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
+        tensorFromPtr releaseMethod tensorPtr
 
-        wrapper = TensorWrapper managedTensorPtr
-        Tensor wrapper
+def batchEval list:
+    count = list . length
+    batchEvalOp = lookupSymbol "TFL" "batch_eval_op_float"
+    releaseMethod = lookupSymbol "TFL" "release"
+
+    carr = ManagedPointer (Pointer None) . mallocElems count
+    indexed = 0 . upto count . zip list
+    indexed . each (idx, elem):
+        carr . moveElems idx . write (elem.ptr.ptr)
+
+    returnedPtr = batchEvalOp.call (Pointer (Pointer None)) [carr.toCArg, (CInt64.fromInt count).toCArg]
+    returnedArr = Array (Pointer None) . make count returnedPtr
+
+    retval = returnedArr . toList . map (tensorFromPtr releaseMethod)
+    returnedArr . free
+    retval
 
 
 def makeConstWrapper tensor:
