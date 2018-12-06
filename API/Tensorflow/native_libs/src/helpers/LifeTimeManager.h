@@ -9,6 +9,7 @@
 #include <sstream>
 #include <vector>
 #include <unordered_map>
+#include "logging.h"
 
 // TODO? could get rid of most headers by using pimpl
 
@@ -48,6 +49,7 @@ public:
     template<typename T>
     T *addOwnership(std::shared_ptr<T> ptr)
     {
+        LOG(ptr);
         // we don't bother tracking nullptr - there is no object with a lifetime to manage
         if(!ptr)
             return nullptr;
@@ -59,6 +61,7 @@ public:
     }
     void releaseOwnership(const void *ptr)
     {
+        LOG(ptr);
         access(ptr, [this] (auto itr)
         {
             // TODO should separate retrieving any from storage and deleting it

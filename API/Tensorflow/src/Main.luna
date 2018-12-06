@@ -5,6 +5,17 @@ import Tensorflow.Tensor
 import Tensorflow.Operations
 import Tensorflow.CWrappers.Operations
 
+def checkAdd:
+    print "checkAdd:"
+    number = 42
+    print ("number: " + number.toText)
+
+    add1 = lookupSymbol "TFL" "add1"
+    cResult = add1.call CInt32 [CInt32.fromInt(number).toCArg]
+    result = cResult.toInt
+    print ("number + 1: " + result.toText)
+    None
+
 def step (x, y) [a, b]:
     lr = constFromScalar (0.0001 . negate)
     xscal = constFromScalar x
@@ -26,6 +37,7 @@ def step (x, y) [a, b]:
 
 
 def main:
+    checkAdd
     print "Regression"
     xs = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].map x: x.toReal
     ys = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].map x: x.toReal
