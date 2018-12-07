@@ -1,49 +1,46 @@
 import Std.Base
+import Std.Time
 import Std.Foreign
 import Std.Foreign.C.Value
 import Tensorflow.Tensor
 import Tensorflow.Operations
 import Tensorflow.CWrappers.Operations
 
-def checkAdd:
-    print "checkAdd:"
-    number = 42
-    print ("number: " + number.toText)
-
-    add1 = lookupSymbol "TFL" "add1"
-    cResult = add1.call CInt32 [CInt32.fromInt(number).toCArg]
-    result = cResult.toInt
-    print ("number + 1: " + result.toText)
-    None
-
-def step (x, y) [a, b]:
-    lr = constFromScalar (0.0001 . negate)
+def step lrscal (x, y) [a, b]:
     xscal = constFromScalar x
     yscal = constFromScalar y
-    diff'' = a * xscal
-    diff' = diff'' + b
+
+    ascal = constFromScalar a
+    bscal = constFromScalar b
+
+    diff'' = ascal * xscal
+    diff' = diff'' + bscal
     diff = diff' - yscal
     meanYerrSq = diff * diff
-    pa'' = partial meanYerrSq a
-    pb'' = partial meanYerrSq b
+    pa'' = partial meanYerrSq ascal
+    pb'' = partial meanYerrSq bscal
 
-    pa' = pa'' * lr
-    pb' = pb'' * lr
+    pa' = pa'' * lrscal
+    pb' = pb'' * lrscal
 
-    pa = a + pa'
-    pb = b + pb'
+    pa = ascal + pa'
+    pb = bscal + pb'
 
-    [pa, pb]
+    batchEval [pa, pb] . each (x: x . at 0)
 
 
 def main:
-    checkAdd
     print "Regression"
     xs = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].map x: x.toReal
     ys = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].map x: x.toReal
     zipped = xs . zip ys
-    a0 = constFromScalar 0.0
-    b0 = constFromScalar 0.0
-    abList = zipped . fold [a0, b0] step
-    print (batchEval abList).toJSON
+
+    lr = constFromScalar (0.0001 . negate)
+
+    t0 = Time.now
+    abList = zipped . fold [0.0, 0.0] (step lr)
+    t1 = Time.now
+
+    print abList.toJSON
+    print ("Took " + (t1.diff t0).toText + " ms")
     None
