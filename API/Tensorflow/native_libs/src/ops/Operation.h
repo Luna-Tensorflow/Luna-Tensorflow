@@ -21,20 +21,14 @@ public:
         putenv(suppress_tf_log);
 
         GraphSession graph;
-        TF_Tensor *output_value;
+        graph.add_output(graph.add_operation(this));
 
-        TF_Output output = graph.add(this);
+        Tensor<DataTypeLabel>** values = graph.eval<DataTypeLabel>();
 
-        run_with_status<void>(std::bind(TF_SessionRun,
-                                        graph.get_underlying_session(),
-                                        nullptr,
-                                        nullptr, nullptr, 0,
-                                        &output, &output_value, 1,
-                                        nullptr, 0,
-                                        nullptr,
-                                        std::placeholders::_1));
+        auto ptr = values[0];
+        free(values);
 
-        return std::make_shared<Tensor<DataTypeLabel>>(output_value);
+        return LifetimeManager::instance().accessOwned(ptr);
     }
 
     virtual TF_Output add_to_graph(GraphSession& graph) const = 0;

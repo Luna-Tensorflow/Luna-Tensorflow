@@ -26,7 +26,7 @@ public:
     TF_Output add_to_graph(GraphSession& graph) const override
     {
         if(graph.exists(this))
-            return graph.add(this);
+            return graph.add_operation(this);
 
         TF_OperationDescription *desc = TF_NewOperation(graph.get_underlying(),
         	"Const", std::to_string(hashcode()).c_str());
@@ -42,7 +42,7 @@ public:
             .index = 0
         };
 
-        graph.register_output(hashcode(), out);
+	    graph.register_output_hash(hashcode(), out);
         return out;
     }
 

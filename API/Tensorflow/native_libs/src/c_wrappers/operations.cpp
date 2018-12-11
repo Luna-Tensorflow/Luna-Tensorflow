@@ -111,29 +111,10 @@ namespace {
 
 		GraphSession graph;
 
-		std::vector<TF_Tensor*> output_values(count);
-		std::vector<TF_Output> tf_outputs(count);
+		for(size_t i=0; i<count; ++i)
+			graph.add_output(graph.add_operation(ops[i]));
 
-		for(unsigned i=0; i<count; ++i)
-			tf_outputs[i] = graph.add(ops[i]);
-
-		run_with_status<void>(std::bind(TF_SessionRun,
-		                                graph.get_underlying_session(),
-		                                nullptr,
-		                                nullptr, nullptr, 0,
-		                                tf_outputs.data(), output_values.data(), count,
-		                                nullptr, 0,
-		                                nullptr,
-		                                std::placeholders::_1));
-
-		auto return_values = (Tensor<DT>**) std::calloc(sizeof(Tensor<DT>*), count);
-
-		for(unsigned i=0; i<count; ++i)
-		{
-			return_values[i] = LifetimeManager::instance().addOwnership(std::make_shared<Tensor<DT>>(output_values[i]));
-		}
-
-		return return_values;
+		return graph.eval<DT>();
 	}
 }
 

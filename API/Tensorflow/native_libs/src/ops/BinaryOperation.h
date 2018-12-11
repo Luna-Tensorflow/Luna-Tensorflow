@@ -29,8 +29,8 @@ public:
         TF_OperationDescription *desc = TF_NewOperation(graph.get_underlying(),
             operation_name.c_str(), std::to_string(hashcode()).c_str());
 
-        TF_Output output1 = graph.add(arg1.get());
-        TF_Output output2 = graph.add(arg2.get());
+        TF_Output output1 = graph.add_operation(arg1.get());
+        TF_Output output2 = graph.add_operation(arg2.get());
 
         TF_AddInput(desc, output1);
         TF_AddInput(desc, output2);
@@ -41,7 +41,7 @@ public:
                 .oper = operation,
                 .index = 0
         };
-        graph.register_output(hashcode(), out);
+	    graph.register_output_hash(hashcode(), out);
         return out;
     };
 protected:
@@ -59,14 +59,14 @@ public:
 
 
     TF_Output add_to_graph(GraphSession& graph) const override {
-        TF_Output output1 = graph.add(this->arg1.get());
-        TF_Output output2 = graph.add(this->arg2.get());
+        TF_Output output1 = graph.add_operation(this->arg1.get());
+        TF_Output output2 = graph.add_operation(this->arg2.get());
 
 
 		TF_Output output;
 		run_with_status<void>(std::bind(TF_AddGradients, graph.get_underlying(),
 			&output1, 1, &output2, 1, nullptr, std::placeholders::_1, &output));
-		graph.register_output(this->hashcode(), output);
+	    graph.register_output_hash(this->hashcode(), output);
 
 		return output;
     };

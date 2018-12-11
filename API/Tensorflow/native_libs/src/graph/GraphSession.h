@@ -10,6 +10,8 @@
 #include <memory>
 
 #include "../helpers/utils.h"
+#include "../tensor/Tensor.h"
+#include "../helpers/LifeTimeManager.h"
 
 template<TF_DataType DataTypeLabel>
 class Operation;
@@ -21,6 +23,8 @@ private:
 	TF_Graph* graph;
 	TF_Session* session;
 	TF_SessionOptions* options;
+
+	std::vector<TF_Output> outputs;
 
 public:
 	GraphSession() 	{
@@ -39,15 +43,46 @@ public:
 		return (hashes.find(op->hashcode()) != hashes.end());
 	}
 
-	template<TF_DataType DataTypeLabel> TF_Output add(const Operation<DataTypeLabel>* op) {
+	template<TF_DataType DataTypeLabel> TF_Output add_operation(const Operation<DataTypeLabel>* op)
+	{
 		if(exists(op))
 			return hashes[op->hashcode()];
 
 		return (hashes[op->hashcode()] = op->add_to_graph(*this));
 	}
 
-	void register_output(size_t hash, TF_Output& out) {
+	template<TF_DataType DataTypeLabel>
+	Tensor<DataTypeLabel>** eval() const
+	{
+		size_t count = outputs.size();
+		std::vector<TF_Tensor*> output_values(count);
+
+		run_with_status<void>(std::bind(TF_SessionRun,
+		                                session,
+		                                nullptr,
+		                                nullptr, nullptr, 0,
+		                                outputs.data(), output_values.data(), count,
+		                                nullptr, 0,
+		                                nullptr,
+		                                std::placeholders::_1));
+
+		auto return_values = (Tensor<DataTypeLabel>**) std::calloc(sizeof(Tensor<DataTypeLabel>*), count);
+
+		for(unsigned i=0; i<count; ++i)
+		{
+			return_values[i] = LifetimeManager::instance().addOwnership(std::make_shared<Tensor<DataTypeLabel>>(output_values[i]));
+		}
+
+		return return_values;
+	}
+
+	void register_output_hash(size_t hash, TF_Output &out) {
 		hashes[hash] = out;
+	}
+
+	void add_output(TF_Output out)
+	{
+		outputs.push_back(out);
 	}
 
 	TF_Graph* get_underlying() {
