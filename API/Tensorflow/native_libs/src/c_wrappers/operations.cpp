@@ -7,6 +7,7 @@
 #include "../ops/Operation.h"
 #include "../ops/Const.h"
 #include "../ops/BinaryOperation.h"
+#include "../ops/UnaryOperation.h"
 #include "../helpers/LifeTimeManager.h"
 
 namespace {
@@ -29,6 +30,22 @@ Operation<TF_FLOAT>* make_op_binary_float(const char* name, Operation<TF_FLOAT>*
 Operation<TF_INT32>* make_op_binary_int(const char* name, Operation<TF_INT32>* a, Operation<TF_INT32>* b) {
 	 LOG(name, a, b);
     return make_op_binary(name, a, b);
+}
+
+namespace {
+    template<TF_DataType DataTypeLabel>
+    Operation<DataTypeLabel> *make_op_unary(const char *name, Operation<DataTypeLabel> *a) {
+        std::string name_cpp(name);
+        std::shared_ptr<Operation<DataTypeLabel>> a_cpp = LifetimeManager::instance().accessOwned(a);
+        auto op = std::make_shared<UnaryOperation<DataTypeLabel>>(name_cpp, a_cpp);
+        auto opBase = std::dynamic_pointer_cast<Operation<DataTypeLabel>>(op);
+        return LifetimeManager::instance().addOwnership(std::move(opBase));
+    }
+}
+
+Operation<TF_FLOAT>* make_op_unary_float(const char* name, Operation<TF_FLOAT>* a) {
+     LOG(name, a);
+    return make_op_unary(name, a);
 }
 
 

@@ -50,3 +50,7 @@ def partial a b:
     wrapper = makePartialDerivativeWrapper a b
     TFOperation wrapper
 
+def sigmoid a:
+    wrapper = makeUnaryOpWrapper "Sigmoid" a
+    TFOperation wrapper
+
