@@ -48,3 +48,8 @@ def main:
     print abList.toJSON
     print ("Took " + (t1.diff t0).toText + " ms")
     None
+
+def main2:
+    a = constFromScalar (0.5)
+    b = sigmoid a
+    print b.toJSON
