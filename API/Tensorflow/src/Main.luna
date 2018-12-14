@@ -1,17 +1,28 @@
 import Std.Base
 import Std.Time
-import Std.Foreign
-import Std.Foreign.C.Value
-import Tensorflow.Tensor
+
+import Tensorflow.Lift
 import Tensorflow.Operations
-import Tensorflow.Graph
-import Tensorflow.CWrappers.Operations
 
-def step graph (x, y) [a, b]:
-    (graph . evalSubsts [("a", a), ("b", b), ("x", x), ("y", y)]) . each (el: el . at 0)
+def step func (x, y) [a, b]:
+    (func x y a b) . each (el: el . at 0)
 
-def multiList list n acc:
-    if n==0 then acc else multiList list (n-1) (acc+list)
+def gradientDescent lr x y a b:
+    diff'' = a*x
+    diff'  = diff'' + b
+    diff   = diff' - y
+
+    meanSqErr = diff * diff
+    pa'' = partial meanSqErr a
+    pb'' = partial meanSqErr b
+
+    pa'  = pa'' * lr
+    pb'  = pb'' * lr
+
+    pa = a + pa'
+    pb = b + pb'
+
+    [pa, pb]
 
 def main:
     print "Regression"
@@ -20,31 +31,10 @@ def main:
 
     train = xs . zip ys
 
-    lr = constFromScalar (0.0001 . negate)
-
-    xph = makePlaceholder "x"
-    yph = makePlaceholder "y"
-
-    aph = makePlaceholder "a"
-    bph = makePlaceholder "b"
-
-    diff'' = aph * xph
-    diff' = diff'' + bph
-    diff = diff' - yph
-    meanYerrSq = diff * diff
-    pa'' = partial meanYerrSq aph
-    pb'' = partial meanYerrSq bph
-
-    pa' = pa'' * lr
-    pb' = pb'' * lr
-
-    pa = aph + pa'
-    pb = bph + pb'
-
-    graph = makeGraphFromOutputList [pa, pb]
+    lifted = lift5 gradientDescent
 
     t0 = Time.now
-    abList = train . fold [0.0, 0.0] (step graph)
+    abList = train . fold [0.0, 0.0] (step (lifted (0.0001 . negate)))
     t1 = Time.now
 
     print abList.toJSON
