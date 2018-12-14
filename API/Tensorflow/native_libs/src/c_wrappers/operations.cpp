@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "operations.h"
 
 #include <string>
@@ -184,5 +186,67 @@ Tensor<TF_FLOAT>** batch_eval_op_float(Operation<TF_FLOAT>** ops, size_t count)
 {
 	LOG(ops, count);
 	return batch_eval_op(ops, count);
+}
+
+namespace {
+	template<TF_DataType DataTypeLabel>
+	GraphSession* make_graph_from_output(Operation<DataTypeLabel>* op)
+	{
+		auto graphPtr = std::make_shared<GraphSession>();
+		graphPtr->add_output(graphPtr->add_operation(op));
+
+		return LifetimeManager::instance().addOwnership(graphPtr);
+	}
+
+	template<TF_DataType DataTypeLabel>
+	GraphSession* make_graph_from_outputs(Operation<DataTypeLabel>** op, size_t output_count)
+	{
+		auto graphPtr = std::make_shared<GraphSession>();
+		for(size_t i=0; i<output_count; ++i)
+			graphPtr->add_output(graphPtr->add_operation(op[i]));
+
+		return LifetimeManager::instance().addOwnership(graphPtr);
+	}
+
+	template<TF_DataType DataTypeLabel>
+	Tensor<DataTypeLabel>** eval_graph(GraphSession *graph)
+	{
+		return graph->eval<DataTypeLabel>();
+	}
+
+	template<TF_DataType DataTypeLabel>
+	Tensor<DataTypeLabel>** eval_graph_with_placeholders(GraphSession *graph,
+		const char **ph_names, Tensor<DataTypeLabel> **ph_values, size_t ph_count)
+	{
+		std::map<std::string, std::shared_ptr<Tensor<DataTypeLabel>>> substitutions;
+		for(size_t i=0; i<ph_count; ++i)
+		{
+			substitutions.emplace(std::string(ph_names[i]),
+			                      LifetimeManager::instance().accessOwned(ph_values[i]));
+		}
+
+		return graph->eval<DataTypeLabel>(substitutions);
+	}
+}
+
+GraphSession *make_graph_from_output_float(Operation<TF_FLOAT> *output)
+{
+	return make_graph_from_output<TF_FLOAT>(output);
+}
+
+GraphSession *make_graph_from_outputs_float(Operation<TF_FLOAT> **outputs, size_t output_count)
+{
+	return make_graph_from_outputs<TF_FLOAT>(outputs, output_count);
+}
+
+Tensor<TF_FLOAT>** eval_graph_float(GraphSession *graph)
+{
+	return eval_graph<TF_FLOAT>(graph);
+}
+
+Tensor<TF_FLOAT>** eval_graph_with_placeholders_float(GraphSession *graph, const char **ph_names, Tensor<TF_FLOAT> **ph_values,
+                                   size_t ph_count)
+{
+	return eval_graph_with_placeholders<TF_FLOAT>(graph, ph_names, ph_values, ph_count);
 }
 

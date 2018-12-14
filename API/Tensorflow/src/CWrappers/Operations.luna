@@ -4,12 +4,6 @@ import Tensorflow.Tensor
 import Tensorflow.Operations
 import Tensorflow.CWrappers.Tensor
 
-def tensorFromPtr releaseMethod tensorPtr:
-    managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
-
-    wrapper = TensorWrapper managedTensorPtr
-    Tensor wrapper
-
 def unzip listpair: case listpair of
     Empty: (Empty, Empty)
     Prepend (x,y) tail: case unzip tail of
