@@ -1,0 +1,61 @@
+import Std.Base
+
+import Tensorflow.Tensor
+import Tensorflow.Operations
+import Tensorflow.Graph
+
+def lift1 fun:
+    p1 = makePlaceholder "1"
+    result = fun p1
+    graph = makeGraphFromOutputList result
+
+    def liftedf a:
+        graph . evalSubsts [("1", a)]
+    liftedf
+
+def lift2 fun:
+    p1 = makePlaceholder "1"
+    p2 = makePlaceholder "2"
+    result = fun p1 p2
+    graph = makeGraphFromOutputList result
+
+    def liftedf a b:
+        graph . evalSubsts [("1", a), ("2", b)]
+    liftedf
+
+def lift3 fun:
+    p1 = makePlaceholder "1"
+    p2 = makePlaceholder "2"
+    p3 = makePlaceholder "3"
+    result = fun p1 p2 p3
+    graph = makeGraphFromOutputList result
+
+    def liftedf a b c:
+        graph . evalSubsts [("1", a), ("2", b), ("3", c)]
+    liftedf
+
+def lift4 fun:
+    p1 = makePlaceholder "1"
+    p2 = makePlaceholder "2"
+    p3 = makePlaceholder "3"
+    p4 = makePlaceholder "4"
+    result = fun p1 p2 p3 p4
+    graph = makeGraphFromOutputList result
+
+    def liftedf a b c d:
+        graph . evalSubsts [("1", a), ("2", b), ("3", c), ("4", d)]
+    liftedf
+
+def lift5 fun:
+    p1 = makePlaceholder "1"
+    p2 = makePlaceholder "2"
+    p3 = makePlaceholder "3"
+    p4 = makePlaceholder "4"
+    p5 = makePlaceholder "5"
+    result = fun p1 p2 p3 p4 p5
+    graph = makeGraphFromOutputList result
+
+    def liftedf a b c d e:
+        graph . evalSubsts [("1", a), ("2", b), ("3", c), ("4", d), ("5", e)]
+    liftedf
+
