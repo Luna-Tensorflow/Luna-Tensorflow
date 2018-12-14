@@ -7,11 +7,11 @@ import Tensorflow.Operations
 import Tensorflow.CWrappers.Operations
 
 def step lrscal (x, y) [a, b]:
-    xscal = constFromScalar x
-    yscal = constFromScalar y
+    xscal = makePlaceholder "x"
+    yscal = makePlaceholder "y"
 
-    ascal = constFromScalar a
-    bscal = constFromScalar b
+    ascal = makePlaceholder "a"
+    bscal = makePlaceholder "b"
 
     diff'' = ascal * xscal
     diff' = diff'' + bscal
@@ -26,7 +26,7 @@ def step lrscal (x, y) [a, b]:
     pa = ascal + pa'
     pb = bscal + pb'
 
-    batchEval [pa, pb] . each (x: x . at 0)
+    (batchEvalSubstitutions [pa, pb] [("a", a), ("b", b), ("x", x), ("y", y)]) . each (el: el . at 0)
 
 def multiList list n acc:
     if n==0 then acc else multiList list (n-1) (acc+list)
@@ -36,8 +36,7 @@ def main:
     xs = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].map x: x.toReal
     ys = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].map x: x.toReal
 
-    zipped = xs . zip ys
-    train = multiList zipped 20 []
+    train = xs . zip ys
 
     lr = constFromScalar (0.0001 . negate)
 
@@ -48,8 +47,3 @@ def main:
     print abList.toJSON
     print ("Took " + (t1.diff t0).toText + " ms")
     None
-
-def main2:
-    a = constFromScalar (0.5)
-    b = sigmoid a
-    print b.toJSON

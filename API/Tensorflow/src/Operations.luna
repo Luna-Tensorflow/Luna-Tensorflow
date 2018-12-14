@@ -23,6 +23,10 @@ class TFOperation:
     def - other:
         sub self other
 
+def makePlaceholder name:
+    wrapper = makePlaceholderWrapper name
+    TFOperation wrapper
+
 def makeConst tensor:
     wrapper = makeConstWrapper tensor
     TFOperation wrapper

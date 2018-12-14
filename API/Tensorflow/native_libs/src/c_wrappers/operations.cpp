@@ -8,6 +8,8 @@
 #include "../ops/Const.h"
 #include "../ops/BinaryOperation.h"
 #include "../ops/UnaryOperation.h"
+#include "../ops/Gradient.h"
+#include "../ops/Placeholder.h"
 #include "../helpers/LifeTimeManager.h"
 
 namespace {
@@ -63,6 +65,20 @@ namespace {
 Operation<TF_FLOAT>* make_op_partial_derivative(Operation<TF_FLOAT>* a, Operation<TF_FLOAT> *b) {
 	LOG(a, b);
 	return make_op_derivative(a, b);
+}
+
+namespace {
+	template<TF_DataType DT>
+	Operation<DT> *make_op_placeholder(const char* name) {
+		auto placeholder = std::make_shared<Placeholder<DT>>(std::string(name));
+		auto placeholderBase = std::dynamic_pointer_cast<Operation<DT>>(placeholder);
+		return LifetimeManager::instance().addOwnership(std::move(placeholderBase));
+	}
+}
+
+Operation<TF_FLOAT>* make_op_placeholder_float(const char* name) {
+	LOG(name);
+	return make_op_placeholder<TF_FLOAT>(name);
 }
 
 namespace {
@@ -133,6 +149,35 @@ namespace {
 
 		return graph.eval<DT>();
 	}
+
+	template<TF_DataType DT>
+	Tensor<DT>** batch_eval_op_placeholders(Operation<DT>** ops, size_t op_count,
+		const char* ph_names[], Tensor<DT>** ph_values, size_t ph_count)
+	{
+		char suppress_tf_log[] = "TF_CPP_MIN_LOG_LEVEL=3";
+		putenv(suppress_tf_log);
+
+		GraphSession graph;
+
+		for(size_t i=0; i<op_count; ++i)
+			graph.add_output(graph.add_operation(ops[i]));
+
+		std::map<std::string, std::shared_ptr<Tensor<DT>>> substitutions;
+		for(size_t i=0; i<ph_count; ++i)
+		{
+			substitutions.emplace(std::string(ph_names[i]),
+				LifetimeManager::instance().accessOwned(ph_values[i]));
+		}
+
+		return graph.eval<DT>(substitutions);
+	}
+}
+
+Tensor<TF_FLOAT>** batch_eval_op_placeholders_float(Operation<TF_FLOAT>** ops, size_t count,
+	const char* ph_names[], Tensor<TF_FLOAT>** ph_values, size_t ph_count)
+{
+	LOG(ops, count, ph_names, ph_values, ph_count);
+	return batch_eval_op_placeholders(ops, count, ph_names, ph_values, ph_count);
 }
 
 Tensor<TF_FLOAT>** batch_eval_op_float(Operation<TF_FLOAT>** ops, size_t count)
@@ -140,3 +185,4 @@ Tensor<TF_FLOAT>** batch_eval_op_float(Operation<TF_FLOAT>** ops, size_t count)
 	LOG(ops, count);
 	return batch_eval_op(ops, count);
 }
+
