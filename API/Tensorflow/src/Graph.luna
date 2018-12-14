@@ -1,0 +1,25 @@
+import Tensorflow.CWrappers.Graph
+import Tensorflow.Operations
+
+class TFGraph:
+    wrapper :: GraphWrapper
+    outputs :: List (Operation)
+
+    def ptr:
+        self.wrapper.ptr
+
+    def eval:
+        self.evalSubsts []
+
+    def evalSubsts substs:
+        self.wrapper.evalSubsts self.outputs.length substs
+
+    def toJSON:
+        self.eval.toJSON
+
+def makeGraphFromOutputList outputList:
+    wrapper = makeGraphWrapperFromOutputList outputList
+    TFGraph wrapper outputList
+
+def makeGraphFromOutput output:
+    makeGraphFromOutputList [output]

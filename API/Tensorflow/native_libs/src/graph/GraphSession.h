@@ -27,7 +27,7 @@ private:
 	TF_Session* session;
 	TF_SessionOptions* options;
 
-	std::vector<TF_Output> outputs;
+	std::vector<TF_Output> output_nodes;
 	std::map<std::string, TF_Output> placeholders;
 
 
@@ -50,7 +50,7 @@ public:
 	template<TF_DataType DataTypeLabel>
 	Tensor<DataTypeLabel>** eval(const std::map<std::string, std::shared_ptr<Tensor<DataTypeLabel>>>& substitutions) const
 	{
-		size_t count = outputs.size();
+		size_t count = output_nodes.size();
 		std::vector<TF_Tensor*> output_values(count);
 
 		if(!std::equal(placeholders.begin(), placeholders.end(), substitutions.begin(),
@@ -73,7 +73,7 @@ public:
 		                                session,
 		                                nullptr,
 		                                placeholders_v.data(), tensor_v.data(), tensor_v.size(),
-		                                outputs.data(), output_values.data(), count,
+		                                output_nodes.data(), output_values.data(), count,
 		                                nullptr, 0,
 		                                nullptr,
 		                                std::placeholders::_1));
@@ -105,7 +105,7 @@ public:
 
 	void add_output(TF_Output out)
 	{
-		outputs.push_back(out);
+		output_nodes.push_back(out);
 	}
 
 	TF_Graph* get_underlying() {
