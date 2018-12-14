@@ -20,6 +20,8 @@ extern "C"
 TFL_API Operation<TF_FLOAT>* make_op_const_float(Tensor<TF_FLOAT>* tensor);
 TFL_API Operation<TF_INT32>* make_op_const_int(Tensor<TF_INT32>* tensor);
 
+TFL_API Operation<TF_FLOAT>* make_op_placeholder_float(const char* name);
+
 TFL_API Operation<TF_FLOAT>* make_op_binary_float(const char* name, Operation<TF_FLOAT>* a, Operation<TF_FLOAT>* b);
 TFL_API Operation<TF_INT32>* make_op_binary_int(const char* name, Operation<TF_INT32>* a, Operation<TF_INT32>* b);
 
@@ -34,6 +36,8 @@ TFL_API Tensor<TF_INT32>* eval_op_int(Operation<TF_INT32>* op);
 TFL_API Operation<TF_FLOAT>* make_op_partial_derivative(Operation<TF_FLOAT>* a, Operation<TF_FLOAT>* b);
 
 TFL_API Tensor<TF_FLOAT>** batch_eval_op_float(Operation<TF_FLOAT>** ops, size_t count);
+TFL_API Tensor<TF_FLOAT>** batch_eval_op_placeholders_float(Operation<TF_FLOAT>** ops, size_t count,
+	const char** ph_names, Tensor<TF_FLOAT>** ph_values, size_t ph_count);
 
 #ifdef __cplusplus
 };

@@ -16,7 +16,7 @@ template <TF_DataType DataTypeLabel>
 class Const : public Operation<DataTypeLabel> {
 public:
     explicit Const(std::shared_ptr<Tensor<DataTypeLabel>> tensor) : value(std::move(tensor)) {
-    	hash = (value->hash() ^ const_salter.next_salt());
+    	hash = (value->hash());
     }
 
     size_t hashcode() const override {

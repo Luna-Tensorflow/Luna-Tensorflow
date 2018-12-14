@@ -8,13 +8,16 @@
 #include <map>
 #include <tensorflow/c/c_api.h>
 #include <memory>
+#include <string>
 
 #include "../helpers/utils.h"
 #include "../tensor/Tensor.h"
 #include "../helpers/LifeTimeManager.h"
 
-template<TF_DataType DataTypeLabel>
-class Operation;
+#include <any>
+
+template<TF_DataType DataTypeLabel> class Operation;
+template<TF_DataType DataTypeLabel> class Placeholder;
 
 class GraphSession
 {
@@ -25,19 +28,12 @@ private:
 	TF_SessionOptions* options;
 
 	std::vector<TF_Output> outputs;
+	std::map<std::string, TF_Output> placeholders;
+
 
 public:
-	GraphSession() 	{
-		graph = TF_NewGraph();
-		options = TF_NewSessionOptions();
-		session = run_with_status<TF_Session*>(std::bind(TF_NewSession, graph, options, std::placeholders::_1));
-	}
-
-	~GraphSession()	{
-		run_with_status<void>(std::bind(TF_DeleteSession, session, std::placeholders::_1));
-		TF_DeleteSessionOptions(options);
-		TF_DeleteGraph(graph);
-	}
+	GraphSession();
+	~GraphSession();
 
 	template<TF_DataType DataTypeLabel> bool exists(const Operation<DataTypeLabel>* op) {
 		return (hashes.find(op->hashcode()) != hashes.end());
@@ -52,15 +48,31 @@ public:
 	}
 
 	template<TF_DataType DataTypeLabel>
-	Tensor<DataTypeLabel>** eval() const
+	Tensor<DataTypeLabel>** eval(const std::map<std::string, std::shared_ptr<Tensor<DataTypeLabel>>>& substitutions) const
 	{
 		size_t count = outputs.size();
 		std::vector<TF_Tensor*> output_values(count);
 
+		if(!std::equal(placeholders.begin(), placeholders.end(), substitutions.begin(),
+			[](auto& a, auto& b) -> bool {return a.first == b.first; }))
+		{
+			throw std::invalid_argument("Not all placeholders are substituted!");
+		}
+
+		std::vector<TF_Output> placeholders_v;
+		std::vector<TF_Tensor*> tensor_v;
+
+		for(auto elem : substitutions)
+		{
+			placeholders_v.push_back(placeholders.at(elem.first));
+			tensor_v.push_back(elem.second->get_underlying());
+		}
+
+
 		run_with_status<void>(std::bind(TF_SessionRun,
 		                                session,
 		                                nullptr,
-		                                nullptr, nullptr, 0,
+		                                placeholders_v.data(), tensor_v.data(), tensor_v.size(),
 		                                outputs.data(), output_values.data(), count,
 		                                nullptr, 0,
 		                                nullptr,
@@ -76,8 +88,19 @@ public:
 		return return_values;
 	}
 
+	template<TF_DataType DataTypeLabel>
+	Tensor<DataTypeLabel>** eval() const
+	{
+		return eval<DataTypeLabel>(std::map<std::string, std::shared_ptr<Tensor<DataTypeLabel>>>());
+	}
+
 	void register_output_hash(size_t hash, TF_Output &out) {
 		hashes[hash] = out;
+	}
+
+	void register_placeholder(const std::string& name, TF_Output &out)
+	{
+		placeholders.emplace(name, out);
 	}
 
 	void add_output(TF_Output out)
