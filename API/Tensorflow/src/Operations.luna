@@ -13,7 +13,7 @@ class TFOperation:
     def eval:
         self.wrapper.eval
 
-    # toJSON :: Text
+    # toJSON :: JSON
     def toJSON:
         self.eval.toJSON
 
