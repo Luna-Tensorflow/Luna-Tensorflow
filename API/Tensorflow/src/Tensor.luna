@@ -27,11 +27,11 @@ class Tensor:
         indices = 0.upto (self.length - 1)
         indices.map self.at
 
-    # toJSON :: Text
+    # toJSON :: JSON
     def toJSON:
         self.toList.toJSON
 
-# tensorFromPtr :: (Pointer -> None) -> ManagedPointer None -> Tensor a
+# tensorFromPtr :: (Pointer -> None) -> Pointer None -> Tensor a
 def tensorFromPtr releaseMethod tensorPtr:
     managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
 
