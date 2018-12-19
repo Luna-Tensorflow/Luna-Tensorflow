@@ -26,7 +26,6 @@ class GraphWrapper:
         releaseMethod = lookupSymbol "TFL" "release"
 
         (names, substs) = unzip substitutions
-        substsTensors = substs . each (x : tensorFromList [x])
 
         subsNameArr = ManagedPointer CString . mallocElems phCount
         indexed = 0 . upto phCount . zip names
@@ -35,7 +34,7 @@ class GraphWrapper:
 
 
         substsArr = ManagedPointer (Pointer None) . mallocElems phCount
-        indexed = 0 . upto phCount . zip substsTensors
+        indexed = 0 . upto phCount . zip substs
         indexed . each (idx, elem):
             substsArr . moveElems idx . write (elem.ptr.ptr)
 
@@ -44,7 +43,7 @@ class GraphWrapper:
 
         returnedArr = Array (Pointer None) . make count returnedPtr
 
-        retval = returnedArr . toList . map (tensorFromPtr releaseMethod)
+        retval = returnedArr . toList . each (tensorFromPtr releaseMethod)
         returnedArr . free
         retval
 
