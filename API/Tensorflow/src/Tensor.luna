@@ -6,31 +6,39 @@ import Std.Foreign.C.Value
 class Tensor:
     wrapper :: TensorWrapper
 
+    # ptr :: ManagedPointer None
     def ptr:
         self.wrapper.ptr
 
+    # length :: Int
     def length:
         self.wrapper.length
 
+    # at Multi :: List Int -> Real
     def atMulti indices:
         self.wrapper.at indices
 
+    # at :: Int -> Real
     def at index:
         self.atMulti [index]
 
+    # toList :: List Real
     def toList:
         indices = 0.upto (self.length - 1)
         indices.map self.at
 
+    # toJSON :: Text
     def toJSON:
         self.toList.toJSON
 
+# tensorFromPtr :: (Pointer -> None) -> ManagedPointer None -> Tensor a
 def tensorFromPtr releaseMethod tensorPtr:
     managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
 
     wrapper = TensorWrapper managedTensorPtr
     Tensor wrapper
 
+# tensorFromList :: List a -> Tensor a
 def tensorFromList list:
     wrapper = create1dTensorWrapper list
     Tensor wrapper

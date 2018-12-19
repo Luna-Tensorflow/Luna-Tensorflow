@@ -4,6 +4,7 @@ import Tensorflow.Tensor
 import Tensorflow.Operations
 import Tensorflow.Graph
 
+# lift1 :: (TFOperation a1 -> (List TFOperation b)) -> Tensor a1 -> (List Tensor b)
 def lift1 fun:
     p1 = makePlaceholder "1"
     result = fun p1
@@ -13,7 +14,7 @@ def lift1 fun:
         graph . evalSubsts [("1", a)]
     liftedf
 
-# lift2 :: (Operation a -> Operation b -> (List Operation c)) -> Tensor a -> Tensor b -> (List Tensor c)
+# lift2 :: (TFOperation a1 -> TFOperation a2 -> (List TFOperation b)) -> Tensor a1 -> Tensor a2 -> (List Tensor b)
 def lift2 fun:
     p1 = makePlaceholder "1"
     p2 = makePlaceholder "2"
@@ -24,6 +25,7 @@ def lift2 fun:
         graph . evalSubsts [("1", a), ("2", b)]
     liftedf
 
+# lift3 :: (TFOperation a1 -> TFOperation a2 -> TFOperation a3 -> (List TFOperation b)) -> Tensor a1 -> Tensor a2 -> Tensor a3 -> (List Tensor b)
 def lift3 fun:
     p1 = makePlaceholder "1"
     p2 = makePlaceholder "2"
@@ -35,6 +37,7 @@ def lift3 fun:
         graph . evalSubsts [("1", a), ("2", b), ("3", c)]
     liftedf
 
+# lift4 :: (TFOperation a1 -> TFOperation a2 -> TFOperation a3 -> TFOperation a4 -> (List TFOperation b)) -> Tensor a1 -> Tensor a2 -> Tensor a3 -> Tensor a4 -> (List Tensor b)
 def lift4 fun:
     p1 = makePlaceholder "1"
     p2 = makePlaceholder "2"
@@ -47,6 +50,7 @@ def lift4 fun:
         graph . evalSubsts [("1", a), ("2", b), ("3", c), ("4", d)]
     liftedf
 
+# lift5 :: (TFOperation a1 -> TFOperation a2 -> TFOperation a3 -> TFOperation a4 -> TFOperation a5 -> (List TFOperation b)) -> Tensor a1 -> Tensor a2 -> Tensor a3 -> Tensor a4 -> Tensor a5 -> (List Tensor b)
 def lift5 fun:
     p1 = makePlaceholder "1"
     p2 = makePlaceholder "2"
