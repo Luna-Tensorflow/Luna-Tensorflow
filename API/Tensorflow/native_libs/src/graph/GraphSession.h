@@ -68,7 +68,6 @@ public:
 			tensor_v.push_back(elem.second->get_underlying());
 		}
 
-
 		run_with_status<void>(std::bind(TF_SessionRun,
 		                                session,
 		                                nullptr,

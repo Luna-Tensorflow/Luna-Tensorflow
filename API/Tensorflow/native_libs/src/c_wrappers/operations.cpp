@@ -10,9 +10,10 @@
 #include "../ops/Const.h"
 #include "../ops/BinaryOperation.h"
 #include "../ops/UnaryOperation.h"
-#include "../ops/Gradient.h"
+#include "../ops/Partial.h"
 #include "../ops/Placeholder.h"
 #include "../helpers/LifeTimeManager.h"
+#include "../gradient/Gradient.h"
 
 namespace {
     template<TF_DataType DataTypeLabel>
@@ -58,7 +59,8 @@ namespace {
 	Operation<DT> *make_op_derivative(Operation<DT> *a, Operation<DT> *b) {
 		std::shared_ptr<Operation<DT>> a_cpp = LifetimeManager::instance().accessOwned(a);
 		std::shared_ptr<Operation<DT>> b_cpp = LifetimeManager::instance().accessOwned(b);
-		auto op = std::make_shared<Gradient<DT>>(a_cpp, b_cpp);
+		Gradient<DT> *gradient = new Gradient<DT>({a_cpp}, {b_cpp}, {});
+		auto op = gradient->get_partials()[0];
 		auto opBase = std::dynamic_pointer_cast<Operation<DT>>(op);
 		return LifetimeManager::instance().addOwnership(std::move(opBase));
 	}
