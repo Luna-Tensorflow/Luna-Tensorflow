@@ -3,9 +3,10 @@ import Std.Time
 
 import Tensorflow.Lift
 import Tensorflow.Operations
+import Tensorflow.Tensor
 
 def step func (x, y) [a, b]:
-    (func x y a b) . each (el: el . at 0)
+    func x y a b
 
 def gradientDescent lr x y a b:
     diff'' = a*x
@@ -26,17 +27,22 @@ def gradientDescent lr x y a b:
 
 def main:
     print "Regression"
-    xs = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].map x: x.toReal
-    ys = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].map x: x.toReal
+    xtensors = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].each (x: tensorFromList [x.toReal])
+    ytensors = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].each (x: tensorFromList [x.toReal])
 
-    train = xs . zip ys
+    train = xtensors . zip ytensors
+
 
     lifted = lift5 gradientDescent
 
+    zero = tensorFromList [0.0]
+    lr = tensorFromList [(0.0001 . negate)]
+
     t0 = Time.now
-    abList = train . fold [0.0, 0.0] (step (lifted (0.0001 . negate)))
+    [a, b] = train . fold [zero, zero] (step (lifted lr))
     t1 = Time.now
 
-    print abList.toJSON
+    print a.toJSON
+    print b.toJSON
     print ("Took " + (t1.diff t0).toText + " ms")
     None

@@ -13,6 +13,7 @@ def lift1 fun:
         graph . evalSubsts [("1", a)]
     liftedf
 
+# lift2 :: (Operation a -> Operation b -> (List Operation c)) -> Tensor a -> Tensor b -> (List Tensor c)
 def lift2 fun:
     p1 = makePlaceholder "1"
     p2 = makePlaceholder "2"
