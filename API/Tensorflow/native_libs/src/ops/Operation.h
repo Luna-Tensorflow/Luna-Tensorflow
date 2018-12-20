@@ -3,7 +3,6 @@
 
 #include <cstddef>
 #include <memory>
-#include <cstdlib>
 #include <tensorflow/c/c_api.h>
 
 #include "../graph/GraphSession.h"
@@ -17,9 +16,6 @@ public:
     virtual ~Operation() = default;
 
     std::shared_ptr<Tensor<DataTypeLabel>> eval() const {
-        char suppress_tf_log[] = "TF_CPP_MIN_LOG_LEVEL=3";
-        putenv(suppress_tf_log);
-
         GraphSession graph;
         graph.add_output(graph.add_operation(this));
 
