@@ -16,7 +16,9 @@ template <TF_DataType DataTypeLabel>
 class Const : public Operation<DataTypeLabel> {
 public:
     explicit Const(std::shared_ptr<Tensor<DataTypeLabel>> tensor) : value(std::move(tensor)) {
-    	hash = (value->hash() ^ const_salter.next_salt());
+    	/// we add a salt to Consts's hash to be able to distinguish between consts having the same value,
+    	/// but being different objects - not to treat them as the same variables, e.g. in gradient op.
+        hash = (value->hash() ^ const_salter.next_salt());
     }
 
     size_t hashcode() const override {
