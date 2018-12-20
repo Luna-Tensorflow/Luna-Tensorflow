@@ -31,6 +31,7 @@ project(TFL)
 if(WIN32)
     include_directories(${CMAKE_SOURCE_DIR}/../../../../tensorflow/include/)
     link_directories(${CMAKE_SOURCE_DIR}/../../../../tensorflow/lib)
+    file(COPY ${CMAKE_SOURCE_DIR}/../../../../tensorflow/lib/tensorflow.dll DESTINATION ${OUT_DIR})
 endif()
 
 # Glob for the project files
