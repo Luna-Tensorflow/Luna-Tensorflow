@@ -13,7 +13,7 @@ class TFGraph:
     def eval:
         self.evalSubsts []
 
-    # evalSubsts :: List (String, (Tensor a)) -> List Tensor a
+    # evalSubsts :: List Tuple2 String (Tensor a) -> List Tensor a
     def evalSubsts substs:
         self.wrapper.evalSubsts self.outputs.length substs
 
@@ -21,7 +21,7 @@ class TFGraph:
     def toJSON:
         self.eval.toJSON
 
-# makeGraphFromOutputList :: List TFOperaion -> TFGraph
+# makeGraphFromOutputList :: List TFOperation -> TFGraph
 def makeGraphFromOutputList outputList:
     wrapper = makeGraphWrapperFromOutputList outputList
     TFGraph wrapper outputList
