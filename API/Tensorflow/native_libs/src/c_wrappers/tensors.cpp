@@ -61,3 +61,22 @@ int64_t tensor_float_length(Tensor<TF_FLOAT> * tensor) {
 	auto r = LifetimeManager::instance().accessOwned(tensor)->shape()[0];
    LOGANDRETURN(r, tensor);
 }
+
+#define DECLARE_TENSOR(typelabel) \
+TFL_API Tensor<typelabel> *make_tensor_##typelabel(Type<typelabel>::type const *array, int64_t len) { \
+	LOG(array, len); \
+	auto tensor_ptr = std::make_shared<Tensor<(typelabel)>>(array, len); \
+	return LifetimeManager::instance().addOwnership(std::move(tensor_ptr)); \
+} \
+TFL_API Tensor<typelabel> *make_tensor_arr_##typelabel(Type<typelabel>::type const **array, int64_t width, int64_t height) { \
+    LOG(array, width, height); \
+	auto tensor_ptr = std::make_shared<Tensor<typelabel>>(array, width, height); \
+	return LifetimeManager::instance().addOwnership(std::move(tensor_ptr)); \
+} \
+TFL_API Type<typelabel>::type get_tensor_value_at_##typelabel(Tensor<typelabel> *tensor, int64_t *idxs, size_t len) { \
+    auto r = LifetimeManager::instance().accessOwned(tensor)->at(idxs, len); \
+    LOGANDRETURN(r, tensor, idxs, len); \
+}
+
+DECLARE_TENSOR(TF_FLOAT);
+DECLARE_TENSOR(TF_INT32);
