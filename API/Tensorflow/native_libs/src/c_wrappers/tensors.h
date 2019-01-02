@@ -17,7 +17,8 @@ extern "C"
 #define DEFINE_TENSOR(typelabel) \
 TFL_API Tensor<typelabel> *make_tensor_##typelabel(Type<typelabel>::type const *array, int64_t len); \
 TFL_API Tensor<typelabel> *make_tensor_arr_##typelabel(Type<typelabel>::type const **array, int64_t width, int64_t height); \
-TFL_API Type<typelabel>::type get_tensor_value_at_##typelabel(Tensor<typelabel> *tensor, int64_t *idxs, size_t idxs_len);
+TFL_API Type<typelabel>::type get_tensor_value_at_##typelabel(Tensor<typelabel> *tensor, int64_t *idxs, size_t idxs_len); \
+TFL_API int64_t get_tensor_length_##typelabel(Tensor<typelabel> *tensor);
 
 
 DEFINE_TENSOR(TF_FLOAT);

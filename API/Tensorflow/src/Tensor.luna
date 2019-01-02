@@ -3,8 +3,9 @@ import Tensorflow.CWrappers.Tensor
 import Std.Foreign.C.Value
 
 # For now we assume tensors are 1D
-class Tensor:
-    wrapper :: TensorWrapper
+# Tensor T
+class Tensor a:
+    wrapper :: TensorWrapper a
 
     # ptr :: ManagedPointer None
     def ptr:
@@ -14,11 +15,11 @@ class Tensor:
     def length:
         self.wrapper.length
 
-    # at Multi :: List Int -> Real
+    # at Multi :: List Int -> T
     def atMulti indices:
         self.wrapper.at indices
 
-    # at :: Int -> Real
+    # at :: Int -> T
     def at index:
         self.atMulti [index]
 
@@ -32,10 +33,10 @@ class Tensor:
         self.toList.toJSON
 
 # tensorFromPtr :: (Pointer -> None) -> Pointer None -> Tensor a
-def tensorFromPtr releaseMethod tensorPtr:
+def tensorFromPtr releaseMethod typetag tensorPtr:
     managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
 
-    wrapper = TensorWrapper managedTensorPtr
+    wrapper = TensorWrapper managedTensorPtr typetag
     Tensor wrapper
 
 # tensorFromList :: List a -> Tensor a

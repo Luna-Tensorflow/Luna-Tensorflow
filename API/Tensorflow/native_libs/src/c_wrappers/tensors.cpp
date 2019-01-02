@@ -76,6 +76,10 @@ TFL_API Tensor<typelabel> *make_tensor_arr_##typelabel(Type<typelabel>::type con
 TFL_API Type<typelabel>::type get_tensor_value_at_##typelabel(Tensor<typelabel> *tensor, int64_t *idxs, size_t len) { \
     auto r = LifetimeManager::instance().accessOwned(tensor)->at(idxs, len); \
     LOGANDRETURN(r, tensor, idxs, len); \
+} \
+TFL_API int64_t get_tensor_length_##typelabel(Tensor<typelabel> *tensor) { \
+    auto r = LifetimeManager::instance().accessOwned(tensor)->shape()[0]; \
+    LOGANDRETURN(r, tensor); \
 }
 
 DECLARE_TENSOR(TF_FLOAT);

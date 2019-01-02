@@ -1,23 +1,24 @@
 import Std.Foreign
 import Std.Foreign.C.Value
+import Tensorflow.Types
 
-class TensorWrapper:
+class TensorWrapper a:
     ptr :: ManagedPointer None
-    #typename :: Text # TODO
+    typetag :: a
 
     def toCArg:
         self.ptr.toCArg
 
     def length:
-        lengthFun = lookupSymbol "TFL" ("tensor_float_length")
+        lengthFun = lookupSymbol "TFL" ("get_tensor_length_" + self.typetag.typename)
         res = lengthFun.call CInt64 [self.toCArg]
         res.toInt
 
     def at indexes:
-        atFun = lookupSymbol "TFL" ("get_tensor_float_value_at")
+        atFun = lookupSymbol "TFL" ("get_tensor_value_at_" + self.typetag.typename)
         cindexes = indexes.map CInt64.fromInt
-        res = atFun.call CFloat [self.toCArg, Array CInt64 . fromList cindexes . toCArg, CInt64.fromInt cindexes.length . toCArg]
-        res.toReal
+        res = atFun.call (self.typetag.ctype) [self.toCArg, Array CInt64 . fromList cindexes . toCArg, CInt64.fromInt cindexes.length . toCArg]
+        self.typetag.fromC res
 
 def create1dTensorWrapper values:
     cvalues = values.map CFloat.fromReal
@@ -25,4 +26,4 @@ def create1dTensorWrapper values:
     releaseMethod = lookupSymbol "TFL" "release"
     tensor = makeTensor.call (Pointer None) [Array CFloat . fromList cvalues . toCArg, CInt64.fromInt cvalues.length . toCArg]
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
-    TensorWrapper managedTensor #"float" # TODO
+    TensorWrapper managedTensor FloatType

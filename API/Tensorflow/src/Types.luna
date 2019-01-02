@@ -1,0 +1,21 @@
+import Std.Foreign.C.Value
+
+class FloatType:
+      def typename:
+          "TF_FLOAT"
+      def ctype:
+          CFloat
+      def fromC val:
+          val.toReal
+      def toC val:
+          CFloat.fromReal val
+
+class Int32Type:
+      def typename:
+          "TF_INT32"
+      def ctype:
+          CInt32
+      def fromC val:
+          val.toInt
+      def toC val:
+          CInt32.fromInt val

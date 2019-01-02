@@ -3,6 +3,7 @@ import Std.Foreign.C.Value
 
 import Tensorflow.Operations
 import Tensorflow.Tensor
+import Tensorflow.Types
 
 def unzip listpair: case listpair of
     Empty: (Empty, Empty)
@@ -43,7 +44,7 @@ class GraphWrapper:
 
         returnedArr = Array (Pointer None) . make count returnedPtr
 
-        retval = returnedArr . toList . each (tensorFromPtr releaseMethod)
+        retval = returnedArr . toList . each (tensorFromPtr releaseMethod FloatType)
         returnedArr . free
         retval
 
