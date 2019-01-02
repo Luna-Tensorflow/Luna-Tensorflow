@@ -29,9 +29,9 @@ class TFOperation:
     def - other:
         sub self other
 
-# makePlaceholder :: Text -> TFOperation a
-def makePlaceholder name:
-    wrapper = makePlaceholderWrapper name
+# makePlaceholder :: TypeTag -> Text -> TFOperation a
+def makePlaceholder typetag name:
+    wrapper = makePlaceholderWrapper typetag name
     TFOperation wrapper
 
 # makeConst :: Tensor a -> TFOperation a

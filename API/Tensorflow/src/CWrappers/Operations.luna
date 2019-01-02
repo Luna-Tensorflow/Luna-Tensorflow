@@ -10,9 +10,9 @@ def unzip listpair: case listpair of
         (tailx, taily): ((Prepend x tailx), (Prepend y taily))
 
 
-class OperationWrapper:
+class OperationWrapper a:
     ptr :: ManagedPointer None
-    #typename :: Text # TODO
+    typetag :: a
 
     def toCArg:
         self.ptr.toCArg
@@ -61,37 +61,38 @@ def batchEvalSubstitutions list substitutions:
     retval
 
 def makeConstWrapper tensor:
-    makeOp = lookupSymbol "TFL" ("make_op_const_float")
+    makeOp = lookupSymbol "TFL" ("make_op_const_" + tensor.wrapper.typetag.typename)
     releaseMethod = lookupSymbol "TFL" "release"
     op = makeOp.call (Pointer None) [tensor.ptr.toCArg]
     managedOp = ManagedPointer None . fromPointer releaseMethod op
-    OperationWrapper managedOp
+    OperationWrapper managedOp tensor.wrapper.typetag
 
-def makePlaceholderWrapper name:
-    makeOp = lookupSymbol "TFL" ("make_op_placeholder_float")
+def makePlaceholderWrapper typetag name:
+    makeOp = lookupSymbol "TFL" ("make_op_placeholder_" + typetag.typename)
     releaseMethod = lookupSymbol "TFL" "release"
     op = makeOp.call (Pointer None) [(CString.fromText name).toCArg]
     managedOp = ManagedPointer None . fromPointer releaseMethod op
-    OperationWrapper managedOp
+    OperationWrapper managedOp typetag
 
 def makeBinaryOpWrapper name a b:
-    makeOp = lookupSymbol "TFL" ("make_op_binary_float")
+    None # TODO: add assert a.wrapper.typetag == b.wrapper.typetag
+    makeOp = lookupSymbol "TFL" ("make_op_binary_" + a.wrapper.typetag.typename)
     releaseMethod = lookupSymbol "TFL" "release"
     op = makeOp.call (Pointer None) [(CString.fromText name).toCArg, a.ptr.toCArg, b.ptr.toCArg]
     managedOp = ManagedPointer None . fromPointer releaseMethod op
-    OperationWrapper managedOp
+    OperationWrapper managedOp a.wrapper.typetag
 
 def makeUnaryOpWrapper name a:
-    makeOp = lookupSymbol "TFL" ("make_op_unary_float")
+    makeOp = lookupSymbol "TFL" ("make_op_unary_" + a.wrapper.typetag.typename)
     releaseMethod = lookupSymbol "TFL" "release"
     op = makeOp.call (Pointer None) [(CString.fromText name).toCArg, a.ptr.toCArg]
     managedOp = ManagedPointer None . fromPointer releaseMethod op
-    OperationWrapper managedOp
+    OperationWrapper managedOp a.wrapper.typetag
 
 def makePartialDerivativeWrapper a b:
-    makeOp = lookupSymbol "TFL" ("make_op_partial_derivative")
+    makeOp = lookupSymbol "TFL" ("make_op_partial_derivative_" + a.wrapper.typetag.typename)
     releaseMethod = lookupSymbol "TFL" "release"
     op = makeOp.call (Pointer None) [a.ptr.toCArg, b.ptr.toCArg]
     managedOp = ManagedPointer None . fromPointer releaseMethod op
-    OperationWrapper managedOp
+    OperationWrapper managedOp a.wrapper.typetag
 

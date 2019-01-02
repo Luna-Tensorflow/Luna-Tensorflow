@@ -32,7 +32,6 @@ def main:
 
     train = xtensors . zip ytensors
 
-
     lifted = lift5 gradientDescent
 
     zero = tensorFromList [0.0]

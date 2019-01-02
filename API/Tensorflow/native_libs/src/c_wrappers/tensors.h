@@ -24,6 +24,7 @@ TFL_API int64_t get_tensor_length_##typelabel(Tensor<typelabel> *tensor);
 DEFINE_TENSOR(TF_FLOAT);
 DEFINE_TENSOR(TF_INT32);
 
+// TODO remove old definitions after migration is complete
 TFL_API Tensor<TF_FLOAT> *make_float_tensor(float const*, int64_t);
 TFL_API Tensor<TF_FLOAT> *make_float_tensor_arr(float const**, int64_t, int64_t);
 TFL_API Tensor<TF_INT32> *make_int_tensor(int32_t const*, int64_t);

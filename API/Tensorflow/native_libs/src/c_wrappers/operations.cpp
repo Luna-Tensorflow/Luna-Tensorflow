@@ -64,7 +64,7 @@ namespace {
 	}
 }
 
-Operation<TF_FLOAT>* make_op_partial_derivative(Operation<TF_FLOAT>* a, Operation<TF_FLOAT> *b) {
+Operation<TF_FLOAT>* make_op_partial_derivative_float(Operation<TF_FLOAT>* a, Operation<TF_FLOAT> *b) {
 	LOG(a, b);
 	return make_op_derivative(a, b);
 }
@@ -250,3 +250,35 @@ Tensor<TF_FLOAT>** eval_graph_with_placeholders_float(GraphSession *graph, const
 	return eval_graph_with_placeholders<TF_FLOAT>(graph, ph_names, ph_values, ph_count);
 }
 
+#define DECLARE_OPS(typelabel) \
+TFL_API Operation<typelabel>* make_op_const_##typelabel(Tensor<typelabel>* tensor) { \
+	LOG(tensor); \
+	return make_op_const(tensor); \
+} \
+TFL_API Operation<typelabel>* make_op_placeholder_##typelabel(const char* name) { \
+	LOG(name); \
+	return make_op_placeholder<typelabel>(name); \
+} \
+TFL_API Operation<typelabel>* make_op_binary_##typelabel(const char* name, Operation<typelabel>* a, Operation<typelabel>* b) { \
+	LOG(name, a, b); \
+	return make_op_binary(name, a, b); \
+} \
+TFL_API Operation<typelabel>* make_op_unary_##typelabel(const char* name, Operation<typelabel>* a) { \
+	LOG(name, a); \
+	return make_op_unary(name, a); \
+} \
+TFL_API Operation<typelabel>* make_op_partial_derivative_##typelabel(Operation<typelabel>* a, Operation<typelabel>* b) { \
+	LOG(a, b); \
+	return make_op_derivative(a, b); \
+} \
+TFL_API size_t operation_hashcode_##typelabel(Operation<typelabel>* op) { \
+	LOG(op); \
+	return operation_hashcode(op); \
+} \
+TFL_API Tensor<typelabel>* eval_op_##typelabel(Operation<typelabel>* op) { \
+	LOG(op); \
+	return eval_op(op); \
+}
+
+DECLARE_OPS(TF_FLOAT);
+DECLARE_OPS(TF_INT32);
