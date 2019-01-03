@@ -16,7 +16,7 @@ template <TF_DataType DataTypeLabel> class Partial;
 
 template <TF_DataType DataTypeLabel>
 class Gradient {
-public:
+private:
     Gradient(std::vector<std::shared_ptr<Operation<DataTypeLabel>>> ys,
             std::vector<std::shared_ptr<Operation<DataTypeLabel>>> xs,
             std::vector<std::shared_ptr<Operation<DataTypeLabel>>> dxs) : ys(ys), xs(xs), dxs(dxs) {
@@ -41,8 +41,21 @@ public:
         }
 
         for (auto &x : xs) {
-            partials.push_back(std::make_shared<Partial<DataTypeLabel>>(x, ptr, hash_base));
+            partials.push_back(new Partial<DataTypeLabel>(x, ptr, hash_base));
         }
+    }
+
+public:
+    static std::vector<std::shared_ptr<Partial<DataTypeLabel>>> prepare_gradients(std::vector<std::shared_ptr<Operation<DataTypeLabel>>> ys,
+            std::vector<std::shared_ptr<Operation<DataTypeLabel>>> xs, std::vector<std::shared_ptr<Operation<DataTypeLabel>>> dxs) {
+        Gradient<DataTypeLabel> *gradient = new Gradient<DataTypeLabel>(ys, xs, dxs);
+
+        std::vector<std::shared_ptr<Partial<DataTypeLabel>>> ret;
+        for (auto partial: gradient->partials) {
+            ret.push_back(std::shared_ptr<Partial<DataTypeLabel>>(partial));
+        }
+
+        return ret;
     }
 
     void add_to_graph(GraphSession &graph) {
@@ -68,12 +81,8 @@ public:
         }
     }
 
-    std::vector<std::shared_ptr<Partial<DataTypeLabel>>> get_partials() {
-        return partials;
-    }
-
 private:
-    std::vector<std::shared_ptr<Partial<DataTypeLabel>>> partials;
+    std::vector<Partial<DataTypeLabel>*> partials;
     std::vector<std::shared_ptr<Operation<DataTypeLabel>>> ys;
     std::vector<std::shared_ptr<Operation<DataTypeLabel>>> xs;
     std::vector<std::shared_ptr<Operation<DataTypeLabel>>> dxs;

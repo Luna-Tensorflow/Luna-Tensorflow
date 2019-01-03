@@ -25,7 +25,7 @@ def gradientDescent lr x y a b:
 
     [pa, pb]
 
-def main:
+def main1:
     print "Regression"
     xtensors = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].each (x: tensorFromList [x.toReal])
     ytensors = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].each (x: tensorFromList [x.toReal])
@@ -45,4 +45,13 @@ def main:
     print a.toJSON
     print b.toJSON
     print ("Took " + (t1.diff t0).toText + " ms")
+    None
+
+def main:
+    a = constFromScalar 3.0
+    b = constFromScalar 3.0
+    c = a * b
+    d = c * a
+    e = partial d a
+    print e.toJSON
     None
