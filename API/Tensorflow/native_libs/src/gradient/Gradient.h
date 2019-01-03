@@ -11,8 +11,7 @@
 
 #include "../graph/GraphSession.h"
 #include "../helpers/utils.h"
-
-template <TF_DataType DataTypeLabel> class Partial;
+#include "../ops/Partial.h"
 
 template <TF_DataType DataTypeLabel>
 class Gradient {
@@ -46,7 +45,7 @@ private:
     }
 
 public:
-    static std::vector<std::shared_ptr<Partial<DataTypeLabel>>> prepare_gradients(std::vector<std::shared_ptr<Operation<DataTypeLabel>>> ys,
+    static std::vector<std::shared_ptr<Partial<DataTypeLabel>>> add_gradients(std::vector<std::shared_ptr<Operation<DataTypeLabel>>> ys,
             std::vector<std::shared_ptr<Operation<DataTypeLabel>>> xs, std::vector<std::shared_ptr<Operation<DataTypeLabel>>> dxs) {
         Gradient<DataTypeLabel> *gradient = new Gradient<DataTypeLabel>(ys, xs, dxs);
 

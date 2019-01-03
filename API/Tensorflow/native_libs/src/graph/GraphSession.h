@@ -77,7 +77,7 @@ public:
 		                                nullptr,
 		                                std::placeholders::_1));
 
-		auto return_values = (Tensor<DataTypeLabel>**) std::calloc(sizeof(Tensor<DataTypeLabel>*), count);
+		auto return_values = (Tensor<DataTypeLabel>**) std::malloc(sizeof(Tensor<DataTypeLabel>*) * count);
 
 		for(unsigned i=0; i<count; ++i)
 		{

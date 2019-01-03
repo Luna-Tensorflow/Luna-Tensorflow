@@ -59,7 +59,7 @@ namespace {
 	Operation<DT> *make_op_derivative(Operation<DT> *a, Operation<DT> *b) {
 		std::shared_ptr<Operation<DT>> a_cpp = LifetimeManager::instance().accessOwned(a);
 		std::shared_ptr<Operation<DT>> b_cpp = LifetimeManager::instance().accessOwned(b);
-		auto op = Gradient<DT>::prepare_gradients({a_cpp}, {b_cpp}, {})[0];
+		auto op = Gradient<DT>::add_gradients({a_cpp}, {b_cpp}, {})[0];
 		auto opBase = std::dynamic_pointer_cast<Operation<DT>>(op);
 		return LifetimeManager::instance().addOwnership(std::move(opBase));
 	}

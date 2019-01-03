@@ -1,3 +1,5 @@
+import Std.Foreign.C.Value
+
 import Tensorflow.CWrappers.Operations
 import Tensorflow.Tensor
 
@@ -22,6 +24,12 @@ class TFOperation:
 
     def - other:
         sub self other
+
+def operationFromPtr releaseMethod operationPtr:
+    managedOperationPtr = ManagedPointer None . fromPointer releaseMethod operationPtr
+
+    wrapper = OperationWrapper managedOperationPtr
+    TFOperation wrapper
 
 def makePlaceholder name:
     wrapper = makePlaceholderWrapper name

@@ -9,7 +9,8 @@
 
 #include "BinaryOperation.h"
 #include "../helpers/utils.h"
-#include "../gradient/Gradient.h"
+
+template <TF_DataType DataTypeLabel> class Gradient;
 
 template<TF_DataType DataTypeLabel>
 class Partial : public Operation<DataTypeLabel> {
