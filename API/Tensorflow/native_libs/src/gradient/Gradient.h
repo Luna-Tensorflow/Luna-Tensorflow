@@ -41,6 +41,7 @@ private:
 
         for (auto &x : xs) {
             partials.push_back(new Partial<DataTypeLabel>(x, ptr, hash_base));
+            partial_hashes.push_back(partials.back()->hashcode());
         }
     }
 
@@ -76,12 +77,13 @@ public:
                 x_outputs.data(), x_outputs.size(), dx_outputs.data(), std::placeholders::_1, results.data()));
 
         for (size_t i = 0; i < results.size(); ++i) {
-            graph.register_output_hash(partials[i]->hashcode(), results[i]);
+            graph.register_output_hash(partial_hashes[i], results[i]);
         }
     }
 
 private:
     std::vector<Partial<DataTypeLabel>*> partials;
+    std::vector<size_t> partial_hashes;
     std::vector<std::shared_ptr<Operation<DataTypeLabel>>> ys;
     std::vector<std::shared_ptr<Operation<DataTypeLabel>>> xs;
     std::vector<std::shared_ptr<Operation<DataTypeLabel>>> dxs;

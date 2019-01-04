@@ -58,7 +58,9 @@ def calculateGradients:
     d = c * a
     e = a + b
     gs = gradients [d, e] [a, b] [p, q]
-    print gs.toJSON
+    result = gs.toJSON
+    print result
+    if result == [[34.0.negate], [16.0.negate]].toJSON then print "Gradients OK" else print "Gradients Error"
     None
 
 def main:
