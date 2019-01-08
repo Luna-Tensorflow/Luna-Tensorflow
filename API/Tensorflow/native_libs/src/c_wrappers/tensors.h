@@ -22,7 +22,17 @@ TFL_API int64_t get_tensor_length_##typelabel(Tensor<typelabel> *tensor);
 
 
 DEFINE_TENSOR(TF_FLOAT);
+DEFINE_TENSOR(TF_DOUBLE);
+DEFINE_TENSOR(TF_INT8);
+DEFINE_TENSOR(TF_INT16);
 DEFINE_TENSOR(TF_INT32);
+DEFINE_TENSOR(TF_INT64);
+DEFINE_TENSOR(TF_UINT8);
+DEFINE_TENSOR(TF_UINT16);
+DEFINE_TENSOR(TF_UINT32);
+DEFINE_TENSOR(TF_UINT64);
+//DEFINE_TENSOR(TF_STRING);
+//DEFINE_TENSOR(TF_HALF);
 
 // TODO remove old definitions after migration is complete
 TFL_API Tensor<TF_FLOAT> *make_float_tensor(float const*, int64_t);

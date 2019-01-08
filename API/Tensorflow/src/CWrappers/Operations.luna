@@ -18,10 +18,10 @@ class OperationWrapper a:
         self.ptr.toCArg
 
     def eval:
-        evalOp = lookupSymbol "TFL" "eval_op_float"
+        evalOp = lookupSymbol "TFL" ("eval_op_" + self.typetag.typename)
         releaseMethod = lookupSymbol "TFL" "release"
         tensorPtr = evalOp.call (Pointer None) [self.toCArg]
-        tensorFromPtr releaseMethod tensorPtr
+        tensorFromPtr self.typetag tensorPtr
 
 def batchEval list:
     batchEvalSubstitutions list []
@@ -75,24 +75,24 @@ def makePlaceholderWrapper typetag name:
     OperationWrapper managedOp typetag
 
 def makeBinaryOpWrapper name a b:
-    None # TODO: add assert a.wrapper.typetag == b.wrapper.typetag
-    makeOp = lookupSymbol "TFL" ("make_op_binary_" + a.wrapper.typetag.typename)
+    None # TODO: add assert a.typetag == b.typetag
+    makeOp = lookupSymbol "TFL" ("make_op_binary_" + a.typetag.typename)
     releaseMethod = lookupSymbol "TFL" "release"
     op = makeOp.call (Pointer None) [(CString.fromText name).toCArg, a.ptr.toCArg, b.ptr.toCArg]
     managedOp = ManagedPointer None . fromPointer releaseMethod op
-    OperationWrapper managedOp a.wrapper.typetag
+    OperationWrapper managedOp a.typetag
 
 def makeUnaryOpWrapper name a:
-    makeOp = lookupSymbol "TFL" ("make_op_unary_" + a.wrapper.typetag.typename)
+    makeOp = lookupSymbol "TFL" ("make_op_unary_" + a.typetag.typename)
     releaseMethod = lookupSymbol "TFL" "release"
     op = makeOp.call (Pointer None) [(CString.fromText name).toCArg, a.ptr.toCArg]
     managedOp = ManagedPointer None . fromPointer releaseMethod op
-    OperationWrapper managedOp a.wrapper.typetag
+    OperationWrapper managedOp a.typetag
 
 def makePartialDerivativeWrapper a b:
-    makeOp = lookupSymbol "TFL" ("make_op_partial_derivative_" + a.wrapper.typetag.typename)
+    makeOp = lookupSymbol "TFL" ("make_op_partial_derivative_" + a.typetag.typename)
     releaseMethod = lookupSymbol "TFL" "release"
     op = makeOp.call (Pointer None) [a.ptr.toCArg, b.ptr.toCArg]
     managedOp = ManagedPointer None . fromPointer releaseMethod op
-    OperationWrapper managedOp a.wrapper.typetag
+    OperationWrapper managedOp a.typetag
 

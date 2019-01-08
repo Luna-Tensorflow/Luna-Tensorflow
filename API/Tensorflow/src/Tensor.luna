@@ -1,5 +1,6 @@
 import Tensorflow.CWrappers.Tensor
 
+import Std.Foreign
 import Std.Foreign.C.Value
 
 # For now we assume tensors are 1D
@@ -32,14 +33,16 @@ class Tensor a:
     def toJSON:
         self.toList.toJSON
 
-# tensorFromPtr :: (Pointer -> None) -> Pointer None -> Tensor a
-def tensorFromPtr releaseMethod typetag tensorPtr:
+
+# tensorFromPtr :: TypeTag a -> Pointer None -> Tensor a
+def tensorFromPtr typetag tensorPtr:
+    releaseMethod = lookupSymbol "TFL" "release"
     managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
 
     wrapper = TensorWrapper managedTensorPtr typetag
     Tensor wrapper
 
-# tensorFromList :: List a -> Tensor a
-def tensorFromList list:
-    wrapper = create1dTensorWrapper list
+# tensorFromList :: TypeTag a -> List a -> Tensor a
+def tensorFromList typetag list:
+    wrapper = create1dTensorWrapper typetag list
     Tensor wrapper

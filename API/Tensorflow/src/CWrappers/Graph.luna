@@ -44,7 +44,7 @@ class GraphWrapper:
 
         returnedArr = Array (Pointer None) . make count returnedPtr
 
-        retval = returnedArr . toList . each (tensorFromPtr releaseMethod FloatType)
+        retval = returnedArr . toList . each (tensorFromPtr FloatType)
         returnedArr . free
         retval
 

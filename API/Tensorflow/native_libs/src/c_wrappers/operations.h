@@ -63,7 +63,17 @@ TFL_API Tensor<typelabel>* eval_op_##typelabel(Operation<typelabel>* op);
 // it should be done in the next iteration
 
 DEFINE_OPS(TF_FLOAT);
+DEFINE_OPS(TF_DOUBLE);
+DEFINE_OPS(TF_INT8);
+DEFINE_OPS(TF_INT16);
 DEFINE_OPS(TF_INT32);
+DEFINE_OPS(TF_INT64);
+DEFINE_OPS(TF_UINT8);
+DEFINE_OPS(TF_UINT16);
+DEFINE_OPS(TF_UINT32);
+DEFINE_OPS(TF_UINT64);
+//DEFINE_OPS(TF_STRING);
+//DEFINE_OPS(TF_HALF);
 
 #ifdef __cplusplus
 };

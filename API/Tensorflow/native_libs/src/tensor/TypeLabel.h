@@ -39,6 +39,24 @@ public:
 };
 
 template<>
+class Type<TF_INT64> {
+public:
+	 using type = int64_t;
+};
+
+template<>
+class Type<TF_UINT8> {
+public:
+	 using type = uint8_t ;
+};
+
+template<>
+class Type<TF_UINT16> {
+public:
+	 using type = uint16_t;
+};
+
+template<>
 class Type<TF_UINT32> {
 public:
 	using type = uint32_t;

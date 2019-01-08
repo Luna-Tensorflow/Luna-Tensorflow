@@ -20,10 +20,11 @@ class TensorWrapper a:
         res = atFun.call (self.typetag.ctype) [self.toCArg, Array CInt64 . fromList cindexes . toCArg, CInt64.fromInt cindexes.length . toCArg]
         self.typetag.fromC res
 
-def create1dTensorWrapper values:
-    cvalues = values.map CFloat.fromReal
-    makeTensor = lookupSymbol "TFL" ("make_float_tensor")
+def create1dTensorWrapper typetag values:
+    cvalues = values.map (typetag.toC)
+    makeTensor = lookupSymbol "TFL" ("make_tensor_" + typetag.typename)
     releaseMethod = lookupSymbol "TFL" "release"
-    tensor = makeTensor.call (Pointer None) [Array CFloat . fromList cvalues . toCArg, CInt64.fromInt cvalues.length . toCArg]
+    carray = (Array (typetag.ctype)) . fromList cvalues 
+    tensor = makeTensor.call (Pointer None) [carray.toCArg, CInt64.fromInt cvalues.length . toCArg]
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
-    TensorWrapper managedTensor FloatType
+    TensorWrapper managedTensor typetag

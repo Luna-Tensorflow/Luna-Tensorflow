@@ -39,37 +39,37 @@ def makeConst tensor:
     wrapper = makeConstWrapper tensor
     TFOperation wrapper
 
-# constFromList :: List a -> Tensor a
-def constFromList list:
-    tensor = tensorFromList list
+# constFromList :: TypeTag a -> List a -> Tensor a
+def constFromList typetag list:
+    tensor = tensorFromList typetag list
     makeConst tensor
 
 # constFromScalar :: a -> Tensor a
-def constFromScalar x:
-    constFromList [x]
+def constFromScalar typetag x:
+    constFromList typetag [x]
 
 # add :: (TFOperation a -> TFOperation a) -> TFOperation a
 def add a b:
-    wrapper = makeBinaryOpWrapper "Add" a b
+    wrapper = makeBinaryOpWrapper "Add" a.wrapper b.wrapper
     TFOperation wrapper
 
 # mul :: (TFOperation a -> TFOperation a) -> TFOperation a
 def mul a b:
-    wrapper = makeBinaryOpWrapper "Mul" a b
+    wrapper = makeBinaryOpWrapper "Mul" a.wrapper b.wrapper
     TFOperation wrapper
 
 # sub :: (TFOperation a -> TFOperation a) -> TFOperation a
 def sub a b:
-    wrapper = makeBinaryOpWrapper "Sub" a b
+    wrapper = makeBinaryOpWrapper "Sub" a.wrapper b.wrapper
     TFOperation wrapper
 
 # partial :: (TFOperation a -> TFOperation a) -> TFOperation a
 def partial a b:
-    wrapper = makePartialDerivativeWrapper a b
+    wrapper = makePartialDerivativeWrapper a.wrapper b.wrapper
     TFOperation wrapper
 
 # sigmoid :: TFOperation a -> TFOperation a
 def sigmoid a:
-    wrapper = makeUnaryOpWrapper "Sigmoid" a
+    wrapper = makeUnaryOpWrapper "Sigmoid" a.wrapper
     TFOperation wrapper
 
