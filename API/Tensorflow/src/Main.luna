@@ -48,6 +48,7 @@ def regression:
     None
 
 def testInt:
+    print "testInt"
     a = constFromScalar UInt8Type 250
     b = constFromScalar UInt8Type 10
     c = add a b
@@ -57,6 +58,12 @@ def testInt:
     print "="
     print c.toJSON
 
+def testBool:
+    print "testBool"
+    a = constFromScalar BoolType True
+    print a.toJSON
+
 def main:
     regression
     testInt
+    testBool

@@ -99,3 +99,15 @@ class UInt64Type:
           val.toInt
       def toC val:
           CUInt64.fromInt val
+
+class BoolType:
+      def typename:
+          "TF_BOOL"
+      def ctype:
+          CUInt8
+      def fromC val:
+          (val.toInt == 0).not
+      def toC val:
+          case val of
+               True: CUInt8.fromInt 1
+               False: CUInt8.fromInt 0
