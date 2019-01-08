@@ -62,29 +62,41 @@ int64_t tensor_float_length(Tensor<TF_FLOAT> * tensor) {
    LOGANDRETURN(r, tensor);
 }
 
-#define DECLARE_TENSOR(typelabel) \
+#define MAKE_TENSOR(typelabel) \
 TFL_API Tensor<typelabel> *make_tensor_##typelabel(Type<typelabel>::lunatype const *array, int64_t len) { \
 	LOG(array, len); \
    static_assert(sizeof(Type<typelabel>::tftype) == sizeof(Type<typelabel>::lunatype), "tftype and lunatype need to be of same size"); \
    auto casted = reinterpret_cast<const Type<(typelabel)>::tftype*>(array); \
 	auto tensor_ptr = std::make_shared<Tensor<(typelabel)>>(casted, len); \
 	return LifetimeManager::instance().addOwnership(std::move(tensor_ptr)); \
-} \
+}
+
+#define MAKE_TENSOR_ARR(typelabel) \
 TFL_API Tensor<typelabel> *make_tensor_arr_##typelabel(Type<typelabel>::lunatype const **array, int64_t width, int64_t height) { \
    LOG(array, width, height); \
 	static_assert(sizeof(Type<typelabel>::tftype) == sizeof(Type<typelabel>::lunatype), "tftype and lunatype need to be of same size"); \
    auto casted = reinterpret_cast<const Type<(typelabel)>::tftype**>(array); \
 	auto tensor_ptr = std::make_shared<Tensor<(typelabel)>>(casted, width, height); \
 	return LifetimeManager::instance().addOwnership(std::move(tensor_ptr)); \
-} \
+}
+
+#define GET_TENSOR_VALUE_AT(typelabel) \
 TFL_API Type<typelabel>::lunatype get_tensor_value_at_##typelabel(Tensor<typelabel> *tensor, int64_t *idxs, size_t len) { \
     auto r = LifetimeManager::instance().accessOwned(tensor)->at(idxs, len); \
     LOGANDRETURN(r, tensor, idxs, len); \
-} \
+}
+
+#define GET_TENSOR_LENGTH(typelabel) \
 TFL_API int64_t get_tensor_length_##typelabel(Tensor<typelabel> *tensor) { \
     auto r = LifetimeManager::instance().accessOwned(tensor)->shape()[0]; \
     LOGANDRETURN(r, tensor); \
 }
+
+#define DECLARE_TENSOR(typelabel) \
+MAKE_TENSOR(typelabel); \
+MAKE_TENSOR_ARR(typelabel); \
+GET_TENSOR_VALUE_AT(typelabel); \
+GET_TENSOR_LENGTH(typelabel);
 
 DECLARE_TENSOR(TF_FLOAT);
 DECLARE_TENSOR(TF_DOUBLE);
