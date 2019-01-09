@@ -44,7 +44,22 @@ namespace {
     }
 }
 
-Operation<TF_FLOAT>** add_gradients_float(Operation<TF_FLOAT>** ys, std::int64_t nys,  Operation<TF_FLOAT>** xs, std::int64_t nxs,
-                                         Operation<TF_FLOAT>** dxs) {
-    return add_gradients(ys, nys, xs, nxs, dxs);
+#define DECLARE_GRADIENT(typelabel) \
+Operation<typelabel>** add_gradients_##typelabel(Operation<typelabel>** ys, std::int64_t nys,  Operation<typelabel>** xs, \
+                                         std::int64_t nxs, Operation<typelabel>** dxs) { \
+    return add_gradients(ys, nys, xs, nxs, dxs); \
 }
+
+DECLARE_GRADIENT(TF_FLOAT);
+DECLARE_GRADIENT(TF_DOUBLE);
+DECLARE_GRADIENT(TF_INT8);
+DECLARE_GRADIENT(TF_INT16);
+DECLARE_GRADIENT(TF_INT32);
+DECLARE_GRADIENT(TF_INT64);
+DECLARE_GRADIENT(TF_UINT8);
+DECLARE_GRADIENT(TF_UINT16);
+DECLARE_GRADIENT(TF_UINT32);
+DECLARE_GRADIENT(TF_UINT64);
+DECLARE_GRADIENT(TF_BOOL);
+//DECLARE_GRADIENT(TF_STRING);
+//DECLARE_GRADIENT(TF_HALF);

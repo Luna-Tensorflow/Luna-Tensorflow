@@ -5,6 +5,7 @@ import Tensorflow.Lift
 import Tensorflow.Operations
 import Tensorflow.Tensor
 import Tensorflow.Gradient
+import Tensorflow.Types
 
 def step func (x, y) [a, b]:
     func x y a b
@@ -26,18 +27,17 @@ def gradientDescent lr x y a b:
 
     [pa, pb]
 
-def runRegression:
+def regression:
     print "Regression"
-    xtensors = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].each (x: tensorFromList [x.toReal])
-    ytensors = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].each (x: tensorFromList [x.toReal])
+    xtensors = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].each (x: tensorFromList FloatType [x.toReal])
+    ytensors = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].each (x: tensorFromList FloatType [x.toReal])
 
     train = xtensors . zip ytensors
 
-
     lifted = lift5 gradientDescent
 
-    zero = tensorFromList [0.0]
-    lr = tensorFromList [(0.0001 . negate)]
+    zero = tensorFromList FloatType [0.0]
+    lr = tensorFromList FloatType [(0.0001 . negate)]
 
     t0 = Time.now
     [a, b] = train . fold [zero, zero] (step (lifted lr))
@@ -50,10 +50,10 @@ def runRegression:
 
 def calculateGradients:
     print "Gradients"
-    a = constFromScalar 3.0
-    b = constFromScalar 3.0
-    q = constFromScalar 2.0
-    p = constFromScalar 2.0.negate
+    a = constFromScalar FloatType 3.0
+    b = constFromScalar FloatType 3.0
+    q = constFromScalar FloatType 2.0
+    p = constFromScalar FloatType 2.0.negate
     c = a * b
     d = c * a
     e = a + b
@@ -63,7 +63,24 @@ def calculateGradients:
     if result == [[34.0.negate], [16.0.negate]].toJSON then print "Gradients OK" else print "Gradients Error"
     None
 
+def testInt:
+    print "testInt"
+    a = constFromScalar UInt8Type 250
+    b = constFromScalar UInt8Type 10
+    c = add a b
+    print a.toJSON
+    print "+"
+    print b.toJSON
+    print "="
+    print c.toJSON
+
+def testBool:
+    print "testBool"
+    a = constFromScalar BoolType True
+    print a.toJSON
+
 def main:
-    runRegression
+    regression
+    testInt
+    testBool
     calculateGradients
-    None

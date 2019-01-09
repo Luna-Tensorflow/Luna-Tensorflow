@@ -1,5 +1,3 @@
-import Std.Foreign.C.Value
-
 import Tensorflow.CWrappers.Operations
 import Tensorflow.Tensor
 
@@ -7,62 +5,74 @@ import Tensorflow.Tensor
 class TFOperation:
     wrapper :: OperationWrapper
 
+    # ptr :: ManagedPointer None
     def ptr:
         self.wrapper.ptr
 
+    # eval :: Tensor a
     def eval:
         self.wrapper.eval
 
+    # toJSON :: JSON
     def toJSON:
         self.eval.toJSON
 
+    # + :: TFOperation a -> TFOperation a
     def + other:
         add self other
 
+    # * :: TFOperation a -> TFOperation a
     def * other:
         mul self other
 
+    # - :: TFOperation a -> TFOperation a
     def - other:
         sub self other
 
-def operationFromPtr releaseMethod operationPtr:
-    managedOperationPtr = ManagedPointer None . fromPointer releaseMethod operationPtr
-
-    wrapper = OperationWrapper managedOperationPtr
+# makePlaceholder :: TypeTag -> Text -> TFOperation a
+def makePlaceholder typetag name:
+    wrapper = makePlaceholderWrapper typetag name
     TFOperation wrapper
 
-def makePlaceholder name:
-    wrapper = makePlaceholderWrapper name
-    TFOperation wrapper
-
+# makeConst :: Tensor a -> TFOperation a
 def makeConst tensor:
     wrapper = makeConstWrapper tensor
     TFOperation wrapper
 
-def constFromList list:
-    tensor = tensorFromList list
+# constFromList :: TypeTag a -> List a -> Tensor a
+def constFromList typetag list:
+    tensor = tensorFromList typetag list
     makeConst tensor
 
-def constFromScalar x:
-    constFromList [x]
+# constFromScalar :: a -> Tensor a
+def constFromScalar typetag x:
+    constFromList typetag [x]
 
+# add :: (TFOperation a -> TFOperation a) -> TFOperation a
 def add a b:
-    wrapper = makeBinaryOpWrapper "Add" a b
+    wrapper = makeBinaryOpWrapper "Add" a.wrapper b.wrapper
     TFOperation wrapper
 
+# mul :: (TFOperation a -> TFOperation a) -> TFOperation a
 def mul a b:
-    wrapper = makeBinaryOpWrapper "Mul" a b
+    wrapper = makeBinaryOpWrapper "Mul" a.wrapper b.wrapper
     TFOperation wrapper
 
+# sub :: (TFOperation a -> TFOperation a) -> TFOperation a
 def sub a b:
-    wrapper = makeBinaryOpWrapper "Sub" a b
+    wrapper = makeBinaryOpWrapper "Sub" a.wrapper b.wrapper
     TFOperation wrapper
 
+# partial :: (TFOperation a -> TFOperation a) -> TFOperation a
 def partial a b:
-    wrapper = makePartialDerivativeWrapper a b
+    wrapper = makePartialDerivativeWrapper a.wrapper b.wrapper
     TFOperation wrapper
 
+# sigmoid :: TFOperation a -> TFOperation a
 def sigmoid a:
-    wrapper = makeUnaryOpWrapper "Sigmoid" a
+    wrapper = makeUnaryOpWrapper "Sigmoid" a.wrapper
     TFOperation wrapper
 
+def operationFromPtr ptr typetag:
+    wrapper = operationWrapperFromPtr ptr typetag
+    TFOperation wrapper

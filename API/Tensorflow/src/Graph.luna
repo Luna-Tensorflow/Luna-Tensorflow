@@ -5,21 +5,27 @@ class TFGraph:
     wrapper :: GraphWrapper
     outputs :: List (Operation)
 
+    # ptr :: ManagedPointer None
     def ptr:
         self.wrapper.ptr
 
+    # eval :: List Tensor a
     def eval:
         self.evalSubsts []
 
+    # evalSubsts :: List Tuple2 String (Tensor a) -> List Tensor a
     def evalSubsts substs:
         self.wrapper.evalSubsts self.outputs.length substs
 
+    # toJSON :: JSON
     def toJSON:
         self.eval.toJSON
 
+# makeGraphFromOutputList :: List TFOperation -> TFGraph
 def makeGraphFromOutputList outputList:
     wrapper = makeGraphWrapperFromOutputList outputList
     TFGraph wrapper outputList
 
+# makeGraphFromOutput :: TFOperation-> TFGraph
 def makeGraphFromOutput output:
     makeGraphFromOutputList [output]

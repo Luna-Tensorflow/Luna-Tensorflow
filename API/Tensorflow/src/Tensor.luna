@@ -1,36 +1,48 @@
 import Tensorflow.CWrappers.Tensor
 
+import Std.Foreign
 import Std.Foreign.C.Value
 
 # For now we assume tensors are 1D
-class Tensor:
-    wrapper :: TensorWrapper
+# Tensor T
+class Tensor a:
+    wrapper :: TensorWrapper a
 
+    # ptr :: ManagedPointer None
     def ptr:
         self.wrapper.ptr
 
+    # length :: Int
     def length:
         self.wrapper.length
 
+    # at Multi :: List Int -> T
     def atMulti indices:
         self.wrapper.at indices
 
+    # at :: Int -> T
     def at index:
         self.atMulti [index]
 
+    # toList :: List Real
     def toList:
         indices = 0.upto (self.length - 1)
         indices.map self.at
 
+    # toJSON :: JSON
     def toJSON:
         self.toList.toJSON
 
-def tensorFromPtr releaseMethod tensorPtr:
+
+# tensorFromPtr :: TypeTag a -> Pointer None -> Tensor a
+def tensorFromPtr typetag tensorPtr:
+    releaseMethod = lookupSymbol "TFL" "release"
     managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
 
-    wrapper = TensorWrapper managedTensorPtr
+    wrapper = TensorWrapper managedTensorPtr typetag
     Tensor wrapper
 
-def tensorFromList list:
-    wrapper = create1dTensorWrapper list
+# tensorFromList :: TypeTag a -> List a -> Tensor a
+def tensorFromList typetag list:
+    wrapper = create1dTensorWrapper typetag list
     Tensor wrapper

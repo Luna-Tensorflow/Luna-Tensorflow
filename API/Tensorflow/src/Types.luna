@@ -1,0 +1,113 @@
+import Std.Foreign.C.Value
+
+class FloatType:
+      def typename:
+          "TF_FLOAT"
+      def ctype:
+          CFloat
+      def fromC val:
+          val.toReal
+      def toC val:
+          CFloat.fromReal val
+
+class DoubleType:
+      def typename:
+          "TF_DOUBLE"
+      def ctype:
+          CDouble
+      def fromC val:
+          val.toReal
+      def toC val:
+          CDouble.fromReal val
+
+class Int8Type:
+      def typename:
+          "TF_INT8"
+      def ctype:
+          CInt8
+      def fromC val:
+          val.toInt
+      def toC val:
+          CInt8.fromInt val
+
+class Int16Type:
+      def typename:
+          "TF_INT16"
+      def ctype:
+          CInt16
+      def fromC val:
+          val.toInt
+      def toC val:
+          CInt16.fromInt val
+
+class Int32Type:
+      def typename:
+          "TF_INT32"
+      def ctype:
+          CInt32
+      def fromC val:
+          val.toInt
+      def toC val:
+          CInt32.fromInt val
+
+class Int64Type:
+      def typename:
+          "TF_INT64"
+      def ctype:
+          CInt64
+      def fromC val:
+          val.toInt
+      def toC val:
+          CInt64.fromInt val
+
+class UInt8Type:
+      def typename:
+          "TF_INT8"
+      def ctype:
+          CUInt8
+      def fromC val:
+          val.toInt
+      def toC val:
+          CUInt8.fromInt val
+
+class UInt16Type:
+      def typename:
+          "TF_INT16"
+      def ctype:
+          CUInt16
+      def fromC val:
+          val.toInt
+      def toC val:
+          CUInt16.fromInt val
+
+class UInt32Type:
+      def typename:
+          "TF_INT32"
+      def ctype:
+          CUInt32
+      def fromC val:
+          val.toInt
+      def toC val:
+          CUInt32.fromInt val
+
+class UInt64Type:
+      def typename:
+          "TF_INT64"
+      def ctype:
+          CUInt64
+      def fromC val:
+          val.toInt
+      def toC val:
+          CUInt64.fromInt val
+
+class BoolType:
+      def typename:
+          "TF_BOOL"
+      def ctype:
+          CUInt8
+      def fromC val:
+          (val.toInt == 0).not
+      def toC val:
+          case val of
+               True: CUInt8.fromInt 1
+               False: CUInt8.fromInt 0

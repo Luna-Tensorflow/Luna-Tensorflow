@@ -13,7 +13,7 @@ template<TF_DataType DataTypeLabel>
 class Tensor {
 private:
 	TF_Tensor *underlying;
-	using type = typename Type<DataTypeLabel>::type;
+	using type = typename Type<DataTypeLabel>::tftype;
 	std::vector<int64_t> dims;
 
 public:
@@ -124,7 +124,7 @@ Tensor<DataTypeLabel>::Tensor(Tensor &&other) noexcept
 }
 
 template<TF_DataType DataTypeLabel>
-typename Type<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(const std::vector<int64_t> &indices)
+typename Tensor<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(const std::vector<int64_t> &indices)
 {
 	return at(indices.data(), indices.size());
 }
@@ -151,7 +151,7 @@ Tensor<DataTypeLabel>::~Tensor()
 }
 
 template<TF_DataType DataTypeLabel>
-typename Type<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(int64_t const *indices, int64_t len)
+typename Tensor<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(int64_t const *indices, int64_t len)
 {
 	int64_t index = indices[len-1];
 	int64_t multiplier = 1;
@@ -163,7 +163,7 @@ typename Type<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(int64_t const *ind
 
 	char* adr = (char*) TF_TensorData(underlying) + TF_DataTypeSize(DataTypeLabel) * index;
 
-	return *(typename Type<DataTypeLabel>::type*)adr;
+	return *(typename Tensor<DataTypeLabel>::type*)adr;
 }
 
 template<TF_DataType DataTypeLabel>

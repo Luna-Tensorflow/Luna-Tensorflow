@@ -1,32 +1,30 @@
 import Std.Foreign
 import Std.Foreign.C.Value
+import Tensorflow.Types
 
-class TensorWrapper:
+class TensorWrapper a:
     ptr :: ManagedPointer None
-    #typename :: Text # TODO
+    typetag :: a
 
     def toCArg:
         self.ptr.toCArg
 
     def length:
-        lengthFun = lookupSymbol "TFL" ("tensor_float_length")
+        lengthFun = lookupSymbol "TFL" ("get_tensor_length_" + self.typetag.typename)
         res = lengthFun.call CInt64 [self.toCArg]
         res.toInt
 
     def at indexes:
-        atFun = lookupSymbol "TFL" ("get_tensor_float_value_at")
+        atFun = lookupSymbol "TFL" ("get_tensor_value_at_" + self.typetag.typename)
         cindexes = indexes.map CInt64.fromInt
-        cindexesArr = Array CInt64 . fromList cindexes
-        res = atFun.call CFloat [self.toCArg, cindexesArr.toCArg, CInt64.fromInt cindexes.length . toCArg]
-        cindexesArr.free
-        res.toReal
+        res = atFun.call (self.typetag.ctype) [self.toCArg, Array CInt64 . fromList cindexes . toCArg, CInt64.fromInt cindexes.length . toCArg]
+        self.typetag.fromC res
 
-def create1dTensorWrapper values:
-    cvalues = values.map CFloat.fromReal
-    makeTensor = lookupSymbol "TFL" ("make_float_tensor")
+def create1dTensorWrapper typetag values:
+    cvalues = values.map (typetag.toC)
+    makeTensor = lookupSymbol "TFL" ("make_tensor_" + typetag.typename)
     releaseMethod = lookupSymbol "TFL" "release"
-    cvaluesArr = Array CFloat . fromList cvalues
-    tensor = makeTensor.call (Pointer None) [cvaluesArr.toCArg, CInt64.fromInt cvalues.length . toCArg]
-    cvaluesArr.free
+    carray = (Array (typetag.ctype)) . fromList cvalues 
+    tensor = makeTensor.call (Pointer None) [carray.toCArg, CInt64.fromInt cvalues.length . toCArg]
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
-    TensorWrapper managedTensor #"float" # TODO
+    TensorWrapper managedTensor typetag
