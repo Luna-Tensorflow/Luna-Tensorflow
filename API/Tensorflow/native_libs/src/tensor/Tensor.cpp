@@ -1,6 +1,8 @@
 #include "Tensor.h"
 
-std::vector<int64_t> TypeErasedTensor::shape() {
+TypeErasedTensor::TypeErasedTensor(TF_Tensor* tensor) : underlying(tensor) {}
+
+std::vector<int64_t> TypeErasedTensor::shape() const {
     int ndims = TF_NumDims(underlying);
     std::vector<int64_t> dims(ndims);
     for (int i = 0; i < ndims; ++i) {
@@ -9,7 +11,7 @@ std::vector<int64_t> TypeErasedTensor::shape() {
     return dims;
 }
 
-size_t TypeErasedTensor::flatSize() {
+size_t TypeErasedTensor::flatSize() const {
     size_t r = 1;
     for (auto dim : shape()) {
         r *= dim;

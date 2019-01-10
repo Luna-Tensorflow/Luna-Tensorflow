@@ -5,6 +5,7 @@
 #include <tensorflow/c/c_api.h>
 #include <cstring>
 #include <cstddef>
+#include <numeric>
 
 #include "../helpers/utils.h"
 #include "TypeLabel.h"
@@ -13,11 +14,11 @@ class TypeErasedTensor {
 protected:
 	 TF_Tensor *underlying;
 
-	 TypeErasedTensor(TF_Tensor* tensor = nullptr) : underlying(tensor) {}
+	 TypeErasedTensor(TF_Tensor* tensor = nullptr);
 public:
-	 std::vector<int64_t> shape();
+	 std::vector<int64_t> shape() const;
 
-	 size_t flatSize();
+	 size_t flatSize() const;
 
 	 TF_Tensor* get_underlying() const;
 
@@ -34,8 +35,7 @@ public:
 	explicit Tensor(const type* vect, int64_t len);
 	explicit Tensor(const type** array, int64_t width, int64_t height);
 
-	explicit Tensor(const std::vector<type> &vect);
-	explicit Tensor(const std::vector<std::vector<type>> &array);
+	explicit Tensor(const type *data, const int64_t *dims, int num_dims);
 
 	explicit Tensor(TF_Tensor* underlying);
 
@@ -48,23 +48,11 @@ public:
 };
 
 template<TF_DataType DataTypeLabel>
-Tensor<DataTypeLabel>::Tensor(const Tensor::type *vect, int64_t len)
-	: TypeErasedTensor() {
-	size_t data_size = TF_DataTypeSize(DataTypeLabel);
-	auto dims = std::vector<int64_t>{len};
-	underlying = TF_AllocateTensor(DataTypeLabel, dims.data(), 1, data_size * len);
-
-	auto* adr = (std::byte*) TF_TensorData(underlying);
-	for(auto i=0; i<len; ++i)
-	{
-		*((type*) adr) = vect[i];
-		adr += data_size;
-	}
+Tensor<DataTypeLabel>::Tensor(const Tensor<DataTypeLabel>::type *vect, int64_t len) : Tensor(vect, &len, 1) {
 }
 
 template<TF_DataType DataTypeLabel>
-Tensor<DataTypeLabel>::Tensor(const Tensor::type **array, int64_t width, int64_t height)
-	: TypeErasedTensor() {
+Tensor<DataTypeLabel>::Tensor(const Tensor<DataTypeLabel>::type **array, int64_t width, int64_t height) {
 	size_t data_size = TF_DataTypeSize(DataTypeLabel);
 	auto dims = std::vector<int64_t>{width, height};
 	underlying = TF_AllocateTensor(DataTypeLabel, dims.data(), 2, width * height * data_size);
@@ -81,41 +69,28 @@ Tensor<DataTypeLabel>::Tensor(const Tensor::type **array, int64_t width, int64_t
 }
 
 template<TF_DataType DataTypeLabel>
-Tensor<DataTypeLabel>::Tensor(const std::vector<Tensor::type> &vect) : Tensor(vect.data(), vect.size()) {}
-
-template<TF_DataType DataTypeLabel>
-Tensor<DataTypeLabel>::Tensor(const std::vector<std::vector<Tensor::type>> &array)
-	: TypeErasedTensor() {
-	size_t data_size = TF_DataTypeSize(DataTypeLabel);
-	auto dims = std::vector<int64_t>{array.size(), array.front().size()};
-	underlying = TF_AllocateTensor(DataTypeLabel, dims.data(), 2, array.size() * array.front().size() * data_size);
-
-	auto* adr = (std::byte*) TF_TensorData(underlying);
-	for(auto i=0; i<array.size(); ++i)
-	{
-		for(auto j=0; j<array[i].size(); ++j)
-		{
-			*((type*) adr) = array[i][j];
-			adr += data_size;
-		}
-	}
-}
-
-template<TF_DataType DataTypeLabel>
 Tensor<DataTypeLabel>::Tensor(TF_Tensor* underlying) : TypeErasedTensor(underlying) {}
 
 template<TF_DataType DataTypeLabel>
-Tensor<DataTypeLabel>::Tensor(const Tensor &other)
+Tensor<DataTypeLabel>::Tensor(const type *data, const int64_t *dims, int num_dims) {
+    size_t required_data_size = std::accumulate(dims, dims + num_dims, 1, [](int64_t a, int64_t b){return a * b;})
+    		* TF_DataTypeSize(DataTypeLabel);
+    underlying = TF_AllocateTensor(DataTypeLabel, dims, num_dims, required_data_size);
+    memcpy(TF_TensorData(underlying), data, required_data_size);
+}
+
+template<TF_DataType DataTypeLabel>
+Tensor<DataTypeLabel>::Tensor(const Tensor<DataTypeLabel> &other)
 {
 	TF_Tensor *other_underlying = other.get_underlying();
 	auto data_size = TF_TensorByteSize(other_underlying);
-	auto dims = shape();
+	auto dims = other.shape();
 	underlying = TF_AllocateTensor(TF_TensorType(other_underlying), dims.data(), dims.size(), data_size);
 	memcpy(TF_TensorData(underlying), TF_TensorData(other_underlying), data_size);
 }
 
 template<TF_DataType DataTypeLabel>
-Tensor<DataTypeLabel>::Tensor(Tensor &&other) noexcept
+Tensor<DataTypeLabel>::Tensor(Tensor<DataTypeLabel> &&other) noexcept
 {
 	underlying = other.underlying;
 	other.underlying = nullptr;
