@@ -79,8 +79,16 @@ def testBool:
     a = constFromScalar BoolType True
     print a.toJSON
 
+def testString:
+    print "testString"
+    a = constFromScalar StringType "test"
+    print a.toJSON
+    b = add a a
+    print b.toJSON
+
 def main:
     regression
     testInt
     testBool
+    testString
     calculateGradients

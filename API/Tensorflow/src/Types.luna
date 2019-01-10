@@ -111,3 +111,15 @@ class BoolType:
           case val of
                True: CUInt8.fromInt 1
                False: CUInt8.fromInt 0
+
+class StringType:
+    def typename:
+        "TF_STRING"
+    def ctype:
+        CString
+    def fromC val:
+        txt = val.toText
+        val.free # convention is that we need to free the result
+        txt
+    def toC val:
+        CString.fromText val # this C-string is freed on C++ side

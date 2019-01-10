@@ -109,5 +109,16 @@ DECLARE_TENSOR(TF_UINT16);
 DECLARE_TENSOR(TF_UINT32);
 DECLARE_TENSOR(TF_UINT64);
 DECLARE_TENSOR(TF_BOOL);
-//DECLARE_TENSOR(TF_STRING);
 //DECLARE_TENSOR(TF_HALF);
+
+GET_TENSOR_VALUE_AT(TF_STRING);
+GET_TENSOR_LENGTH(TF_STRING);
+TFL_API Tensor<TF_STRING> *make_tensor_TF_STRING(Type<TF_STRING>::lunatype const *array, int64_t len) {
+   LOG(array, len);
+	auto tensor_ptr = std::make_shared<Tensor<(TF_STRING)>>(const_cast<const char**>(array), len);
+	// It's much easier to just free the C-strings here than to add rule exceptions in Luna.
+	for (int64_t i = 0; i < len; ++i) {
+		free(array[i]);
+	}
+	return LifetimeManager::instance().addOwnership(std::move(tensor_ptr));
+}

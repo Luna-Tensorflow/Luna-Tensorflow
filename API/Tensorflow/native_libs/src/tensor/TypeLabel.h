@@ -42,7 +42,7 @@ template<>
 class Type<TF_STRING> {
 public:
     using tftype = const char*;
-    using lunatype = const char*;
+    using lunatype = char*;
 };
 
 #endif //TFL_TYPELABEL_H
