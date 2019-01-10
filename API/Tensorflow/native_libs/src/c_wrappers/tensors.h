@@ -15,7 +15,7 @@ extern "C"
 #endif
 
 #define DEFINE_TENSOR(typelabel) \
-TFL_API Tensor<typelabel> *make_tensor_##typelabel(Type<typelabel>::lunatype const *array, int64_t len); \
+TFL_API Tensor<typelabel> *make_tensor_##typelabel(Type<typelabel>::lunatype const *array, const int64_t *dims, size_t num_dims); \
 TFL_API Type<typelabel>::lunatype get_tensor_value_at_##typelabel(Tensor<typelabel> *tensor, int64_t *idxs, size_t idxs_len); \
 TFL_API int64_t get_tensor_length_##typelabel(Tensor<typelabel> *tensor);
 
@@ -36,7 +36,6 @@ DEFINE_TENSOR(TF_BOOL);
 
 // TODO remove old definitions after migration is complete
 TFL_API Tensor<TF_FLOAT> *make_float_tensor(float const*, int64_t);
-TFL_API Tensor<TF_FLOAT> *make_float_tensor_arr(float const**, int64_t, int64_t);
 TFL_API Tensor<TF_INT32> *make_int_tensor(int32_t const*, int64_t);
 
 TFL_API float get_tensor1d_float_value_at(Tensor<TF_FLOAT> *, int64_t);

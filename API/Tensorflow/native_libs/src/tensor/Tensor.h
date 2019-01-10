@@ -33,9 +33,10 @@ private:
 	using type = typename Type<DataTypeLabel>::tftype;
 public:
 	explicit Tensor(const type* vect, int64_t len);
-	explicit Tensor(const type** array, int64_t width, int64_t height);
 
 	explicit Tensor(const type *data, const int64_t *dims, int num_dims);
+
+	explicit Tensor(const type *data, const std::vector<int64_t> &dims);
 
 	explicit Tensor(TF_Tensor* underlying);
 
@@ -52,23 +53,6 @@ Tensor<DataTypeLabel>::Tensor(const Tensor<DataTypeLabel>::type *vect, int64_t l
 }
 
 template<TF_DataType DataTypeLabel>
-Tensor<DataTypeLabel>::Tensor(const Tensor<DataTypeLabel>::type **array, int64_t width, int64_t height) {
-	size_t data_size = TF_DataTypeSize(DataTypeLabel);
-	auto dims = std::vector<int64_t>{width, height};
-	underlying = TF_AllocateTensor(DataTypeLabel, dims.data(), 2, width * height * data_size);
-
-	auto* adr = (std::byte*) TF_TensorData(underlying);
-	for(auto i=0; i<width; ++i)
-	{
-		for(auto j=0; j<height; ++j)
-		{
-			*((type*) adr) = array[j][i];
-			adr += data_size;
-		}
-	}
-}
-
-template<TF_DataType DataTypeLabel>
 Tensor<DataTypeLabel>::Tensor(TF_Tensor* underlying) : TypeErasedTensor(underlying) {}
 
 template<TF_DataType DataTypeLabel>
@@ -80,13 +64,13 @@ Tensor<DataTypeLabel>::Tensor(const type *data, const int64_t *dims, int num_dim
 }
 
 template<TF_DataType DataTypeLabel>
+Tensor<DataTypeLabel>::Tensor(const type *data, const std::vector<int64_t> &dims)
+        : Tensor(data, dims.data(), dims.size()) {
+}
+
+template<TF_DataType DataTypeLabel>
 Tensor<DataTypeLabel>::Tensor(const Tensor<DataTypeLabel> &other)
-{
-	TF_Tensor *other_underlying = other.get_underlying();
-	auto data_size = TF_TensorByteSize(other_underlying);
-	auto dims = other.shape();
-	underlying = TF_AllocateTensor(TF_TensorType(other_underlying), dims.data(), dims.size(), data_size);
-	memcpy(TF_TensorData(underlying), TF_TensorData(other_underlying), data_size);
+        : Tensor(TF_TensorData(other.get_underlying()), other.shape()) {
 }
 
 template<TF_DataType DataTypeLabel>
