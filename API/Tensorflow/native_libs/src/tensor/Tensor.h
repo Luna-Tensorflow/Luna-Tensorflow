@@ -15,46 +15,15 @@ protected:
 
 	 TypeErasedTensor(TF_Tensor* tensor = nullptr) : underlying(tensor) {}
 public:
-	 std::vector<int64_t> shape() {
-	 	int ndims = TF_NumDims(underlying);
-	 	std::vector<int64_t> dims(ndims);
-	 	for (int i = 0; i < ndims; ++i) {
-	 		dims[i] = TF_Dim(underlying, i);
-	 	}
-	 	return dims;
-	 }
+	 std::vector<int64_t> shape();
 
-	 size_t flatSize() {
-	 	size_t r = 1;
-	 	for (auto dim : shape()) {
-	 		r *= dim;
-	 	}
-		 return r;
-	 }
+	 size_t flatSize();
 
-	 TF_Tensor* get_underlying() const {
-		 return underlying;
-	 }
+	 TF_Tensor* get_underlying() const;
 
-	 size_t hash() const {
-		 size_t bytes = TF_TensorByteSize(underlying);
+	 size_t hash() const;
 
-		 char* data = (char*) TF_TensorData(underlying);
-		 size_t hash = std::hash<char>()(*data);
-		 for (size_t i = 1; i < bytes; ++i) {
-			 ++data;
-			 hash = hash_combine(hash, *data);
-		 }
-
-		 return hash;
-	 }
-
-	 virtual ~TypeErasedTensor() {
-		 if (underlying != nullptr) {
-			 TF_DeleteTensor(underlying);
-		 }
-		 underlying = nullptr;
-	 }
+	 virtual ~TypeErasedTensor();
 };
 
 template<TF_DataType DataTypeLabel>
@@ -138,7 +107,6 @@ Tensor<DataTypeLabel>::Tensor(TF_Tensor* underlying) : TypeErasedTensor(underlyi
 template<TF_DataType DataTypeLabel>
 Tensor<DataTypeLabel>::Tensor(const Tensor &other)
 {
-	// TODO DEBUG THIS, it likely segfaults ???
 	TF_Tensor *other_underlying = other.get_underlying();
 	auto data_size = TF_TensorByteSize(other_underlying);
 	auto dims = shape();
