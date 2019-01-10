@@ -1,0 +1,71 @@
+import Std.Base
+import Std.Time
+
+import Tensorflow.Lift
+import Tensorflow.Operations
+import Tensorflow.Tensor
+import Tensorflow.Gradient
+import Tensorflow.Types
+
+def forwardstep l [w, b]:
+    None# TODO sigmoid
+    add (mul l w) b
+
+def forward in w b:
+    network = w.zip b
+    network.fold in forwardstep
+
+def backprop lr out networkout w b:
+    None# TODO loss function
+    diff' = out - networkout
+    diff = diff' * diff'
+
+    wgrads = gradients diff w []
+    wnew = (w.zipWith wgrads).each((w, g): sub w (mul lr g))
+
+    bgrads = gradients diff b []
+    bnew = (b.zipWith bgrads).each((b, g): sub b (mul lr g))
+
+    [wnew, bnew]
+
+def step func (w, b) [in, out]:
+    func w b in out
+
+def neuralNetwork lr w b in out: 
+    networkout = forward in w b
+    backprop out networkout w b
+
+def main:
+    print "Classification"
+
+    xvalues = [0.40217346868349846, 0.3277419251425864, 0.8724729303385044, 0.8897825035899187, 0.9796188749741762, 0.7071019631116182, 0.5027699712943916, 0.8410354310072834, 0.37423438516452323, 0.30315898494179416, 0.500712201294488, 0.20282920088572065, 0.12574385409881206, 0.951965555266773, 0.09966070979142583, 0.3467844401097815, 0.39655854006867064, 0.6892856855764523, 0.823644760824153, 0.12702164874400934]
+
+    yvalues = [0.5213346373852332, 0.3070805651378441, 0.9805103551686634, 0.25309586773255044, 0.23423684611482032, 0.7080247433000999, 0.36607704941260666, 0.27038798824466126, 0.39576019264559403, 0.27996211368289725, 0.27772628856375614, 0.7286980755907009, 0.19588733975413697, 0.8967179308067383, 0.7342176878095072, 0.9242946056218853, 0.8908233966156088, 0.9734959153301433, 0.31985891617892037, 0.058583433450159705]
+
+    inputs' = xvalues.zip yvalues
+    inputs = inputs'.each ((x, y): tensorFromList FloatType [x, y])
+
+    outs = [1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0].each (x: tensorFromList FloatType [x.toReal])
+
+    train = inputs.zip outs
+
+    lr = tensorFromList FloatType [(0.0001.negate)]
+
+    lifted = lift5 neuralNetwork
+
+def main2:
+    None# TODO 2d tensors
+
+    winitial = [[[0.32849324, 0.02853841], [0.70440296, 0.26983632], [0.40327336, 0.88772564]], 
+        [[0.65793274, 0.44521962, 0.40699923], [0.82086343, 0.83105773, 0.03566758], [0.60750798, 0.38902823, 0.80938644]], 
+        [[0.83362546, 0.11802483, 0.15363802]]].each (x: tensorFromList FloatType x)
+    binitial = [[0.03566758, 0.60750798, 0.38902823], 
+        [0.80938644, 0.83362546, 0.11802483], 
+        [0.15363802]].each (x: tensorFromList FloatType x)
+
+    [wtrained, btrained] = train.fold [winitial, binitial] (step (lifted lr))
+
+    print wtrained.toJSON
+    print btrained.toJSON
+
+    None
