@@ -38,4 +38,11 @@ public:
     using lunatype = uint8_t;
 };
 
+template<>
+class Type<TF_STRING> {
+public:
+    using tftype = const char*;
+    using lunatype = const char*;
+};
+
 #endif //TFL_TYPELABEL_H
