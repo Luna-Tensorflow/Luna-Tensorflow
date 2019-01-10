@@ -20,7 +20,7 @@ private:
             std::vector<std::shared_ptr<Operation<DataTypeLabel>>> xs,
             std::vector<std::shared_ptr<Operation<DataTypeLabel>>> dxs) : ys(ys), xs(xs), dxs(dxs) {
         if (!dxs.empty() && dxs.size() != ys.size()) {
-            throw std::invalid_argument("dx must be empty or of the same size as ys!");
+            throw std::invalid_argument("dxs must be empty or of the same size as ys!");
         }
         if (xs.empty() || ys.empty()) {
             throw std::invalid_argument("xs and ys must not be empty!");

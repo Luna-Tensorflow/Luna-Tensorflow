@@ -11,7 +11,7 @@ def gradients ys xs dxs:
     ysArr = Array (Pointer None) . fromList (ys.map y: y.ptr.ptr)
     xsArr = Array (Pointer None) . fromList (xs.map x: x.ptr.ptr)
 
-    dxsPtr = if (dxs.length == ys.length).not then nullPtr else Array (Pointer None) . fromList (dxs.map dx: dx.ptr.ptr) . ptr . ptr
+    dxsPtr = if dxs.isEmpty then nullPtr else if dxs.length == ys.length then Array (Pointer None) . fromList (dxs.map dx: dx.ptr.ptr) . ptr . ptr else throw "gradients: dxs must be empty or of the same size as ys"
 
     dysPtr = addGradients.call (Pointer (Pointer None)) [ysArr.toCArg, CInt64.fromInt ys.length . toCArg, xsArr.toCArg,
             CInt64.fromInt xs.length . toCArg, dxsPtr.toCArg]
