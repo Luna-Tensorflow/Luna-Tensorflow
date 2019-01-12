@@ -46,6 +46,7 @@ public:
 
 	type& at(int64_t const* indices, int64_t len);
 	type& at(const std::vector<int64_t> &indices);
+	type& at(int64_t index);
 };
 
 template<TF_DataType DataTypeLabel>
@@ -91,14 +92,20 @@ typename Tensor<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(int64_t const *i
 {
 	int64_t index = indices[len-1];
 	int64_t multiplier = 1;
+	std::vector<int64_t> dims = shape();
 
 	for (int64_t i = len - 2; i >= 0; --i) {
-		multiplier *= TF_Dim(underlying, i + 1);
+		multiplier *= dims[i + 1];
 		index += indices[i] * multiplier;
 	}
 
-	char* adr = (char*) TF_TensorData(underlying) + TF_DataTypeSize(DataTypeLabel) * index;
+	return at(index);
+}
 
+template<TF_DataType DataTypeLabel>
+typename Tensor<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(int64_t index)
+{
+	char* adr = (char*) TF_TensorData(underlying) + TF_DataTypeSize(DataTypeLabel) * index;
 	return *(typename Tensor<DataTypeLabel>::type*)adr;
 }
 

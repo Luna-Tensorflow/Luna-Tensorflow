@@ -29,15 +29,15 @@ def gradientDescent lr x y a b:
 
 def regression:
     print "Regression"
-    xtensors = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].each (x: tensorFromList FloatType [x.toReal])
-    ytensors = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].each (x: tensorFromList FloatType [x.toReal])
+    xtensors = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].each (x: tensorFromList1d FloatType [x.toReal])
+    ytensors = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].each (x: tensorFromList1d FloatType [x.toReal])
 
     train = xtensors . zip ytensors
 
     lifted = lift5 gradientDescent
 
-    zero = tensorFromList FloatType [0.0]
-    lr = tensorFromList FloatType [(0.0001 . negate)]
+    zero = tensorFromList1d FloatType [0.0]
+    lr = tensorFromList1d FloatType [(0.0001 . negate)]
 
     t0 = Time.now
     [a, b] = train . fold [zero, zero] (step (lifted lr))
@@ -79,8 +79,25 @@ def testBool:
     a = constFromScalar BoolType True
     print a.toJSON
 
-def main:
+def testMultidimTensor:
+    aTensor = tensorFromList Int64Type [1, 2, 3, 4, 5, 6] [2, 3]
+    print aTensor.toJSON
+    print (aTensor.at [1, 2])
+    bTensor = tensorFromList Int64Type [9, 8, 7, 7, 8, 9] [2, 3]
+    print bTensor.toJSON
+    a = makeConst aTensor
+    b = makeConst bTensor
+    c = a + b
+    print c.eval.dims
+    print c.eval.toJSON
+    print c.toJSON
+
+def main2:
     regression
     testInt
     testBool
     calculateGradients
+    testMultidimTensor
+
+def main:
+    testMultidimTensor

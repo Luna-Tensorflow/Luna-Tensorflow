@@ -17,7 +17,9 @@ extern "C"
 #define DEFINE_TENSOR(typelabel) \
 TFL_API Tensor<typelabel> *make_tensor_##typelabel(Type<typelabel>::lunatype const *array, const int64_t *dims, size_t num_dims); \
 TFL_API Type<typelabel>::lunatype get_tensor_value_at_##typelabel(Tensor<typelabel> *tensor, int64_t *idxs, size_t idxs_len); \
-TFL_API int64_t get_tensor_length_##typelabel(Tensor<typelabel> *tensor);
+TFL_API Type<typelabel>::lunatype get_tensor_value_at_index_##typelabel(Tensor<typelabel> *tensor, int64_t index); \
+TFL_API int get_tensor_num_dims_##typelabel(Tensor<typelabel> *tensor); \
+TFL_API int64_t get_tensor_dim_##typelabel(Tensor<typelabel> *tensor, int32_t dim_index); \
 
 
 DEFINE_TENSOR(TF_FLOAT);

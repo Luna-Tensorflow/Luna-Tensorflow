@@ -12,22 +12,22 @@ class Tensor a:
     def ptr:
         self.wrapper.ptr
 
-    # length :: Int
-    def length:
-        self.wrapper.length
+    # dims :: List Int
+    def dims:
+        self.wrapper.dims
 
-    # at Multi :: List Int -> T
-    def atMulti indices:
+    # at :: List Int -> T
+    def at indices:
         self.wrapper.at indices
 
-    # at :: Int -> T
-    def at index:
-        self.atMulti [index]
+    # atIndex :: Int -> T
+    def atIndex index:
+        self.wrapper.atIndex index
 
     # toList :: List Real
     def toList:
-        indices = 0.upto (self.length - 1)
-        indices.map self.at
+        indices = 0.upto (self.dims.foldLeft 1 (x: a: a * x) - 1)
+        indices.map self.atIndex
 
     # toJSON :: JSON
     def toJSON:
@@ -42,7 +42,12 @@ def tensorFromPtr typetag tensorPtr:
     wrapper = TensorWrapper managedTensorPtr typetag
     Tensor wrapper
 
-# tensorFromList :: TypeTag a -> List a -> Tensor a
-def tensorFromList typetag list:
-    wrapper = create1dTensorWrapper typetag list
+# tensorFromList1d :: TypeTag a -> List a -> Tensor a
+def tensorFromList1d typetag list:
+    wrapper = createTensorWrapper typetag list [list.length]
+    Tensor wrapper
+
+# tensorFromList :: TypeTag a -> List a -> List Int -> Tensor a
+def tensorFromList typetag list dims:
+    wrapper = createTensorWrapper typetag list dims
     Tensor wrapper

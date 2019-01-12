@@ -13,6 +13,7 @@ namespace {
     template <TF_DataType DataTypeLabel>
     Operation<DataTypeLabel>** add_gradients(Operation<DataTypeLabel>** ys, std::int64_t nys,  Operation<DataTypeLabel>** xs, std::int64_t nxs,
             Operation<DataTypeLabel>** dxs) {
+        LOG(ys, nys, xs, nxs, dxs);
         std::vector<std::shared_ptr<Operation<DataTypeLabel>>> ys_v;
         std::vector<std::shared_ptr<Operation<DataTypeLabel>>> xs_v;
         std::vector<std::shared_ptr<Operation<DataTypeLabel>>> dxs_v;

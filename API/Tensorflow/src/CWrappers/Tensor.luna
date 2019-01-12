@@ -9,10 +9,27 @@ class TensorWrapper a:
     def toCArg:
         self.ptr.toCArg
 
-    def length:
-        lengthFun = lookupSymbol "TFL" ("get_tensor_length_" + self.typetag.typename)
-        res = lengthFun.call CInt64 [self.toCArg]
+    def numDims:
+        numDimsFun = lookupSymbol "TFL" ("get_tensor_num_dims_" + self.typetag.typename)
+
+        res = numDimsFun.call CInt64 [self.toCArg]
+
         res.toInt
+
+    def dim i:
+        dimFun = lookupSymbol "TFL" ("get_tensor_dim_" + self.typetag.typename)
+
+        res = dimFun.call CInt64 [self.toCArg, CInt32.fromInt i . toCArg]
+
+        res.toInt
+
+    def dims:
+        n = self.numDims
+
+        def fillDims i list:
+            if i >= 0 then fillDims (i - 1) (Prepend (self.dim i) list) else list
+
+        fillDims (n - 1) []
 
     def at indexes:
         atFun = lookupSymbol "TFL" ("get_tensor_value_at_" + self.typetag.typename)
@@ -20,11 +37,25 @@ class TensorWrapper a:
         res = atFun.call (self.typetag.ctype) [self.toCArg, Array CInt64 . fromList cindexes . toCArg, CInt64.fromInt cindexes.length . toCArg]
         self.typetag.fromC res
 
-def create1dTensorWrapper typetag values:
-    cvalues = values.map (typetag.toC)
+    def atIndex index:
+        atIndexFun = lookupSymbol "TFL" ("get_tensor_value_at_index_" + self.typetag.typename)
+        res = atIndexFun.call (self.typetag.ctype) [self.toCArg, CInt64.fromInt index . toCArg]
+        self.typetag.fromC res
+
+def createTensorWrapper typetag values dims:
+    expectedValuesCount = dims.foldLeft 1 (x: a: a * x)
+    if (values.length == expectedValuesCount).not then throw "values must be exactly of the size needed to fill a tensor with dimensions dims" else None
+
+    cvalues = values.map typetag.toC
+    cvaluesArray = (Array typetag.ctype) . fromList cvalues
+
+    cdims = dims.map CInt64.fromInt
+    cdimsArray = (Array CInt64) . fromList cdims
+
     makeTensor = lookupSymbol "TFL" ("make_tensor_" + typetag.typename)
     releaseMethod = lookupSymbol "TFL" "release"
-    carray = (Array (typetag.ctype)) . fromList cvalues 
-    tensor = makeTensor.call (Pointer None) [carray.toCArg, CInt64.fromInt cvalues.length . toCArg]
+
+    tensor = makeTensor.call (Pointer None) [cvaluesArray.toCArg, cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg]
+
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
     TensorWrapper managedTensor typetag
