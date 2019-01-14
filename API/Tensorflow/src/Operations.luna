@@ -41,7 +41,7 @@ def makeConst tensor:
 
 # constFromList :: TypeTag a -> List a -> Tensor a
 def constFromList typetag list:
-    tensor = tensorFromList typetag list
+    tensor = tensorFromList1d typetag list
     makeConst tensor
 
 # constFromScalar :: a -> Tensor a

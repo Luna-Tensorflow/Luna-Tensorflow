@@ -6,6 +6,7 @@
 #include <cstring>
 #include <cstddef>
 #include <functional>
+#include <numeric>
 
 #include "../helpers/utils.h"
 #include "TypeLabel.h"
@@ -14,11 +15,11 @@ class TypeErasedTensor {
 protected:
 	 TF_Tensor *underlying;
 
-	 TypeErasedTensor(TF_Tensor* tensor = nullptr) : underlying(tensor) {}
+	 TypeErasedTensor(TF_Tensor* tensor = nullptr);
 public:
-	 std::vector<int64_t> shape();
+	 std::vector<int64_t> shape() const;
 
-	 size_t flatSize();
+	 size_t flatSize() const;
 
 	 TF_Tensor* get_underlying() const;
 
@@ -33,10 +34,10 @@ private:
 	using type = typename Type<DataTypeLabel>::tftype;
 public:
 	explicit Tensor(const type* vect, int64_t len);
-	explicit Tensor(const type** array, int64_t width, int64_t height);
 
-	explicit Tensor(const std::vector<type> &vect);
-	explicit Tensor(const std::vector<std::vector<type>> &array);
+	explicit Tensor(const type *data, const int64_t *dims, int num_dims);
+
+	explicit Tensor(const type *data, const std::vector<int64_t> &dims);
 
 	explicit Tensor(TF_Tensor* underlying);
 
@@ -46,77 +47,36 @@ public:
 
 	type& at(int64_t const* indices, int64_t len);
 	type& at(const std::vector<int64_t> &indices);
+	type& at(int64_t index);
 };
 
 template<TF_DataType DataTypeLabel>
-Tensor<DataTypeLabel>::Tensor(const Tensor::type *vect, int64_t len)
-	: TypeErasedTensor() {
-	size_t data_size = TF_DataTypeSize(DataTypeLabel);
-	auto dims = std::vector<int64_t>{len};
-	underlying = TF_AllocateTensor(DataTypeLabel, dims.data(), 1, data_size * len);
-
-	auto* adr = (std::byte*) TF_TensorData(underlying);
-	for(auto i=0; i<len; ++i)
-	{
-		*((type*) adr) = vect[i];
-		adr += data_size;
-	}
-}
-
-template<TF_DataType DataTypeLabel>
-Tensor<DataTypeLabel>::Tensor(const Tensor::type **array, int64_t width, int64_t height)
-	: TypeErasedTensor() {
-	size_t data_size = TF_DataTypeSize(DataTypeLabel);
-	auto dims = std::vector<int64_t>{width, height};
-	underlying = TF_AllocateTensor(DataTypeLabel, dims.data(), 2, width * height * data_size);
-
-	auto* adr = (std::byte*) TF_TensorData(underlying);
-	for(auto i=0; i<width; ++i)
-	{
-		for(auto j=0; j<height; ++j)
-		{
-			*((type*) adr) = array[j][i];
-			adr += data_size;
-		}
-	}
-}
-
-template<TF_DataType DataTypeLabel>
-Tensor<DataTypeLabel>::Tensor(const std::vector<Tensor::type> &vect) : Tensor(vect.data(), vect.size()) {}
-
-template<TF_DataType DataTypeLabel>
-Tensor<DataTypeLabel>::Tensor(const std::vector<std::vector<Tensor::type>> &array)
-	: TypeErasedTensor() {
-	size_t data_size = TF_DataTypeSize(DataTypeLabel);
-	auto dims = std::vector<int64_t>{array.size(), array.front().size()};
-	underlying = TF_AllocateTensor(DataTypeLabel, dims.data(), 2, array.size() * array.front().size() * data_size);
-
-	auto* adr = (std::byte*) TF_TensorData(underlying);
-	for(auto i=0; i<array.size(); ++i)
-	{
-		for(auto j=0; j<array[i].size(); ++j)
-		{
-			*((type*) adr) = array[i][j];
-			adr += data_size;
-		}
-	}
+Tensor<DataTypeLabel>::Tensor(const Tensor<DataTypeLabel>::type *vect, int64_t len) : Tensor(vect, &len, 1) {
 }
 
 template<TF_DataType DataTypeLabel>
 Tensor<DataTypeLabel>::Tensor(TF_Tensor* underlying) : TypeErasedTensor(underlying) {}
 
 template<TF_DataType DataTypeLabel>
-Tensor<DataTypeLabel>::Tensor(const Tensor &other)
-{
-	TF_Tensor *other_underlying = other.get_underlying();
-	auto data_size = TF_TensorByteSize(other_underlying);
-	auto dims = shape();
-	underlying = TF_AllocateTensor(TF_TensorType(other_underlying), dims.data(), dims.size(), data_size);
-	memcpy(TF_TensorData(underlying), TF_TensorData(other_underlying), data_size);
+Tensor<DataTypeLabel>::Tensor(const type *data, const int64_t *dims, int num_dims) {
+    size_t required_data_size = std::accumulate(dims, dims + num_dims, 1, [](int64_t a, int64_t b){return a * b;})
+    		* TF_DataTypeSize(DataTypeLabel);
+    underlying = TF_AllocateTensor(DataTypeLabel, dims, num_dims, required_data_size);
+    memcpy(TF_TensorData(underlying), data, required_data_size);
 }
 
 template<TF_DataType DataTypeLabel>
-Tensor<DataTypeLabel>::Tensor(Tensor &&other) noexcept
+Tensor<DataTypeLabel>::Tensor(const type *data, const std::vector<int64_t> &dims)
+        : Tensor(data, dims.data(), dims.size()) {
+}
+
+template<TF_DataType DataTypeLabel>
+Tensor<DataTypeLabel>::Tensor(const Tensor<DataTypeLabel> &other)
+        : Tensor(TF_TensorData(other.get_underlying()), other.shape()) {
+}
+
+template<TF_DataType DataTypeLabel>
+Tensor<DataTypeLabel>::Tensor(Tensor<DataTypeLabel> &&other) noexcept
 {
 	underlying = other.underlying;
 	other.underlying = nullptr;
@@ -133,14 +93,20 @@ typename Tensor<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(int64_t const *i
 {
 	int64_t index = indices[len-1];
 	int64_t multiplier = 1;
+	std::vector<int64_t> dims = shape();
 
 	for (int64_t i = len - 2; i >= 0; --i) {
-		multiplier *= TF_Dim(underlying, i + 1);
+		multiplier *= dims[i + 1];
 		index += indices[i] * multiplier;
 	}
 
-	char* adr = (char*) TF_TensorData(underlying) + TF_DataTypeSize(DataTypeLabel) * index;
+	return at(index);
+}
 
+template<TF_DataType DataTypeLabel>
+typename Tensor<DataTypeLabel>::type& Tensor<DataTypeLabel>::at(int64_t index)
+{
+	char* adr = (char*) TF_TensorData(underlying) + TF_DataTypeSize(DataTypeLabel) * index;
 	return *(typename Tensor<DataTypeLabel>::type*)adr;
 }
 
@@ -153,32 +119,40 @@ private:
         return reinterpret_cast<uint64_t*>(TF_TensorData(underlying))[idx] + 8 * flattenedLen;
     }
     size_t getLength(size_t idx) {
-        auto myOffset = reinterpret_cast<uint64_t*>(TF_TensorData(underlying))[idx] + 8 * flattenedLen;
+        auto myOffset = getOffset(idx);
         if (idx == flattenedLen - 1) {
             return TF_TensorByteSize(underlying) - myOffset;
         } else {
-            auto nextOffset = reinterpret_cast<uint64_t*>(TF_TensorData(underlying))[idx + 1] + 8 * flattenedLen;
+            auto nextOffset = getOffset(idx + 1);
             return nextOffset - myOffset;
         }
     }
 public:
-    explicit Tensor(const char** vect, int64_t len) : TypeErasedTensor() {
-        auto dims = std::vector<int64_t>{len};
-        size_t nbytes = static_cast<size_t>(len * 8);
-        for (int64_t i = 0; i < len; ++i) {
-            nbytes += TF_StringEncodedSize(strlen(vect[i]));
+    explicit Tensor(const char **vect, int64_t len) : Tensor(vect, &len, 1) {
+    }
+
+    explicit Tensor(const char **data, const int64_t *dims, int num_dims) : TypeErasedTensor() {
+        flattenedLen = static_cast<size_t>(std::accumulate(dims, dims + num_dims, 1, [](int64_t a, int64_t b){return a * b;}));
+        size_t n_bytes = flattenedLen * sizeof(uint64_t);
+        for (size_t i = 0; i < flattenedLen; ++i) {
+            n_bytes += TF_StringEncodedSize(strlen(data[i]));
         }
 
-        underlying = TF_AllocateTensor(TF_STRING, dims.data(), 1, nbytes);
+        underlying = TF_AllocateTensor(TF_STRING, dims, num_dims, n_bytes);
 
-        uint64_t *offsets = static_cast<uint64_t *>(TF_TensorData(underlying));
-        char* data = static_cast<char *>(TF_TensorData(underlying)) + len * 8;
+        uint64_t *offsets = static_cast<uint64_t*>(TF_TensorData(underlying));
+        char* elem_data = static_cast<char*>(TF_TensorData(underlying)) + flattenedLen * 8;
         uint64_t offset = 0;
-        for (int64_t i = 0; i < len; ++i) {
+        for (size_t i = 0; i < flattenedLen; ++i) {
             offsets[i] = offset;
-            auto slen = strlen(vect[i]);
-            run_with_status<void>(std::bind(TF_StringEncode, vect[i], slen, data + offset, TF_StringEncodedSize(slen), std::placeholders::_1));
+            auto slen = strlen(data[i]);
+            auto encoded_len = TF_StringEncodedSize(slen);
+            run_with_status<void>(std::bind(TF_StringEncode, data[i], slen, elem_data + offset, encoded_len, std::placeholders::_1));
+            offset += encoded_len;
         }
+    }
+
+    explicit Tensor(const char **data, const std::vector<int64_t> &dims) : Tensor(data, dims.data(), dims.size()) {
     }
 
     explicit Tensor(TF_Tensor* underlying) : TypeErasedTensor(underlying) {
@@ -228,6 +202,20 @@ public:
 
     char* at(const std::vector<int64_t> &indices) {
         return at(indices.data(), indices.size());
+    }
+
+    char* at(int64_t index) {
+        auto offset = getOffset(static_cast<size_t>(index));
+        auto encoded_len = getLength(static_cast<size_t>(index));
+
+        const char* str;
+        size_t decoded_len;
+        run_with_status<void>(std::bind(TF_StringDecode, reinterpret_cast<const char*>(TF_TensorData(underlying)) + offset, encoded_len, &str, &decoded_len, std::placeholders::_1));
+
+        char* cpy = static_cast<char *>(malloc(decoded_len + 1));
+        memcpy(cpy, str, decoded_len);
+        cpy[decoded_len] = 0;
+        return cpy;
     }
 };
 
