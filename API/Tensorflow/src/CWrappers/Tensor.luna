@@ -57,5 +57,7 @@ def createTensorWrapper typetag dims values:
 
     tensor = makeTensor.call (Pointer None) [cvaluesArray.toCArg, cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg]
 
+    cvalues.each typetag.cleanup
+
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
     TensorWrapper managedTensor typetag

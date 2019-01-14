@@ -1,116 +1,138 @@
 import Std.Foreign.C.Value
 
 class FloatType:
-      def typename:
-          "TF_FLOAT"
-      def ctype:
-          CFloat
-      def fromC val:
-          val.toReal
-      def toC val:
-          CFloat.fromReal val
+    def typename:
+        "TF_FLOAT"
+    def ctype:
+        CFloat
+    def fromC val:
+        val.toReal
+    def toC val:
+        CFloat.fromReal val
+    def cleanup val:
+        None
 
 class DoubleType:
-      def typename:
-          "TF_DOUBLE"
-      def ctype:
-          CDouble
-      def fromC val:
-          val.toReal
-      def toC val:
-          CDouble.fromReal val
+    def typename:
+        "TF_DOUBLE"
+    def ctype:
+        CDouble
+    def fromC val:
+        val.toReal
+    def toC val:
+        CDouble.fromReal val
+    def cleanup val:
+        None
 
 class Int8Type:
-      def typename:
-          "TF_INT8"
-      def ctype:
-          CInt8
-      def fromC val:
-          val.toInt
-      def toC val:
-          CInt8.fromInt val
+    def typename:
+        "TF_INT8"
+    def ctype:
+        CInt8
+    def fromC val:
+        val.toInt
+    def toC val:
+        CInt8.fromInt val
+    def cleanup val:
+        None
 
 class Int16Type:
-      def typename:
-          "TF_INT16"
-      def ctype:
-          CInt16
-      def fromC val:
-          val.toInt
-      def toC val:
-          CInt16.fromInt val
+    def typename:
+        "TF_INT16"
+    def ctype:
+        CInt16
+    def fromC val:
+        val.toInt
+    def toC val:
+        CInt16.fromInt val
+    def cleanup val:
+        None
 
 class Int32Type:
-      def typename:
-          "TF_INT32"
-      def ctype:
-          CInt32
-      def fromC val:
-          val.toInt
-      def toC val:
-          CInt32.fromInt val
+    def typename:
+        "TF_INT32"
+    def ctype:
+        CInt32
+    def fromC val:
+        val.toInt
+    def toC val:
+        CInt32.fromInt val
+    def cleanup val:
+        None
 
 class Int64Type:
-      def typename:
-          "TF_INT64"
-      def ctype:
-          CInt64
-      def fromC val:
-          val.toInt
-      def toC val:
-          CInt64.fromInt val
+    def typename:
+        "TF_INT64"
+    def ctype:
+        CInt64
+    def fromC val:
+        val.toInt
+    def toC val:
+        CInt64.fromInt val
+    def cleanup val:
+        None
 
 class UInt8Type:
-      def typename:
-          "TF_INT8"
-      def ctype:
-          CUInt8
-      def fromC val:
-          val.toInt
-      def toC val:
-          CUInt8.fromInt val
+    def typename:
+        "TF_INT8"
+    def ctype:
+        CUInt8
+    def fromC val:
+        val.toInt
+    def toC val:
+        CUInt8.fromInt val
+    def cleanup val:
+        None
 
 class UInt16Type:
-      def typename:
-          "TF_INT16"
-      def ctype:
-          CUInt16
-      def fromC val:
-          val.toInt
-      def toC val:
-          CUInt16.fromInt val
+    def typename:
+        "TF_INT16"
+    def ctype:
+        CUInt16
+    def fromC val:
+        val.toInt
+    def toC val:
+        CUInt16.fromInt val
+    def cleanup val:
+        None
 
 class UInt32Type:
-      def typename:
-          "TF_INT32"
-      def ctype:
-          CUInt32
-      def fromC val:
-          val.toInt
-      def toC val:
-          CUInt32.fromInt val
+    def typename:
+        "TF_INT32"
+    def ctype:
+        CUInt32
+    def fromC val:
+        val.toInt
+    def toC val:
+        CUInt32.fromInt val
+    def cleanup val:
+        None
 
 class UInt64Type:
-      def typename:
-          "TF_INT64"
-      def ctype:
-          CUInt64
-      def fromC val:
-          val.toInt
-      def toC val:
-          CUInt64.fromInt val
+    def typename:
+        "TF_INT64"
+    def ctype:
+        CUInt64
+    def fromC val:
+        val.toInt
+    def toC val:
+        CUInt64.fromInt val
+    def cleanup val:
+        None
 
 class BoolType:
-      def typename:
-          "TF_BOOL"
-      def ctype:
-          CUInt8
-      def fromC val:
-          (val.toInt == 0).not
-      def toC val:
-          case val of
-               True: CUInt8.fromInt 1
-               False: CUInt8.fromInt 0
+    def typename:
+        "TF_BOOL"
+    def ctype:
+        CUInt8
+    def fromC val:
+        (val.toInt == 0).not
+    def toC val:
+        case val of
+            True: CUInt8.fromInt 1
+            False: CUInt8.fromInt 0
+    def cleanup val:
+        None
 
 class StringType:
     def typename:
@@ -122,4 +144,6 @@ class StringType:
         val.free # convention is that we need to free the result
         txt
     def toC val:
-        CString.fromText val # this C-string is freed on C++ side
+        CString.fromText val
+    def cleanup val:
+        val.free

@@ -128,10 +128,10 @@ private:
         }
     }
 public:
-    explicit Tensor(const char **vect, int64_t len) : Tensor(vect, &len, 1) {
+    explicit Tensor(const char * const *vect, int64_t len) : Tensor(vect, &len, 1) {
     }
 
-    explicit Tensor(const char **data, const int64_t *dims, int num_dims) : TypeErasedTensor() {
+    explicit Tensor(const char * const *data, const int64_t *dims, int num_dims) : TypeErasedTensor() {
         flattenedLen = static_cast<size_t>(std::accumulate(dims, dims + num_dims, 1, [](int64_t a, int64_t b){return a * b;}));
         size_t n_bytes = flattenedLen * sizeof(uint64_t);
         for (size_t i = 0; i < flattenedLen; ++i) {
@@ -152,7 +152,7 @@ public:
         }
     }
 
-    explicit Tensor(const char **data, const std::vector<int64_t> &dims) : Tensor(data, dims.data(), dims.size()) {
+    explicit Tensor(const char * const *data, const std::vector<int64_t> &dims) : Tensor(data, dims.data(), dims.size()) {
     }
 
     explicit Tensor(TF_Tensor* underlying) : TypeErasedTensor(underlying) {
