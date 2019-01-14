@@ -44,10 +44,10 @@ def tensorFromPtr typetag tensorPtr:
 
 # tensorFromList1d :: TypeTag a -> List a -> Tensor a
 def tensorFromList1d typetag list:
-    wrapper = createTensorWrapper typetag list [list.length]
+    wrapper = createTensorWrapper typetag [list.length] list
     Tensor wrapper
 
-# tensorFromList :: TypeTag a -> List a -> List Int -> Tensor a
-def tensorFromList typetag list dims:
-    wrapper = createTensorWrapper typetag list dims
+# tensorFromList :: TypeTag a -> List Int -> List a -> Tensor a
+def tensorFromList typetag dims list:
+    wrapper = createTensorWrapper typetag dims list
     Tensor wrapper

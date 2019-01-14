@@ -42,7 +42,7 @@ class TensorWrapper a:
         res = atIndexFun.call (self.typetag.ctype) [self.toCArg, CInt64.fromInt index . toCArg]
         self.typetag.fromC res
 
-def createTensorWrapper typetag values dims:
+def createTensorWrapper typetag dims values:
     expectedValuesCount = dims.foldLeft 1 (x: a: a * x)
     if (values.length == expectedValuesCount).not then throw "values must be exactly of the size needed to fill a tensor with dimensions dims" else None
 
