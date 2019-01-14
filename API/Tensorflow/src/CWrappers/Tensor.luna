@@ -35,18 +35,22 @@ class TensorWrapper a:
         atFun = lookupSymbol "TFL" ("get_tensor_value_at_" + self.typetag.typename)
         cindexes = indexes.map CInt64.fromInt
         res = atFun.call (self.typetag.ctype) [self.toCArg, Array CInt64 . fromList cindexes . toCArg, CInt64.fromInt cindexes.length . toCArg]
-        self.typetag.fromC res
+        ret = self.typetag.fromC res
+        self.typetag.cleanupC res
+        ret
 
     def atIndex index:
         atIndexFun = lookupSymbol "TFL" ("get_tensor_value_at_index_" + self.typetag.typename)
         res = atIndexFun.call (self.typetag.ctype) [self.toCArg, CInt64.fromInt index . toCArg]
-        self.typetag.fromC res
+        ret = self.typetag.fromC res
+        self.typetag.cleanupC res
+        ret
 
 def createTensorWrapper typetag dims values:
     expectedValuesCount = dims.foldLeft 1 (x: a: a * x)
     if (values.length == expectedValuesCount).not then throw "values must be exactly of the size needed to fill a tensor with dimensions dims" else None
 
-    cvalues = values.map typetag.toC
+    cvalues = values.each typetag.toC
     cvaluesArray = (Array typetag.ctype) . fromList cvalues
 
     cdims = dims.map CInt64.fromInt
@@ -57,7 +61,7 @@ def createTensorWrapper typetag dims values:
 
     tensor = makeTensor.call (Pointer None) [cvaluesArray.toCArg, cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg]
 
-    cvalues.each typetag.cleanup
+    cvalues.each typetag.cleanupLuna
 
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
     TensorWrapper managedTensor typetag

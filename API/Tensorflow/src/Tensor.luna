@@ -27,7 +27,7 @@ class Tensor a:
     # toList :: List Real
     def toList:
         indices = 0.upto (self.dims.foldLeft 1 (x: a: a * x) - 1)
-        indices.map self.atIndex
+        indices.each self.atIndex
 
     # toJSON :: JSON
     def toJSON:

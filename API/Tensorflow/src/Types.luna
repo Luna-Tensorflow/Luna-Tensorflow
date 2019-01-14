@@ -1,4 +1,5 @@
 import Std.Foreign.C.Value
+import Std.Foreign
 
 class FloatType:
     def typename:
@@ -9,7 +10,9 @@ class FloatType:
         val.toReal
     def toC val:
         CFloat.fromReal val
-    def cleanup val:
+    def cleanupLuna val:
+        None
+    def cleanupC val:
         None
 
 class DoubleType:
@@ -21,7 +24,9 @@ class DoubleType:
         val.toReal
     def toC val:
         CDouble.fromReal val
-    def cleanup val:
+    def cleanupLuna val:
+        None
+    def cleanupC val:
         None
 
 class Int8Type:
@@ -33,7 +38,9 @@ class Int8Type:
         val.toInt
     def toC val:
         CInt8.fromInt val
-    def cleanup val:
+    def cleanupLuna val:
+        None
+    def cleanupC val:
         None
 
 class Int16Type:
@@ -45,7 +52,9 @@ class Int16Type:
         val.toInt
     def toC val:
         CInt16.fromInt val
-    def cleanup val:
+    def cleanupLuna val:
+        None
+    def cleanupC val:
         None
 
 class Int32Type:
@@ -57,7 +66,9 @@ class Int32Type:
         val.toInt
     def toC val:
         CInt32.fromInt val
-    def cleanup val:
+    def cleanupLuna val:
+        None
+    def cleanupC val:
         None
 
 class Int64Type:
@@ -69,7 +80,9 @@ class Int64Type:
         val.toInt
     def toC val:
         CInt64.fromInt val
-    def cleanup val:
+    def cleanupLuna val:
+        None
+    def cleanupC val:
         None
 
 class UInt8Type:
@@ -81,7 +94,9 @@ class UInt8Type:
         val.toInt
     def toC val:
         CUInt8.fromInt val
-    def cleanup val:
+    def cleanupLuna val:
+        None
+    def cleanupC val:
         None
 
 class UInt16Type:
@@ -93,7 +108,9 @@ class UInt16Type:
         val.toInt
     def toC val:
         CUInt16.fromInt val
-    def cleanup val:
+    def cleanupLuna val:
+        None
+    def cleanupC val:
         None
 
 class UInt32Type:
@@ -105,7 +122,9 @@ class UInt32Type:
         val.toInt
     def toC val:
         CUInt32.fromInt val
-    def cleanup val:
+    def cleanupLuna val:
+        None
+    def cleanupC val:
         None
 
 class UInt64Type:
@@ -117,7 +136,9 @@ class UInt64Type:
         val.toInt
     def toC val:
         CUInt64.fromInt val
-    def cleanup val:
+    def cleanupLuna val:
+        None
+    def cleanupC val:
         None
 
 class BoolType:
@@ -131,7 +152,9 @@ class BoolType:
         case val of
             True: CUInt8.fromInt 1
             False: CUInt8.fromInt 0
-    def cleanup val:
+    def cleanupLuna val:
+        None
+    def cleanupC val:
         None
 
 class StringType:
@@ -140,10 +163,11 @@ class StringType:
     def ctype:
         CString
     def fromC val:
-        txt = val.toText
-        val.free # convention is that we need to free the result
-        txt
+        val.toText
     def toC val:
         CString.fromText val
-    def cleanup val:
+    def cleanupLuna val:
         val.free
+    def cleanupC val:
+        freePointer = lookupSymbol "TFL" "free_pointer"
+        freePointer.call None [val.toCArg]

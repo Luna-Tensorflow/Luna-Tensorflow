@@ -8,7 +8,6 @@
 
 #include <vector>
 #include <memory>
-#include <numeric> //TODO
 
 Tensor<TF_FLOAT> *make_float_tensor(float const* array, int64_t len)
 {
