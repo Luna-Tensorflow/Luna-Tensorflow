@@ -7,146 +7,79 @@ import Tensorflow.Tensor
 import Tensorflow.Gradient
 import Tensorflow.Types
 
-def step func (x, y) [a, b]:
-    func x y a b
+def forwardstep l [w, b]:
+    None# TODO sigmoid
+    add (mul l w) b
 
-def gradientDescent lr x y a b:
-    diff'' = a*x
-    diff'  = diff'' + b
-    diff   = diff' - y
+def forward in w b:
+    network = w.zip b
+    network.fold in forwardstep
 
-    meanSqErr = diff * diff
-    pa'' = partial meanSqErr a
-    pb'' = partial meanSqErr b
+def backprop lr out networkout w b:
+    diff' = out - networkout
+    diff = diff' * diff'
 
-    pa'  = pa'' * lr
-    pb'  = pb'' * lr
+    wgrads = gradients diff w []
+    wnew = (w.zipWith wgrads).each((w, g): sub w (mul lr g))
 
-    pa = a + pa'
-    pb = b + pb'
+    bgrads = gradients diff b []
+    bnew = (b.zipWith bgrads).each((b, g): sub b (mul lr g))
 
-    [pa, pb]
+    [wnew, bnew]
 
-def testRegression:
-    print "Regression"
-    xtensors = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].each (x: tensorFromList1d FloatType [x.toReal])
-    ytensors = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].each (x: tensorFromList1d FloatType [x.toReal])
+def step func (w, b) [in, out]:
+    func w b in out
 
-    train = xtensors . zip ytensors
-
-    lifted = lift5 gradientDescent
-
-    zero = tensorFromList1d FloatType [0.0]
-    lr = tensorFromList1d FloatType [(0.0001 . negate)]
-
-    t0 = Time.now
-    [a, b] = train . fold [zero, zero] (step (lifted lr))
-    t1 = Time.now
-
-    print a.toJSON
-    print b.toJSON
-    print ("Took " + (t1.diff t0).toText + " ms")
-    if ((a.toJSON.toText == "[12.209929466247559]").and $ b.toJSON.toText == "[-0.22048871219158173]").not then throw $ "Regression fail: expected a = [12.209929466247559], b = [-0.22048871219158173], got a = " + a.toJSON.toText + ", b = " + b.toJSON.toText else None
-    print "Regression OK"
-    print ""
-    print ""
-    None
-
-def testGradients:
-    print "Gradients"
-    a = constFromScalar FloatType 3.0
-    b = constFromScalar FloatType 3.0
-    q = constFromScalar FloatType 2.0
-    p = constFromScalar FloatType 2.0.negate
-    c = a * b
-    d = c * a
-    e = a + b
-    gs = gradients [d, e] [a, b] [p, q]
-    result = gs.toJSON
-    print result
-    if (result == [[34.0.negate], [16.0.negate]].toJSON).not then throw $ "Gradients error: expected [[-34],[-16]], got " + result.toText else None
-    print "Gradients OK"
-    print ""
-    print ""
-    None
-
-def testUInt8:
-    print "UInt8"
-    a = constFromScalar UInt8Type 250
-    b = constFromScalar UInt8Type 10
-    c = add a b
-    print a.toJSON
-    print "+"
-    print b.toJSON
-    print "="
-    cVal = c.toJSON
-    print cVal
-    if (cVal.toText == "[4]").not then throw $ "UInt8 error: expected [4], got " + cVal.toText else None
-    print "UInt8 OK"
-    print ""
-    print ""
-
-def testBool:
-    print "Bool"
-    a = constFromScalar BoolType True
-    aVal = a.toJSON
-    print aVal
-    if (aVal.toText == "[true]").not then throw $ "Bool error: expected [true], got " + aVal.toText else None
-    print "Bool OK"
-    print ""
-    print ""
-
-def testMultidimensionalTensors:
-    print "Multidimensional tensors"
-    aTensor = tensorFromList Int64Type [2, 3] [1, 2, 3, 4, 5, 6]
-    aJSON = aTensor.toJSON
-    print aJSON
-    if (aJSON.toText == "[1,2,3,4,5,6]").not then throw $ "Multidimensional tensor error: expected [1,2,3,4,5,6], got " + aJSON.toText else None
-
-    aTensor12 = aTensor.at [1, 2]
-    print aTensor12
-    if (aTensor12 == 6).not then throw "Multidimensional tensor error: expected 6, got " + aTensor12.toText else None
-
-    bTensor = tensorFromList Int64Type [2, 3] [9, 8, 7, 7, 8, 9]
-    bJSON = bTensor.toJSON
-    print bJSON
-    if (bJSON.toText == "[9,8,7,7,8,9]").not then throw $ "Multidimensional tensor error: expected [9,8,7,7,8,9], got " + bJSON.toText else None
-
-    a = makeConst aTensor
-    b = makeConst bTensor
-    c = a + b
-    cVal = c.eval
-    print cVal.dims
-    if (cVal.dims == [2, 3]).not then throw $ "Multidimensional tensor error: expected [2, 3], got " + cVal.dims.toText else None
-
-    cJSON = cVal.toJSON
-    print cJSON
-    if (cJSON.toText == "[10,10,10,11,13,15]").not then throw $ "Multidimensional tensor error: expected [10,10,10,11,13,15], got " + cJSON.toText else None
-
-    print "Multidimensional tensor OK"
-    print ""
-    print ""
-
-def testString:
-    print "String"
-    a = constFromScalar StringType "test"
-    aJSON = a.toJSON
-    print aJSON
-    if (aJSON.toText == '["test"]').not then throw $ 'String error: expected "test", got "' + aJSON.toText + '"' else None
-
-    b = add a a
-    bJSON = b.toJSON
-    print bJSON
-    if (bJSON.toText == '["testtest"]').not then throw $ 'String error: expected "testtest", got "' + bJSON.toText + '"' else None
-
-    print "String OK"
-    print ""
-    print ""
+def neuralNetwork lr w b in out: 
+    networkout = forward in w b
+    backprop out networkout w b
 
 def main:
-    testRegression
-    testUInt8
-    testBool
-    testString
-    testGradients
-    testMultidimensionalTensors
+    print "Classification"
+
+    xvalues = [0.40217346868349846, 0.3277419251425864, 0.8724729303385044, 0.8897825035899187, 0.9796188749741762, 0.7071019631116182, 0.5027699712943916, 0.8410354310072834, 0.37423438516452323, 0.30315898494179416, 0.500712201294488, 0.20282920088572065, 0.12574385409881206, 0.951965555266773, 0.09966070979142583, 0.3467844401097815, 0.39655854006867064, 0.6892856855764523, 0.823644760824153, 0.12702164874400934]
+
+    yvalues = [0.5213346373852332, 0.3070805651378441, 0.9805103551686634, 0.25309586773255044, 0.23423684611482032, 0.7080247433000999, 0.36607704941260666, 0.27038798824466126, 0.39576019264559403, 0.27996211368289725, 0.27772628856375614, 0.7286980755907009, 0.19588733975413697, 0.8967179308067383, 0.7342176878095072, 0.9242946056218853, 0.8908233966156088, 0.9734959153301433, 0.31985891617892037, 0.058583433450159705]
+
+
+    inputs' = xvalues.zip yvalues
+
+
+    inputs = inputs'.each ((x, y): tensorFromList1d FloatType [x, y])
+
+
+    print inputs.toJSON
+
+
+    outs = [1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0].each (x: tensorFromList1d FloatType [x.toReal])
+
+
+    train = inputs.zip outs
+
+
+    lr = tensorFromList1d FloatType [(0.0001.negate)]
+
+
+    winitial = [
+        tensorFromList FloatType [3, 2] [0.32849324, 0.02853841, 0.70440296, 0.26983632, 0.40327336, 0.88772564], 
+        tensorFromList FloatType [3, 3] [0.65793274, 0.44521962, 0.40699923, 0.82086343, 0.83105773, 0.03566758, 0.60750798, 0.38902823, 0.80938644], 
+        tensorFromList FloatType [1, 3] [0.83362546, 0.11802483, 0.15363802]
+        ]
+
+
+    binitial = [
+        tensorFromList FloatType [3, 1] [0.03566758, 0.60750798, 0.38902823], 
+        tensorFromList FloatType [3, 1] [0.80938644, 0.83362546, 0.11802483], 
+        tensorFromList FloatType [1, 1] [0.15363802]
+        ]
+
+def main2:
+
+    lifted = lift5 neuralNetwork
+
+    [wtrained, btrained] = train.fold [winitial, binitial] (step (lifted lr))
+
+    print wtrained.toJSON
+    print btrained.toJSON
+
+    None
