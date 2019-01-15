@@ -55,3 +55,8 @@ def tensorFromList1d typetag list:
 def tensorFromList typetag dims list:
     wrapper = createTensorWrapper typetag dims list
     Tensor wrapper
+
+# randomTensor :: TypeTag a -> List Int -> a -> a -> Tensor a
+def randomTensor typetag dims minVal maxVal:
+    wrapper = createRandomTensorWrapper typetag dims minVal maxVal
+    Tensor wrapper

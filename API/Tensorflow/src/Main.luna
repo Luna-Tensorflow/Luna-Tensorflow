@@ -50,6 +50,10 @@ def step func (input, output) [weights, biases]:
     func input weights biases output
 
 def main:
+    tensor = randomTensor FloatType [3,2] (1.0 . negate) 1.0
+    (0.upto 2) . each(i: (0.upto 1).each(j: print (tensor.at [i, j])))
+
+def sianko:
     print "Classification"
 
     xValues = [0.40217346868349846, 0.3277419251425864, 0.8724729303385044, 0.8897825035899187, 0.9796188749741762, 0.7071019631116182, 0.5027699712943916, 0.8410354310072834, 0.37423438516452323, 0.30315898494179416, 0.500712201294488, 0.20282920088572065, 0.12574385409881206, 0.951965555266773, 0.09966070979142583, 0.3467844401097815, 0.39655854006867064, 0.6892856855764523, 0.823644760824153, 0.12702164874400934]
@@ -93,7 +97,7 @@ def main:
 
 
     a = lifted lr i wInitial bInitial o
-def sianko:
+
     print a.toJSON 
     [wTrained, bTrained] =  step (lifted lr) tst [wInitial, bInitial]
 

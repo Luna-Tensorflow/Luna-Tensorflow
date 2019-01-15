@@ -65,3 +65,20 @@ def createTensorWrapper typetag dims values:
 
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
     TensorWrapper managedTensor typetag
+
+def createRandomTensorWrapper typetag dims minValue maxValue:
+    minCVal = typetag.toC minValue
+    maxCVal = typetag.toC maxValue
+
+    cdims = dims.map CInt64.fromInt
+    cdimsArray = (Array CInt64) . fromList cdims
+
+    makeRandomTensor = lookupSymbol "TFL" ("make_random_tensor_" + typetag.typename)
+    releaseMethod = lookupSymbol "TFL" "release"
+
+    tensor = makeRandomTensor.call (Pointer None) [cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg, minCVal . toCArg, maxCVal . toCArg]
+
+    managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
+    TensorWrapper managedTensor typetag
+
+
