@@ -9,9 +9,6 @@ import Tensorflow.Types
 import Tensorflow.Graph
 
 def forwardStep (weight, bias) layer:
-    bias
-
-def sianko2:
     prod = weight * layer
     nextLayer = prod + bias
     nextLayerActivated = tanh nextLayer
@@ -19,7 +16,7 @@ def sianko2:
 
 def forward input weights biases:
     layers = weights . zip biases
-    netOutput = layers.reverse . foldLeft input forwardStep
+    netOutput = layers.fold input forwardStep
 
 def neuralNetwork lr in weights biases out: 
     netOutput = forward in weights biases
@@ -73,16 +70,16 @@ def main:
     lr = tensorFromList1d FloatType [(0.001.negate)]
 
     wInitial = [
-        tensorFromList FloatType [3, 2] [0.32849324, 0.02853841, 0.70440296, 0.26983632, 0.40327336, 0.88772564], 
-        tensorFromList FloatType [3, 3] [0.65793274, 0.44521962, 0.40699923, 0.82086343, 0.83105773, 0.03566758, 0.60750798, 0.38902823, 0.80938644], 
-        tensorFromList FloatType [1, 3] [0.83362546, 0.11802483, 0.15363802]
-        ]
+        ([3, 2], [0.32849324, 0.02853841, 0.70440296, 0.26983632, 0.40327336, 0.88772564]),
+        ([3, 3], [0.65793274, 0.44521962, 0.40699923, 0.82086343, 0.83105773, 0.03566758, 0.60750798, 0.38902823, 0.80938644]),
+        ([1, 3], [0.83362546, 0.11802483, 0.15363802])
+        ].each ((shape, vals): tensorFromList FloatType shape vals)
 
     bInitial = [
-        tensorFromList FloatType [3, 1] [0.03566758, 0.60750798, 0.38902823], 
-        tensorFromList FloatType [3, 1] [0.80938644, 0.83362546, 0.11802483], 
-        tensorFromList FloatType [1, 1] [0.15363802]
-        ]
+        ([3, 1], [0.03566758, 0.60750798, 0.38902823]),
+        ([3, 1], [0.80938644, 0.83362546, 0.11802483]),
+        ([1, 1], [0.15363802])
+        ].each ((shape, vals): tensorFromList FloatType shape vals)
 
     lifted = liftNet neuralNetwork 3
 
