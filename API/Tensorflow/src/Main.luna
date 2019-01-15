@@ -6,6 +6,7 @@ import Tensorflow.Operations
 import Tensorflow.Tensor
 import Tensorflow.Gradient
 import Tensorflow.Types
+import Tensorflow.Graph
 
 def forwardstep l [w, b]:
     None# TODO sigmoid
@@ -34,6 +35,22 @@ def neuralNetwork lr w b in out:
     networkout = forward in w b
     backprop out networkout w b
 
+def liftNet net layercount trueOut:
+    in = makePlaceholder FloatType "in"
+    lr = makePlaceholder FloatType "lr"
+    weights = (1.upto layercount).each (x: makePlaceholder FloatType ("w" + x.toText))
+    biases = (1.upto layercount).each (x: makePlaceholder FloatType ("b" + x.toText))
+
+    result = net lr weights biases in trueOut
+    graph = makeGraphFromOutputList result
+    def liftedNet lr w b in out:
+        weights = ((1.upto layercount).zipWith w).each((i, t): ("w" + i.toText, t))
+        None # TODO biases
+        inputs = [("in", in), ("lr", lr)]
+        inputs2 = inputs # TODO concat inputs, biases, weights
+        graph . evalSubsts inputs2
+    liftedNet
+
 def main:
     print "Classification"
 
@@ -45,7 +62,7 @@ def main:
     inputs' = xvalues.zip yvalues
 
 
-    inputs = inputs'.each ((x, y): tensorFromList1d FloatType [x, y])
+    inputs = inputs'.each ((x, y): tensorFromList FloatType [2, 1] [x, y])
 
 
     print inputs.toJSON
@@ -73,6 +90,8 @@ def main:
         tensorFromList FloatType [1, 1] [0.15363802]
         ]
 
+    lifted = liftNet neuralNetwork 3
+    None #print (lifted.each (x: x.toJSON))
 def main2:
 
     lifted = lift5 neuralNetwork
