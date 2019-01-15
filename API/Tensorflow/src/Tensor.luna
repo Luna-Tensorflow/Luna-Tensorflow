@@ -33,6 +33,10 @@ class Tensor a:
     def toJSON:
         self.toList.toJSON
 
+    # toText :: Text
+    def toText:
+        "Tensor " + (self.dims.toText)
+
 
 # tensorFromPtr :: TypeTag a -> Pointer None -> Tensor a
 def tensorFromPtr typetag tensorPtr:

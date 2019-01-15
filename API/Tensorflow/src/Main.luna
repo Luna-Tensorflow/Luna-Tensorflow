@@ -9,6 +9,9 @@ import Tensorflow.Types
 import Tensorflow.Graph
 
 def forwardStep (weight, bias) layer:
+    bias
+
+def sianko2:
     prod = weight * layer
     nextLayer = prod + bias
     nextLayerActivated = tanh nextLayer
@@ -16,7 +19,7 @@ def forwardStep (weight, bias) layer:
 
 def forward input weights biases:
     layers = weights . zip biases
-    netOutput = layers . fold input forwardStep
+    netOutput = layers.reverse . foldLeft input forwardStep
 
 def neuralNetwork lr in weights biases out: 
     netOutput = forward in weights biases
@@ -27,7 +30,6 @@ def liftNet fun layercount:
     in = makePlaceholder FloatType "in"
 
     weights = (1.upto layercount).each (x: makePlaceholder FloatType ("w" + x.toText))
-
 
     biases = (1.upto layercount).each (x: makePlaceholder FloatType ("b" + x.toText))
 
@@ -43,7 +45,8 @@ def liftNet fun layercount:
 
         params = [("lr", lr), ("in", in), ("out", out)]
         inputs = params + weights + biases
-        graph . evalSubsts inputs
+        res = graph . evalSubsts inputs
+        res
     liftedNet
 
 def step func (input, output) [weights, biases]:
@@ -88,7 +91,18 @@ def main:
     print "Biases:"
     print bInitial.toJSON
 
+
+    (i,o) = train.head.get
+
+
+    a = lifted lr i wInitial bInitial o
+def sianko:
+    print a.toJSON 
+    [wTrained, bTrained] =  step (lifted lr) tst [wInitial, bInitial]
+
+
     [wTrained, bTrained] = train . fold [wInitial, bInitial] (step (lifted lr))
+
 
     print wTrained.toJSON
     print bTrained.toJSON

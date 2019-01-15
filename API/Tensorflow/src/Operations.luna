@@ -29,6 +29,10 @@ class TFOperation:
     def - other:
         sub self other
 
+    # toText :: Text
+    def toText:
+        "Operation TODO" # TODO
+
 # makePlaceholder :: TypeTag -> Text -> TFOperation a
 def makePlaceholder typetag name:
     wrapper = makePlaceholderWrapper typetag name
