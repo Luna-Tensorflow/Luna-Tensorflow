@@ -40,7 +40,7 @@ def liftNet fun layercount:
         weights = ((1.upto layercount) . zip w).each((i, t): ("w" + i.toText, t))
         biases = ((1.upto layercount) . zip b).each((i, t): ("b" + i.toText, t))
 
-        params = [("lr", lr), ("in", in), ("out", out)]
+        params = [("in", in)]#[("lr", lr), ("in", in), ("out", out)]
         inputs = params + weights + biases
         res = graph . evalSubsts inputs
         res

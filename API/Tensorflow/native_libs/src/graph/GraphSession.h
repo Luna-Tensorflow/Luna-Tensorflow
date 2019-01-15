@@ -56,7 +56,21 @@ public:
 		if(!std::equal(placeholders.begin(), placeholders.end(), substitutions.begin(),
 			[](auto& a, auto& b) -> bool {return a.first == b.first; }))
 		{
-			throw std::invalid_argument("Not all placeholders are substituted!");
+      // TODO maybe only print what's missing
+      std::string err;
+      err += "Not all placeholders are substituted!\n";
+      err += "Placeholders: ";
+      for (const auto& kv : placeholders) {
+        err += kv.first + ", ";
+      }
+      err += "\n";
+      err += "Substitutions: ";
+      for (const auto& kv : substitutions) {
+        err += kv.first + ", ";
+      }
+      err += "\n";
+
+			throw std::invalid_argument(err);
 		}
 
 		std::vector<TF_Output> placeholders_v;
