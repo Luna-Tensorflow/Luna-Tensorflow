@@ -8,97 +8,89 @@ import Tensorflow.Gradient
 import Tensorflow.Types
 import Tensorflow.Graph
 
-def forwardstep l [w, b]:
-    None# TODO sigmoid
-    add (mul l w) b
+def forwardStep (weight, bias) layer:
+    prod = weight * layer
+    nextLayer = prod + bias
+    nextLayerActivated = tanh nextLayer
+    nextLayerActivated
 
-def forward in w b:
-    network = w.zip b
-    network.fold in forwardstep
+def forward input weights biases:
+    layers = weights . zip biases
+    netOutput = layers . fold input forwardStep
 
-def backprop lr out networkout w b:
-    diff' = out - networkout
-    diff = diff' * diff'
+def neuralNetwork lr in weights biases out: 
+    netOutput = forward in weights biases
+    [netOutput]
 
-    wgrads = gradients diff w []
-    wnew = (w.zipWith wgrads).each((w, g): sub w (mul lr g))
-
-    bgrads = gradients diff b []
-    bnew = (b.zipWith bgrads).each((b, g): sub b (mul lr g))
-
-    [wnew, bnew]
-
-def step func (w, b) [in, out]:
-    func w b in out
-
-def neuralNetwork lr w b in out: 
-    networkout = forward in w b
-    backprop out networkout w b
-
-def liftNet net layercount trueOut:
-    in = makePlaceholder FloatType "in"
+def liftNet fun layercount:
     lr = makePlaceholder FloatType "lr"
+    in = makePlaceholder FloatType "in"
+
     weights = (1.upto layercount).each (x: makePlaceholder FloatType ("w" + x.toText))
+
+
     biases = (1.upto layercount).each (x: makePlaceholder FloatType ("b" + x.toText))
 
-    result = net lr weights biases in trueOut
+    out = makePlaceholder FloatType "out"
+
+    result = fun lr in weights biases out
     graph = makeGraphFromOutputList result
-    def liftedNet lr w b in out:
-        weights = ((1.upto layercount).zipWith w).each((i, t): ("w" + i.toText, t))
-        None # TODO biases
-        inputs = [("in", in), ("lr", lr)]
-        inputs2 = inputs # TODO concat inputs, biases, weights
-        graph . evalSubsts inputs2
+
+
+    def liftedNet lr in w b out:
+        weights = ((1.upto layercount) . zip w).each((i, t): ("w" + i.toText, t))
+        biases = ((1.upto layercount) . zip b).each((i, t): ("b" + i.toText, t))
+
+        params = [("lr", lr), ("in", in), ("out", out)]
+        inputs = params + weights + biases
+        graph . evalSubsts inputs
     liftedNet
+
+def step func (input, output) [weights, biases]:
+    func input weights biases output
 
 def main:
     print "Classification"
 
-    xvalues = [0.40217346868349846, 0.3277419251425864, 0.8724729303385044, 0.8897825035899187, 0.9796188749741762, 0.7071019631116182, 0.5027699712943916, 0.8410354310072834, 0.37423438516452323, 0.30315898494179416, 0.500712201294488, 0.20282920088572065, 0.12574385409881206, 0.951965555266773, 0.09966070979142583, 0.3467844401097815, 0.39655854006867064, 0.6892856855764523, 0.823644760824153, 0.12702164874400934]
+    xValues = [0.40217346868349846, 0.3277419251425864, 0.8724729303385044, 0.8897825035899187, 0.9796188749741762, 0.7071019631116182, 0.5027699712943916, 0.8410354310072834, 0.37423438516452323, 0.30315898494179416, 0.500712201294488, 0.20282920088572065, 0.12574385409881206, 0.951965555266773, 0.09966070979142583, 0.3467844401097815, 0.39655854006867064, 0.6892856855764523, 0.823644760824153, 0.12702164874400934]
 
-    yvalues = [0.5213346373852332, 0.3070805651378441, 0.9805103551686634, 0.25309586773255044, 0.23423684611482032, 0.7080247433000999, 0.36607704941260666, 0.27038798824466126, 0.39576019264559403, 0.27996211368289725, 0.27772628856375614, 0.7286980755907009, 0.19588733975413697, 0.8967179308067383, 0.7342176878095072, 0.9242946056218853, 0.8908233966156088, 0.9734959153301433, 0.31985891617892037, 0.058583433450159705]
+    yValues = [0.5213346373852332, 0.3070805651378441, 0.9805103551686634, 0.25309586773255044, 0.23423684611482032, 0.7080247433000999, 0.36607704941260666, 0.27038798824466126, 0.39576019264559403, 0.27996211368289725, 0.27772628856375614, 0.7286980755907009, 0.19588733975413697, 0.8967179308067383, 0.7342176878095072, 0.9242946056218853, 0.8908233966156088, 0.9734959153301433, 0.31985891617892037, 0.058583433450159705]
 
+    inputsZipped = xValues.zip yValues
 
-    inputs' = xvalues.zip yvalues
+    inputs = inputsZipped.each ((x, y): tensorFromList FloatType [2, 1] [x, y])
 
-
-    inputs = inputs'.each ((x, y): tensorFromList FloatType [2, 1] [x, y])
-
-
-    print inputs.toJSON
-
-
-    outs = [1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0].each (x: tensorFromList1d FloatType [x.toReal])
-
+    outs = [1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0].each (x: tensorFromList FloatType [1, 1] [x.toReal])
 
     train = inputs.zip outs
 
+    print "Dataset:"
+    print train.toJSON
 
-    lr = tensorFromList1d FloatType [(0.0001.negate)]
+    lr = tensorFromList1d FloatType [(0.001.negate)]
 
-
-    winitial = [
+    wInitial = [
         tensorFromList FloatType [3, 2] [0.32849324, 0.02853841, 0.70440296, 0.26983632, 0.40327336, 0.88772564], 
         tensorFromList FloatType [3, 3] [0.65793274, 0.44521962, 0.40699923, 0.82086343, 0.83105773, 0.03566758, 0.60750798, 0.38902823, 0.80938644], 
         tensorFromList FloatType [1, 3] [0.83362546, 0.11802483, 0.15363802]
         ]
 
-
-    binitial = [
+    bInitial = [
         tensorFromList FloatType [3, 1] [0.03566758, 0.60750798, 0.38902823], 
         tensorFromList FloatType [3, 1] [0.80938644, 0.83362546, 0.11802483], 
         tensorFromList FloatType [1, 1] [0.15363802]
         ]
 
     lifted = liftNet neuralNetwork 3
-    None #print (lifted.each (x: x.toJSON))
-def main2:
 
-    lifted = lift5 neuralNetwork
+    print "Weights:"
+    print wInitial.toJSON
+    print "Biases:"
+    print bInitial.toJSON
 
-    [wtrained, btrained] = train.fold [winitial, binitial] (step (lifted lr))
+    [wTrained, bTrained] = train . fold [wInitial, bInitial] (step (lifted lr))
 
-    print wtrained.toJSON
-    print btrained.toJSON
+    print wTrained.toJSON
+    print bTrained.toJSON
 
     None

@@ -68,6 +68,11 @@ def partial a b:
     wrapper = makePartialDerivativeWrapper a.wrapper b.wrapper
     TFOperation wrapper
 
+# tanh :: TFOperation a -> TFOperation a
+def tanh a:
+    wrapper = makeUnaryOpWrapper "Tanh" a.wrapper
+    TFOperation wrapper
+
 # sigmoid :: TFOperation a -> TFOperation a
 def sigmoid a:
     wrapper = makeUnaryOpWrapper "Sigmoid" a.wrapper
