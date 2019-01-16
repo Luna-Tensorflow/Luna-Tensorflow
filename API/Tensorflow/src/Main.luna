@@ -20,17 +20,24 @@ def forward input weights biases:
     netOutput
 
 def backward lr weights biases diff:
-    wGrads = gradients diff weights []
-    wNew = (weights.zip wGrads).each((w, g): w - lr * g)
+    wGrads = gradients [diff] weights []
+    wNew = (weights.zip wGrads).each((w, g):
+        delta = lr * g
+        retval = w - delta
+        retval)
 
-    bGrads = gradients diff biases []
-    bNew = (biases.zip bGrads).each((b, g): b - lr * g)
+    bGrads = gradients [diff] biases []
+    bNew = (biases.zip bGrads).each((b, g):
+        delta = lr * g
+        retval = b - delta
+        retval)
+
     [wNew, bNew]
 
 def neuralNetwork lr in weights biases out: 
     netOutput = forward in weights biases
     diff' = netOutput - out
-    diff = diff * diff
+    diff = diff' * diff'
     new = backward lr weights biases diff
     new
 
