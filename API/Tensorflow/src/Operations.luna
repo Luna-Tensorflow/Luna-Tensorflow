@@ -72,6 +72,11 @@ def partial a b:
     wrapper = makePartialDerivativeWrapper a.wrapper b.wrapper
     TFOperation wrapper
 
+# matMul :: (TFOperation a -> TFOperation a) -> TFOperation a
+def matMul a b:
+    wrapper = makeBinaryOpWrapper "MatMul" a.wrapper b.wrapper
+    TFOperation wrapper
+
 # tanh :: TFOperation a -> TFOperation a
 def tanh a:
     wrapper = makeUnaryOpWrapper "Tanh" a.wrapper
