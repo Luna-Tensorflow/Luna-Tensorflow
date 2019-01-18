@@ -34,11 +34,12 @@ namespace {
 
         std::vector<std::shared_ptr<Partial<DataTypeLabel>>> partials = Gradient<DataTypeLabel>::add_gradients(ys_v, xs_v, dxs_v);
 
-        Operation<DataTypeLabel>** partial_ptrs = static_cast<Operation<DataTypeLabel>**>(std::malloc(sizeof(Operation<DataTypeLabel>*) * partials.size()));
+        auto** partial_ptrs = static_cast<Operation<DataTypeLabel>**>(std::malloc(sizeof(Operation<DataTypeLabel>*) * partials.size()));
 
         for(unsigned i = 0; i < partials.size(); ++i)
         {
-            partial_ptrs[i] = LifetimeManager::instance().addOwnership(partials[i]);
+            partial_ptrs[i] = LifetimeManager::instance().addOwnership(
+                std::dynamic_pointer_cast<Operation<DataTypeLabel>>(partials[i]));
         }
 
         return partial_ptrs;

@@ -19,26 +19,26 @@ def forward input weights biases:
     netOutput = layers.fold input forwardStep
     netOutput
 
-def backward lr weights biases diff:
-    wGrads = gradients [diff] weights []
+def backward lr weights biases sqError:
+    wGrads = gradients [sqError] weights []
     wNew = (weights.zip wGrads).each((w, g):
         delta = lr * g
-        retval = w - delta
+        retval = w + delta
         retval)
 
-    bGrads = gradients [diff] biases []
+    bGrads = gradients [sqError] biases []
     bNew = (biases.zip bGrads).each((b, g):
         delta = lr * g
-        retval = b - delta
+        retval = b + delta
         retval)
 
     [wNew, bNew]
 
-def neuralNetwork lr in weights biases out: 
+def neuralNetwork lr in weights biases out:
     netOutput = forward in weights biases
     diff' = netOutput - out
-    diff = diff' * diff'
-    new = backward lr weights biases diff
+    sqError = diff' * diff'
+    new = backward lr weights biases sqError
     new
 
 def liftNet fun layercount:
@@ -51,8 +51,8 @@ def liftNet fun layercount:
 
     out = makePlaceholder FloatType "out"
 
-    result = fun lr in weights biases out
-    graph = makeGraphFromOutputList result
+    [resultW, resultB] = fun lr in weights biases out
+    graph = makeGraphFromOutputList (resultW + resultB)
 
     def liftedNet lr in w b out:
         weights = ((1.upto layercount) . zip w).each((i, t): ("w" + i.toText, t))
@@ -67,13 +67,13 @@ def liftNet fun layercount:
 def step func (input, output) [weights, biases]:
     func input weights biases output
 
-def sianko:
-    tensor1 = randomTensor FloatType [2, 3] (1.0 . negate) 1.0
-    tensor2 = randomTensor FloatType [3, 20] (1.0 . negate) 1.0
+def main2:
+    tensor1 = randomTensor FloatType [4, 1] (1.0 . negate) 1.0
+    tensor2 = randomTensor FloatType [4, 1] (1.0 . negate) 1.0
     print tensor1.toJSON
     print tensor2.toJSON
     def matMul' a b:
-        x = matMul a b
+        x = mul a b
         [x]
     lifted = lift2 matMul'
     tensor3 = lifted tensor1 tensor2
@@ -117,6 +117,7 @@ def main:
     print bInitial.toJSON
 
     data = train.head.get
+    print data
 
     a = step (lifted lr) data [wInitial, bInitial]
     print a.toJSON 

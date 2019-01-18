@@ -53,22 +53,23 @@ public:
 		size_t count = output_nodes.size();
 		std::vector<TF_Tensor*> output_values(count);
 
-		if(!std::equal(placeholders.begin(), placeholders.end(), substitutions.begin(),
-			[](auto& a, auto& b) -> bool {return a.first == b.first; }))
+		for(auto& ph : placeholders)
 		{
-      // TODO maybe only print what's missing
-      std::string err;
-      err += "Not all placeholders are substituted!\n";
-      err += "Placeholders: ";
-      for (const auto& kv : placeholders) {
-        err += kv.first + ", ";
-      }
-      err += "\n";
-      err += "Substitutions: ";
-      for (const auto& kv : substitutions) {
-        err += kv.first + ", ";
-      }
-      err += "\n";
+			if(substitutions.count(ph.first) > 0)
+				continue;
+		      // TODO maybe only print what's missing
+		      std::string err;
+		      err += "Not all placeholders are substituted!\n";
+		      err += "Placeholders: ";
+		      for (const auto& kv : placeholders) {
+		        err += kv.first + ", ";
+		      }
+		      err += "\n";
+		      err += "Substitutions: ";
+		      for (const auto& kv : substitutions) {
+		        err += kv.first + ", ";
+		      }
+		      err += "\n";
 
 			throw std::invalid_argument(err);
 		}
@@ -78,6 +79,8 @@ public:
 
 		for(auto elem : substitutions)
 		{
+			if(placeholders.find(elem.first) == placeholders.end()) //bypass obsolete substs
+				continue;
 			placeholders_v.push_back(placeholders.at(elem.first));
 			tensor_v.push_back(elem.second->get_underlying());
 		}

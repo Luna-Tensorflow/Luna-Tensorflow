@@ -31,6 +31,7 @@ class LifetimeManager
     template<typename Function>
     auto access(const void *ptr, Function &&f) const
     {
+    	LOG(ptr);
         std::unique_lock<std::mutex> lock{ mx };
         if(auto itr = storage.find(ptr); itr != storage.end())
         {
@@ -76,6 +77,7 @@ public:
     {
         return access(ptr, [&] (auto itr)
         {
+        	std::cerr << "Accessing member of type "<< itr->second.type().name() << std::endl;
             return std::any_cast<std::shared_ptr<T>>(itr->second);
         });
     }
