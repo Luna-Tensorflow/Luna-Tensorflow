@@ -77,7 +77,7 @@ public:
     {
         return access(ptr, [&] (auto itr)
         {
-        	std::cerr << "Accessing member of type "<< itr->second.type().name() << std::endl;
+        	LOG("Accessing member of type ", itr->second.type().name());
             return std::any_cast<std::shared_ptr<T>>(itr->second);
         });
     }

@@ -82,7 +82,7 @@ def main2:
     print tensor3.toJSON
 
 def translate value:
-    result = if a > 0.0 then 1 else 1.0.negate
+    result = if a > 0.0 then 1.0 else 1.0.negate
     result
 
 def siankoStep (netRes, realRes) acc:
@@ -105,7 +105,7 @@ def main:
 
     inputs = inputsZipped.each ((x, y): tensorFromList FloatType [2, 1] [x, y])
 
-    outs = [(1), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1.negate)].each (x: tensorFromList FloatType [1, 1] [x.toReal])
+    outs = [(1.0), (1.0), (1.0.negate), (1.0.negate), (1.0.negate), (1.0.negate), (1.0.negate), (1.0.negate), (1.0.negate), (1.0.negate), (1.0.negate), (1.0.negate), (1.0.negate), (1.0.negate), (1.0), (1.0.negate), (1.0.negate), (1.0.negate), (1.0), (1.0.negate)].each (x: tensorFromList FloatType [1, 1] [x.toReal])
 
     train = inputs.zip outs
 
@@ -131,15 +131,12 @@ def main:
     print "Biases:"
     print bInitial.toJSON
 
-    [wTrained1, bTrained1] = train . fold [wInitial, bInitial] (step (lifted lr))
-    [wTrained2, bTrained2] = train . fold [wTrained1, bTrained1] (step (lifted lr))
-    [wTrained3, bTrained3] = train . fold [wTrained2, bTrained2] (step (lifted lr))
-    [wTrained4, bTrained4] = train . fold [wTrained3, bTrained3] (step (lifted lr))
-    [wTrained5, bTrained5] = train . fold [wTrained4, bTrained4] (step (lifted lr))
+    [trainedW, trainedB] = (1.upto 5) . fold [wInitial, bInitial] (n: [w, b]:
+        train . fold [w, b] (step (lifted lr)))
 
-    print "Weights Trained:"
-    print wTrained5.toJSON
-    print "Biases Trained:"
-    print bTrained5.toJSON
+    print "Weights trained"
+    print trainedW.toJSON
+    print "Biases trained"
+    print trainedB.toJSON
+    None #TODO ratio test
 
-    None
