@@ -101,20 +101,7 @@ def ratioStep w b (input, output) acc:
     
     lifted = lift2 outDiff
     d = lifted output netOut
-    result = acc + [d.toJSON]
-    result
-    
-def main2:
-    tensor1 = randomTensor FloatType [4, 1] (1.0 . negate) 1.0
-    tensor2 = randomTensor FloatType [4, 1] (1.0 . negate) 1.0
-    print tensor1.toJSON
-    print tensor2.toJSON
-    def matMul' a b:
-        x = mul a b
-        [x]
-    lifted = lift2 matMul'
-    tensor3 = lifted tensor1 tensor2
-    print tensor3.toJSON
+    Prepend d.toJSON acc
 
 def main:
     print "Classification"
@@ -177,7 +164,7 @@ def main:
     print trainedB.toJSON
 
     fun = ratioStep trainedW trainedB
-    ratio = train2 . fold [] fun
+    ratio = (train2 . fold [] fun) . reverse
     print "Outputs:"
     print ratio.toJSON
 
