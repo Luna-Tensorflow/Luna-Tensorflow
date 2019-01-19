@@ -79,7 +79,7 @@ def liftNet2 fun layercount:
     biases = (1.upto layercount).each (x: makePlaceholder FloatType ("b" + x.toText))
 
     out = fun in weights biases
-    graph = makeGraphFromOutputList out
+    graph = makeGraphFromOutputList [out]
 
     def liftedNet in w b:
         weights = ((1.upto layercount) . zip w).each((i, t): ("w" + i.toText, t))
@@ -97,7 +97,7 @@ def step func (input, output) [weights, biases]:
 def ratioStep w b (input, output) acc:
     lifted = liftNet2 forward2 3
     
-    netOut = lifted input w b
+    [netOut] = lifted input w b
 
     def outDiff a b:
         s = sign b
@@ -172,11 +172,11 @@ def main:
     print trainedB.toJSON
     None #TODO ratio test
 
-def siankodebuger:
-    None
 
     fun = ratioStep trainedW trainedB
     ratio = train . fold [] fun
     print "Outputs:"
     print ratio.toJSON
 
+def siankodebuger:
+    None
