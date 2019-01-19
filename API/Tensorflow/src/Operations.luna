@@ -1,5 +1,6 @@
 import Tensorflow.CWrappers.Operations
 import Tensorflow.Tensor
+import Tensorflow.Types
 
 # not sure if we want separate classes for each op type or one class for all?
 class TFOperation:
@@ -28,6 +29,10 @@ class TFOperation:
     # - :: TFOperation a -> TFOperation a
     def - other:
         sub self other
+
+    # toText :: Text
+    def toText:
+        "Operation TODO" # TODO
 
 # makePlaceholder :: TypeTag -> Text -> TFOperation a
 def makePlaceholder typetag name:
@@ -68,9 +73,32 @@ def partial a b:
     wrapper = makePartialDerivativeWrapper a.wrapper b.wrapper
     TFOperation wrapper
 
+# matMul :: (TFOperation a -> TFOperation a) -> TFOperation a
+def matMul a b:
+    wrapper = makeBinaryOpWrapper "MatMul" a.wrapper b.wrapper
+    TFOperation wrapper
+
+# sqnorm :: TFOperation a -> TFOperation a
+def sqnorm a:
+    mult = mul a a
+    dim = constFromScalar Int32Type 1
+
+    wrapper = makeBinaryOpWrapper "Sum" mult.wrapper dim.wrapper
+    TFOperation wrapper
+
+# tanh :: TFOperation a -> TFOperation a
+def tanh a:
+    wrapper = makeUnaryOpWrapper "Tanh" a.wrapper
+    TFOperation wrapper
+
 # sigmoid :: TFOperation a -> TFOperation a
 def sigmoid a:
     wrapper = makeUnaryOpWrapper "Sigmoid" a.wrapper
+    TFOperation wrapper
+
+# sign :: TFOperation a -> TFOperation a
+def sign a:
+    wrapper = makeUnaryOpWrapper "Sign" a.wrapper
     TFOperation wrapper
 
 def operationFromPtr ptr typetag:

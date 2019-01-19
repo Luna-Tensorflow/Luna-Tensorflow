@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <memory>
+#include <random>
 
 Tensor<TF_FLOAT> *make_float_tensor(float const* array, int64_t len)
 {
@@ -87,23 +88,49 @@ TFL_API int64_t get_tensor_dim_##typelabel(Tensor<typelabel> *tensor, int32_t di
     LOGANDRETURN(r, tensor, dim_index); \
 }
 
+#define MAKE_RANDOM_TENSOR(typelabel, type) \
+TFL_API Tensor<typelabel> *make_random_tensor_##typelabel(const int64_t *dims, size_t num_dims, \
+	Type<typelabel>::lunatype const min, Type<typelabel>::lunatype const max){ \
+	int64_t elems = std::accumulate(dims, dims+num_dims, 1, std::multiplies<int64_t>()); \
+	auto* data = (Type<typelabel>::tftype*) malloc(elems * TF_DataTypeSize(typelabel)); \
+	\
+	std::mt19937 engine(std::random_device{}()); \
+	std::uniform_##type##_distribution distribution(min, max); \
+	\
+	std::generate(data, data+elems, [&]() { \
+			return distribution(engine); \
+	}); \
+	\
+	auto tensor = std::make_shared<Tensor<typelabel>>(data, dims, num_dims); \
+	free(data); \
+	\
+	return LifetimeManager::instance().addOwnership(std::move(tensor));\
+}\
+
+
+
 #define DECLARE_TENSOR(typelabel) \
 MAKE_TENSOR(typelabel); \
 GET_TENSOR_VALUE_AT(typelabel); \
 GET_TENSOR_VALUE_AT_INDEX(typelabel); \
 GET_TENSOR_NUM_DIMS(typelabel); \
-GET_TENSOR_DIM(typelabel);
+GET_TENSOR_DIM(typelabel);\
 
-DECLARE_TENSOR(TF_FLOAT);
-DECLARE_TENSOR(TF_DOUBLE);
-DECLARE_TENSOR(TF_INT8);
-DECLARE_TENSOR(TF_INT16);
-DECLARE_TENSOR(TF_INT32);
-DECLARE_TENSOR(TF_INT64);
-DECLARE_TENSOR(TF_UINT8);
-DECLARE_TENSOR(TF_UINT16);
-DECLARE_TENSOR(TF_UINT32);
-DECLARE_TENSOR(TF_UINT64);
+#define DECLARE_TENSOR_NUMERIC(typelabel, type) \
+DECLARE_TENSOR(typelabel); \
+MAKE_RANDOM_TENSOR(typelabel, type);\
+
+
+DECLARE_TENSOR_NUMERIC(TF_FLOAT, real);
+DECLARE_TENSOR_NUMERIC(TF_DOUBLE, real);
+DECLARE_TENSOR_NUMERIC(TF_INT8, int);
+DECLARE_TENSOR_NUMERIC(TF_INT16, int);
+DECLARE_TENSOR_NUMERIC(TF_INT32, int);
+DECLARE_TENSOR_NUMERIC(TF_INT64, int);
+DECLARE_TENSOR_NUMERIC(TF_UINT8, int);
+DECLARE_TENSOR_NUMERIC(TF_UINT16, int);
+DECLARE_TENSOR_NUMERIC(TF_UINT32, int);
+DECLARE_TENSOR_NUMERIC(TF_UINT64, int);
 DECLARE_TENSOR(TF_BOOL);
 DECLARE_TENSOR(TF_STRING);
 //DECLARE_TENSOR(TF_HALF);

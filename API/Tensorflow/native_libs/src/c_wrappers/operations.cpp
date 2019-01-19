@@ -193,6 +193,7 @@ namespace {
 	template<TF_DataType DataTypeLabel>
 	GraphSession* make_graph_from_output(Operation<DataTypeLabel>* op)
 	{
+		LOG(op);
 		auto graphPtr = std::make_shared<GraphSession>();
 		graphPtr->add_output(graphPtr->add_operation(op));
 
@@ -202,6 +203,7 @@ namespace {
 	template<TF_DataType DataTypeLabel>
 	GraphSession* make_graph_from_outputs(Operation<DataTypeLabel>** op, size_t output_count)
 	{
+		LOG(op, output_count);
 		auto graphPtr = std::make_shared<GraphSession>();
 		for(size_t i=0; i<output_count; ++i)
 			graphPtr->add_output(graphPtr->add_operation(op[i]));
@@ -212,6 +214,7 @@ namespace {
 	template<TF_DataType DataTypeLabel>
 	Tensor<DataTypeLabel>** eval_graph(GraphSession *graph)
 	{
+		LOG(graph);
 		return graph->eval<DataTypeLabel>();
 	}
 
@@ -219,6 +222,7 @@ namespace {
 	Tensor<DataTypeLabel>** eval_graph_with_placeholders(GraphSession *graph,
 		const char **ph_names, Tensor<DataTypeLabel> **ph_values, size_t ph_count)
 	{
+		LOG(graph, ph_names, ph_values, ph_count);
 		std::map<std::string, std::shared_ptr<Tensor<DataTypeLabel>>> substitutions;
 		for(size_t i=0; i<ph_count; ++i)
 		{

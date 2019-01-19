@@ -6,147 +6,165 @@ import Tensorflow.Operations
 import Tensorflow.Tensor
 import Tensorflow.Gradient
 import Tensorflow.Types
+import Tensorflow.Graph
 
-def step func (x, y) [a, b]:
-    func x y a b
+def forwardStep (weight, bias) layer:
+    prod = matMul weight layer
+    nextLayer = add prod bias
+    nextLayerActivated = tanh nextLayer
+    nextLayerActivated
 
-def gradientDescent lr x y a b:
-    diff'' = a*x
-    diff'  = diff'' + b
-    diff   = diff' - y
+def forward input weights biases:
+    layers = weights . zip biases
+    netOutput = layers . foldLeft input forwardStep
+    netOutput
 
-    meanSqErr = diff * diff
-    pa'' = partial meanSqErr a
-    pb'' = partial meanSqErr b
+def backward lr weights biases sqError:
+    wGrads = gradients [sqError] weights []
+    wNew = (weights.zip wGrads).each((w, g):
+        delta = lr * g
+        retval = w + delta
+        retval)
 
-    pa'  = pa'' * lr
-    pb'  = pb'' * lr
+    bGrads = gradients [sqError] biases []
+    bNew = (biases.zip bGrads).each((b, g):
+        delta = lr * g
+        retval = b + delta
+        retval)
 
-    pa = a + pa'
-    pb = b + pb'
+    [wNew, bNew]
 
-    [pa, pb]
+def neuralNetwork lr in weights biases out:
+    netOutput = forward in weights biases
+    diff' = netOutput - out
+    sqError = diff' * diff'
+    new = backward lr weights biases sqError
+    new
 
-def testRegression:
-    print "Regression"
-    xtensors = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].each (x: tensorFromList1d FloatType [x.toReal])
-    ytensors = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].each (x: tensorFromList1d FloatType [x.toReal])
+def liftNet fun layercount:
+    lr = makePlaceholder FloatType "lr"
+    in = makePlaceholder FloatType "in"
 
-    train = xtensors . zip ytensors
+    weights = (1.upto layercount).each (x: makePlaceholder FloatType ("w" + x.toText))
 
-    lifted = lift5 gradientDescent
+    biases = (1.upto layercount).each (x: makePlaceholder FloatType ("b" + x.toText))
 
-    zero = tensorFromList1d FloatType [0.0]
-    lr = tensorFromList1d FloatType [(0.0001 . negate)]
+    out = makePlaceholder FloatType "out"
 
-    t0 = Time.now
-    [a, b] = train . fold [zero, zero] (step (lifted lr))
-    t1 = Time.now
+    [resultW, resultB] = fun lr in weights biases out
+    graph = makeGraphFromOutputList (resultW + resultB)
 
-    print a.toJSON
-    print b.toJSON
-    print ("Took " + (t1.diff t0).toText + " ms")
-    if ((a.toJSON.toText == "[12.209929466247559]").and $ b.toJSON.toText == "[-0.22048871219158173]").not then throw $ "Regression fail: expected a = [12.209929466247559], b = [-0.22048871219158173], got a = " + a.toJSON.toText + ", b = " + b.toJSON.toText else None
-    print "Regression OK"
-    print ""
-    print ""
-    None
+    def liftedNet lr in w b out:
+        weights = ((1.upto layercount) . zip w).each((i, t): ("w" + i.toText, t))
+        biases = ((1.upto layercount) . zip b).each((i, t): ("b" + i.toText, t))
 
-def testGradients:
-    print "Gradients"
-    a = constFromScalar FloatType 3.0
-    b = constFromScalar FloatType 3.0
-    q = constFromScalar FloatType 2.0
-    p = constFromScalar FloatType 2.0.negate
-    c = a * b
-    d = c * a
-    e = a + b
-    gs = gradients [d, e] [a, b] [p, q]
-    result = gs.toJSON
-    print result
-    if (result == [[34.0.negate], [16.0.negate]].toJSON).not then throw $ "Gradients error: expected [[-34],[-16]], got " + result.toText else None
-    print "Gradients OK"
-    print ""
-    print ""
-    None
+        params = [("lr", lr), ("in", in), ("out", out)]
+        inputs = params + weights + biases
+        res = graph . evalSubsts inputs
+        res1 = res . take layercount
+        res2 = res . drop layercount
+        [res1, res2]
+    liftedNet
 
-def testUInt8:
-    print "UInt8"
-    a = constFromScalar UInt8Type 250
-    b = constFromScalar UInt8Type 10
-    c = add a b
-    print a.toJSON
-    print "+"
-    print b.toJSON
-    print "="
-    cVal = c.toJSON
-    print cVal
-    if (cVal.toText == "[4]").not then throw $ "UInt8 error: expected [4], got " + cVal.toText else None
-    print "UInt8 OK"
-    print ""
-    print ""
+def liftNet2 fun layercount:
+    in = makePlaceholder FloatType "in"
 
-def testBool:
-    print "Bool"
-    a = constFromScalar BoolType True
-    aVal = a.toJSON
-    print aVal
-    if (aVal.toText == "[true]").not then throw $ "Bool error: expected [true], got " + aVal.toText else None
-    print "Bool OK"
-    print ""
-    print ""
+    weights = (1.upto layercount).each (x: makePlaceholder FloatType ("w" + x.toText))
 
-def testMultidimensionalTensors:
-    print "Multidimensional tensors"
-    aTensor = tensorFromList Int64Type [2, 3] [1, 2, 3, 4, 5, 6]
-    aJSON = aTensor.toJSON
-    print aJSON
-    if (aJSON.toText == "[1,2,3,4,5,6]").not then throw $ "Multidimensional tensor error: expected [1,2,3,4,5,6], got " + aJSON.toText else None
+    biases = (1.upto layercount).each (x: makePlaceholder FloatType ("b" + x.toText))
 
-    aTensor12 = aTensor.at [1, 2]
-    print aTensor12
-    if (aTensor12 == 6).not then throw "Multidimensional tensor error: expected 6, got " + aTensor12.toText else None
+    out = fun in weights biases
+    graph = makeGraphFromOutputList [out]
 
-    bTensor = tensorFromList Int64Type [2, 3] [9, 8, 7, 7, 8, 9]
-    bJSON = bTensor.toJSON
-    print bJSON
-    if (bJSON.toText == "[9,8,7,7,8,9]").not then throw $ "Multidimensional tensor error: expected [9,8,7,7,8,9], got " + bJSON.toText else None
+    def liftedNet in w b:
+        weights = ((1.upto layercount) . zip w).each((i, t): ("w" + i.toText, t))
+        biases = ((1.upto layercount) . zip b).each((i, t): ("b" + i.toText, t))
 
-    a = makeConst aTensor
-    b = makeConst bTensor
-    c = a + b
-    cVal = c.eval
-    print cVal.dims
-    if (cVal.dims == [2, 3]).not then throw $ "Multidimensional tensor error: expected [2, 3], got " + cVal.dims.toText else None
+        params = [("in", in)]
+        inputs = params + weights + biases
+        res = graph . evalSubsts inputs
+        res
+    liftedNet
 
-    cJSON = cVal.toJSON
-    print cJSON
-    if (cJSON.toText == "[10,10,10,11,13,15]").not then throw $ "Multidimensional tensor error: expected [10,10,10,11,13,15], got " + cJSON.toText else None
+def step func (input, output) [weights, biases]:
+    func input weights biases output
 
-    print "Multidimensional tensor OK"
-    print ""
-    print ""
+def ratioStep w b (input, output) acc:
+    lifted = liftNet2 forward 3
+    
+    [netOut] = lifted input w b
 
-def testString:
-    print "String"
-    a = constFromScalar StringType "test"
-    aJSON = a.toJSON
-    print aJSON
-    if (aJSON.toText == '["test"]').not then throw $ 'String error: expected "test", got "' + aJSON.toText + '"' else None
-
-    b = add a a
-    bJSON = b.toJSON
-    print bJSON
-    if (bJSON.toText == '["testtest"]').not then throw $ 'String error: expected "testtest", got "' + bJSON.toText + '"' else None
-
-    print "String OK"
-    print ""
-    print ""
+    def outDiff a b:
+        s = sign b
+        r = sub a s
+        [r]
+    
+    lifted = lift2 outDiff
+    d = lifted output netOut
+    Prepend d.toJSON acc
 
 def main:
-    testRegression
-    testUInt8
-    testBool
-    testString
-    testGradients
-    testMultidimensionalTensors
+    print "Classification"
+
+    xValues = [(0.5561061285288065), (0.6520670199518523), (0.9848409901454254), (0.693533772821763), (0.5149449331882843), (0.6215006144799886.negate), (0.9186331566948731), (0.5993964810785977), (0.2719074528992915.negate), (0.17808631033416344), (0.09453938759087377.negate), (0.6529640835207666), (0.24628208665848494), (0.8829517392701163.negate), (0.596427750678298), (0.044684415477671546), (0.008646693697740071), (0.9348638625889185.negate), (0.13064228442373294.negate), (0.22497707455873406), (0.61383073376269.negate), (0.06662229462484226), (0.8457170027335754.negate), (0.5762580370173775.negate), (0.2826194563524389), (0.4174608533725481.negate), (0.20383331554057382.negate), (0.8283284400016921), (0.938486501678578), (0.06400227745856246), (0.16266659172818243), (0.809503962129434), (0.929581115263689.negate), (0.693985838934448), (0.5926530740632947), (0.42535187730414536), (0.8252798602639926.negate), (0.91289255676233), (0.1525493473386903.negate), (0.7404253658251134), (0.1180072883447485), (0.2895269257172661), (0.45818790008906074.negate), (0.6537681321899698), (0.4878162940724753), (0.686271449082611), (0.7737701498822516), (0.004997879473343625.negate), (0.03667592019347499), (0.03358313007999292), (0.9784107316358956), (0.909341112577879), (0.21660756723584385.negate), (0.21493179600613677.negate), (0.8745988961435742.negate), (0.8025846163891486), (0.8764229572687396), (0.26817006628246), (0.56368948146582), (0.8128748782770205.negate), (0.5320580515880702.negate), (0.01151603555785874), (0.38297507536743947), (0.4779497025492552.negate), (0.8426736008091169), (0.7051775446323907.negate), (0.4256554668072716), (0.10850597904526871), (0.48219107919188176), (0.8762084210800636), (0.43697241248602015), (0.7005282249689815.negate), (0.5597034769757436), (0.8696300036174478), (0.4293312453409146), (0.9954517945701149), (0.4767896009214676.negate), (0.7922631672088454.negate), (0.9804548404275744.negate), (0.7980845757099515), (0.06836568554987354.negate), (0.1414273456366617.negate), (0.44313127492947846), (0.08895744768284142), (0.7115488541047967), (0.6716583883681018.negate), (0.2523406270070594), (0.3847631340733788), (0.7032753248883199.negate), (0.4725930381169885.negate), (0.8481328347682953), (0.47525986722936575.negate), (0.5168967238966662), (0.14355004175019115), (0.755519734872244), (0.007043321328824792.negate), (0.13649321958784633), (0.0349899577475945.negate), (0.67434664387768), (0.7881903570332922)]
+
+    xValues2 = [(0.8612462767064917), (0.16037103866947833.negate), (0.8424698440079859), (0.37765754667112095.negate), (0.02830459959512588.negate), (0.709824989350528.negate), (0.5787762314833118.negate), (0.6560883630761489), (0.49079346558233716), (0.49426244632681215), (0.3617957624226533.negate), (0.11892351920778599), (0.35368228177044947.negate), (0.5815394121237545.negate), (0.15678350628759552), (0.0739771723806506.negate), (0.9779213186484816.negate), (0.7588251417495919), (0.14532749017566804), (0.18923657785599635.negate), (0.7804001621743473), (0.0901309383540212.negate), (0.16827440260645576), (0.14229037199077932), (0.01651292769438073), (0.8936900884354659), (0.7367694266371168.negate), (0.9474486633816077), (0.06697622385014501.negate), (0.16312628755368963.negate), (0.4930425515615715), (0.8764450097049485.negate), (0.8825877322376159.negate), (0.7668958005375639), (0.722773139434969), (0.8987788206512581), (0.10913109877905924.negate), (0.7510308942914279.negate), (0.8484009919274764), (0.11529962990692888.negate), (0.34223034498079463), (0.3044255472588473.negate), (0.6732351831217951.negate), (0.16959483095856798), (0.8317798090871349.negate), (0.5994572804234246), (0.9361377910430035), (0.1778784739084014.negate), (0.46249674564204635.negate), (0.6986736732548442.negate), (0.545863291661074), (0.5578917560076342), (0.1477958640864967), (0.48753414809197504.negate), (0.8435695038906563.negate), (0.3502175951069184.negate), (0.10436133136983039.negate), (0.8261615263994697.negate), (0.5837577839120796), (0.8482127982362246), (0.10273534890376035.negate), (0.6898450142671255.negate), (0.3225777300234609), (0.25400305962605474), (0.5489766157689606), (0.9781303655504516), (0.09660489777469672), (0.7135865224697584.negate), (0.5872097895851018.negate), (0.8060931513203007), (0.760726108050449), (0.7930607058881447.negate), (0.5429028002177196.negate), (0.4742978153377855.negate), (0.332098201263167), (0.38454621490712126.negate), (0.51266117465419), (0.002206165513480629), (0.5916885553452991), (0.6678674055857952.negate), (0.9792108828605675.negate), (0.17504183367997217.negate), (0.29446541334975596), (0.9928418754411252), (0.46505690366781116.negate), (0.2664974529807287.negate), (0.8677536618861748), (0.6394373699786435), (0.4346753516537658.negate), (0.9502487514348994), (0.41013332825865323), (0.3649951206977675), (0.45211624913569226.negate), (0.40118086523181384.negate), (0.7772879729324575.negate), (0.9445945972765972.negate), (0.3696430725135429.negate), (0.09366844940465757.negate), (0.16147525912424454.negate), (0.3137865148638197.negate)]
+
+    yValues = [(0.15087499693144646), (0.06305337208716466.negate), (0.15457193934657276), (0.5853996732779356), (0.9347985502679725.negate), (0.8513675756676251), (0.615319858889374), (0.13759627272636155), (0.32684096475472657.negate), (0.4242600653989286), (0.19453489868580487.negate), (0.13898397604258816.negate), (0.7238086339308603), (0.7743095955638473.negate), (0.88632909796309.negate), (0.32514144212640095.negate), (0.8009818522253347), (0.8744049679345016), (0.9764026867706934), (0.5887647921683616), (0.9253014700279019.negate), (0.3093445470337808), (0.007120716507423408), (0.1634048089634259), (0.37546003196361055), (0.08719621260955068.negate), (0.2170867459852932.negate), (0.6127134212514493), (0.17220579564752136), (0.4294057520414065.negate), (0.6172446828996587.negate), (0.9359131658756445), (0.058524238530254014.negate), (0.1768274417520792), (0.9608559887270816), (0.24988453173260683.negate), (0.4642772394716741), (0.4255314707531821.negate), (0.3972319306223624), (0.786219244662475.negate), (0.7876842721848623.negate), (0.1662215658126236.negate), (0.6967846265684958), (0.6423951476786487), (0.060612230581525095), (0.06492737063619858.negate), (0.3534381896705805.negate), (0.5312108685269439.negate), (0.4797224282567176), (0.0343681201307835), (0.3562072881555227.negate), (0.039746101652368804), (0.10009351254475285.negate), (0.2822530808152237), (0.5260615624041909.negate), (0.012641725805900839), (0.7390491648037274), (0.07942792309938307.negate), (0.6332974335918076.negate), (0.20549884633657967.negate), (0.7391793660301256.negate), (0.5635991482705165), (0.615757237188826), (0.3667280274944362), (0.15917740257187885), (0.2849878774492123), (0.38851861167599044), (0.9020908451792775), (0.4296429654379379.negate), (0.3009319032758637.negate), (0.7752832755188352.negate), (0.7396129169111325.negate), (0.7238817122202197.negate), (0.08836392241081525.negate), (0.4271166108410287.negate), (0.4345465507631996), (0.6305137278813508.negate), (0.2534454737988394.negate), (0.6236274198272518), (0.3160987025698949), (0.14555625125387772.negate), (0.06575687315825252), (0.07611039470340053.negate), (0.5044246437317836), (0.6262720733716041), (0.8898754851943658.negate), (0.7765339797526201), (0.1992744599629892.negate), (0.764170997931596), (0.12179184522807618.negate), (0.8757115724212603.negate), (0.5983005107335557.negate), (0.4707834447515027), (0.6588641658172432.negate), (0.6281218706849758.negate), (0.5728932048269286.negate), (0.7524396180373942), (0.7693104770731052), (0.13533424362555846), (0.8549933927531754)]
+
+    yValues2 = [(0.24445431783774074), (0.6250645725309576), (0.6328197612911444), (0.07080048188287513), (0.12690304645363115), (0.9495970980134341), (0.3284803786698982.negate), (0.22720688008471646), (0.5444339302696222.negate), (0.6003808229585295.negate), (0.9740388805701901.negate), (0.5825865667127046), (0.3802518681561504.negate), (0.2741068918047609), (0.11271054820375026), (0.07007706105225364), (0.3268508483373922), (0.7449285891314004), (0.43641398760323113.negate), (0.9337405724608916), (0.07653982268093462), (0.2820638758734073), (0.868914453613796), (0.58674658306951), (0.6918721414497999), (0.4835792265097367), (0.1360703328011823), (0.4338363531910625), (0.5564992526253996.negate), (0.20636049534681344), (0.18496117429519487.negate), (0.7401327507584254), (0.9320920829539419), (0.33994236213329), (0.14298871116792555.negate), (0.8693198004215499), (0.4041928234894374.negate), (0.9486573640901759.negate), (0.26735027825303237.negate), (0.14712333250208753.negate), (0.6151050253048786), (0.861995726900926.negate), (0.9436515247580672.negate), (0.6764474056663106), (0.743634180804291), (0.4170551015849855), (0.882543311773097.negate), (0.12035144145652898), (0.5821035931197738.negate), (0.5386932628261529), (0.06476075876476428), (0.23205978680703132.negate), (0.3283322838560896.negate), (0.418060108633834), (0.08312319048696337.negate), (0.14510471105687395), (0.9279614681740975.negate), (0.34011702329623583), (0.9196067837590667.negate), (0.012740668667573063), (0.7093825867778965.negate), (0.42724488046724973), (0.9730347849604688.negate), (0.46769776909661287.negate), (0.16293932053405658.negate), (0.2127491246693176), (0.8193310519657555), (0.6219968074331641.negate), (0.8953235021546677), (0.4227448101515183.negate), (0.08220135863629752), (0.867724352113088.negate), (0.3801904824982465), (0.7548757425557475), (0.04296741388219494), (0.8271974077439843.negate), (0.05728406328168334.negate), (0.5288994134340186.negate), (0.1930116927100587.negate), (0.5787150234885776.negate), (0.11555243584568453.negate), (0.36815873638773944.negate), (0.15621103715608653.negate), (0.8266940936807197), (0.7310412362179108.negate), (0.04303562234914593), (0.987547667273498), (0.6492391658858672.negate), (0.17313689600371052.negate), (0.6346761058959243.negate), (0.211163716563038), (0.7400055761039375), (0.11014805321606058), (0.44612924447345614), (0.3001249784201716), (0.7060970452100246), (0.3874480949182102), (0.027834125801754706), (0.6046666178337308.negate), (0.8339749731478201)]
+
+
+
+    inputsZipped = xValues.zip yValues
+    inputsZipped2 = xValues2.zip yValues2
+
+    inputs = inputsZipped.each ((x, y): tensorFromList FloatType [2, 1] [x, y])
+    inputs2 = inputsZipped2.each ((x, y): tensorFromList FloatType [2, 1] [x, y])
+
+    outs = [(1.negate), (1.negate), (1.negate), (1.negate), (1), (1), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1)].each (x: tensorFromList FloatType [1, 1] [x.toReal])
+
+    outs2 = [(1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate)].each (x: tensorFromList FloatType [1, 1] [x.toReal])
+
+
+    train = inputs.zip outs
+    train2 = inputs2.zip outs2
+
+    print "Dataset:"
+    print train.toJSON
+
+    lr = tensorFromList1d FloatType [(0.001.negate)]
+
+    w1 = randomTensor FloatType [3, 2] (1.0 . negate) 1.0
+    w2 = randomTensor FloatType [3, 3] (1.0 . negate) 1.0
+    w3 = randomTensor FloatType [1, 3] (1.0 . negate) 1.0
+
+    wInitial = [w1, w2, w3]
+
+    b1 = randomTensor FloatType [3, 1] (1.0 . negate) 1.0
+    b2 = randomTensor FloatType [3, 1] (1.0 . negate) 1.0
+    b3 = randomTensor FloatType [1, 1] (1.0 . negate) 1.0
+
+    bInitial = [b1, b2, b3]
+
+    lifted = liftNet neuralNetwork 3
+
+    print "Weights:"
+    print wInitial.toJSON
+    print "Biases:"
+    print bInitial.toJSON
+
+    [trainedW, trainedB] = (1.upto 20) . fold [wInitial, bInitial] (n: [w, b]:
+        x = train . fold [w, b] (step (lifted lr))
+        x)
+
+    print "Weights trained"
+    print trainedW.toJSON
+    print "Biases trained"
+    print trainedB.toJSON
+
+    fun = ratioStep trainedW trainedB
+    ratio = (train2 . fold [] fun) . reverse
+    print "Outputs:"
+    print ratio.toJSON
+
