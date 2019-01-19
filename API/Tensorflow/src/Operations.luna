@@ -96,6 +96,11 @@ def sigmoid a:
     wrapper = makeUnaryOpWrapper "Sigmoid" a.wrapper
     TFOperation wrapper
 
+# sign :: TFOperation a -> TFOperation a
+def sign a:
+    wrapper = makeUnaryOpWrapper "Sign" a.wrapper
+    TFOperation wrapper
+
 def operationFromPtr ptr typetag:
     wrapper = operationWrapperFromPtr ptr typetag
     TFOperation wrapper

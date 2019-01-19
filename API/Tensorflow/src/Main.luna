@@ -19,6 +19,11 @@ def forward input weights biases:
     netOutput = layers . foldLeft input forwardStep
     netOutput
 
+def forward2 input weights biases:
+    layers = weights . zip biases
+    netOutput = layers . foldLeft input forwardStep
+    netOutput
+
 def backward lr weights biases sqError:
     wGrads = gradients [sqError] weights []
     wNew = (weights.zip wGrads).each((w, g):
@@ -66,9 +71,44 @@ def liftNet fun layercount:
         [res1, res2]
     liftedNet
 
+def liftNet2 fun layercount:
+    in = makePlaceholder FloatType "in"
+
+    weights = (1.upto layercount).each (x: makePlaceholder FloatType ("w" + x.toText))
+
+    biases = (1.upto layercount).each (x: makePlaceholder FloatType ("b" + x.toText))
+
+    out = fun in weights biases
+    graph = makeGraphFromOutputList out
+
+    def liftedNet in w b:
+        weights = ((1.upto layercount) . zip w).each((i, t): ("w" + i.toText, t))
+        biases = ((1.upto layercount) . zip b).each((i, t): ("b" + i.toText, t))
+
+        params = [("in", in)]
+        inputs = params + weights + biases
+        res = graph . evalSubsts inputs
+        res
+    liftedNet
+
 def step func (input, output) [weights, biases]:
     func input weights biases output
 
+def ratioStep w b (input, output) acc:
+    lifted = liftNet2 forward2 3
+    
+    netOut = lifted input w b
+
+    def outDiff a b:
+        s = sign b
+        r = sub a s
+        [r]
+    
+    lifted = lift2 outDiff
+    d = lifted output netOut
+    result = acc + [d.toJSON]
+    result
+    
 def main2:
     tensor1 = randomTensor FloatType [4, 1] (1.0 . negate) 1.0
     tensor2 = randomTensor FloatType [4, 1] (1.0 . negate) 1.0
@@ -81,17 +121,6 @@ def main2:
     tensor3 = lifted tensor1 tensor2
     print tensor3.toJSON
 
-def translate value:
-    result = if a > 0.0 then 1.0 else 1.0.negate
-    result
-
-def siankoStep (netRes, realRes) acc:
-    result = if translate(netRes) == realRes then acc + 1 else acc
-    result
-
-def siankoStep (input, output) weights biases:
-    func input weights biases output
-    
 def main:
     print "Classification"
 
@@ -133,7 +162,7 @@ def main:
     print "Biases:"
     print bInitial.toJSON
 
-    [trainedW, trainedB] = (1.upto 5) . fold [wInitial, bInitial] (n: [w, b]:
+    [trainedW, trainedB] = (1.upto 100) . fold [wInitial, bInitial] (n: [w, b]:
         x = train . fold [w, b] (step (lifted lr))
         x)
 
@@ -142,4 +171,12 @@ def main:
     print "Biases trained"
     print trainedB.toJSON
     None #TODO ratio test
+
+def siankodebuger:
+    None
+
+    fun = ratioStep trainedW trainedB
+    ratio = train . fold [] fun
+    print "Outputs:"
+    print ratio.toJSON
 
