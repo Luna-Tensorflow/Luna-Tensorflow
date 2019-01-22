@@ -89,18 +89,9 @@ def liftNet2 fun layercount:
 def step func (input, output) [weights, biases]:
     func input weights biases output
 
-def ratioStep w b (input, output) acc:
-    lifted = liftNet2 forward 3
-    
+def ratioStep lifted diffun w b (input, output) acc:    
     [netOut] = lifted input w b
-
-    def outDiff a b:
-        s = sign b
-        r = sub a s
-        [r]
-    
-    lifted = lift2 outDiff
-    d = lifted output netOut
+    d = diffun output netOut
     Prepend d.toJSON acc
 
 def main:
@@ -163,7 +154,16 @@ def main:
     print "Biases trained"
     print trainedB.toJSON
 
-    fun = ratioStep trainedW trainedB
+    lifted = liftNet2 forward 3
+    def outDiff a b:
+        jeden = constFromList FloatType [1.0]
+        s = sign b
+        r = equal a s
+        [r]
+    
+    diffun = lift2 outDiff
+
+    fun = ratioStep lifted diffun trainedW trainedB
     ratio = (train2 . fold [] fun) . reverse
     print "Outputs:"
     print ratio.toJSON

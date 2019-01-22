@@ -78,6 +78,11 @@ def matMul a b:
     wrapper = makeBinaryOpWrapper "MatMul" a.wrapper b.wrapper
     TFOperation wrapper
 
+# matMul :: (TFOperation a -> TFOperation a) -> TFOperation a
+def equal a b:
+    wrapper = makeBinaryOpWrapper "Equal" a.wrapper b.wrapper
+    TFOperation wrapper
+
 # sqnorm :: TFOperation a -> TFOperation a
 def sqnorm a:
     mult = mul a a
