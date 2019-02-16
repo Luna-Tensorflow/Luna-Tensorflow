@@ -22,6 +22,8 @@ opList = op_def_pb2.OpList()
 opList.ParseFromString(ffi.buffer(ops.data, ops.length)[:])
 
 for op in opList.op:
-    print(op.name)
+    #print(op.HasField("deprecation"))
+    if len(op.output_arg) > 1:
+        print(op.name)
 
 TF.TF_DeleteBuffer(ops)

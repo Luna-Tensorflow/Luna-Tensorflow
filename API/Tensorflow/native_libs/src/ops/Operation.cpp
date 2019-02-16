@@ -1,5 +1,70 @@
 //
-// Created by radeusgd on 01.12.18.
+// Created by wojtek on 13.02.19.
 //
 
 #include "Operation.h"
+
+Operation::Operation(std::string name, std::vector<std::shared_ptr<Output>> inputs, int num_outputs,
+        std::vector<std::shared_ptr<Attr>> attrs, std::string chosen_name)
+        : name(name), inputs(inputs), attrs(attrs), chosen_name(chosen_name) {
+    static size_t hash_ctr = 0;
+    hash = ++hash_ctr;
+
+    if (chosen_name.empty()) {
+        chosen_name = name + std::to_string(hash);
+    }
+
+    std::shared_ptr<Operation> ptr = std::shared_ptr<Operation>(this);
+    for (int i = 0; i < num_outputs; ++i) {
+        outputs.push_back(new Output(ptr));
+    }
+}
+
+std::vector<std::shared_ptr<Output>> Operation::add_operation(std::string name, std::vector<std::shared_ptr<Output>> inputs,
+                                                          int num_outputs, std::vector<std::shared_ptr<Attr>> attrs,
+                                                          std::string chosen_name) {
+    Operation *operation = new Operation(name, inputs, num_outputs, attrs, chosen_name);
+
+    std::vector<std::shared_ptr<Output>> ret;
+    for (auto output: operation->outputs) {
+        ret.push_back(std::shared_ptr<Output>(output));
+    }
+
+    return ret;
+}
+
+void Operation::add_to_graph(GraphSession &graph) {
+    std::vector<TF_Output> tf_inputs;
+    for (auto &input : inputs) {
+        tf_inputs.push_back(graph.add_output(input.get()));
+    }
+
+    TF_OperationDescription *desc = TF_NewOperation(graph.get_underlying(),
+                                                    name.c_str(), (name + std::to_string(hash)).c_str());
+
+    for (auto &tf_input : tf_inputs) {
+        TF_AddInput(desc, tf_input);
+    }
+
+    for (auto &attr : attrs) {
+        attr->set(desc);
+    }
+
+    TF_Operation *operation = run_with_status<TF_Operation*>(std::bind(TF_FinishOperation, desc, std::placeholders::_1));
+
+    for (int i = 0; i < static_cast<int>(outputs.size()); ++i) {
+        TF_Output tf_output = {
+                .oper = operation,
+                .index = i
+        };
+        graph.register_output_hash(outputs[i]->hashcode(), tf_output);
+    }
+
+    if (name == "Placeholder") {
+        TF_Output tf_output = {
+                .oper = operation,
+                .index = 0
+        };
+        graph.register_placeholder(chosen_name, tf_output);
+    }
+}

@@ -11,12 +11,14 @@ template<typename type>
 class SimpleType {
 public:
     using tftype = type;
+    using tfattype = type&;
     using lunatype = type;
 };
 
 #define SIMPLETYPE(label, type) template<> class Type<label> { \
 public: \
     using tftype = type; \
+    using tfattype = type&; \
     using lunatype = type; \
 }
 
@@ -35,6 +37,7 @@ template<>
 class Type<TF_BOOL> {
 public:
     using tftype = bool;
+    using tfattype = bool&;
     using lunatype = uint8_t;
 };
 
@@ -42,6 +45,7 @@ template<>
 class Type<TF_STRING> {
 public:
     using tftype = const char*;
+    using tfattype = char*;
     using lunatype = char*;
 };
 

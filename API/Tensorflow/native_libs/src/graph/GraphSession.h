@@ -13,11 +13,11 @@
 #include "../helpers/utils.h"
 #include "../tensor/Tensor.h"
 #include "../helpers/LifeTimeManager.h"
+#include "../ops/Output.h"
 
 #include <any>
 
-template<TF_DataType DataTypeLabel> class Operation;
-template<TF_DataType DataTypeLabel> class Placeholder;
+class Output;
 
 class GraphSession
 {
@@ -35,102 +35,23 @@ public:
 	GraphSession();
 	~GraphSession();
 
-	template<TF_DataType DataTypeLabel> bool exists(const Operation<DataTypeLabel>* op) {
-		return (hashes.find(op->hashcode()) != hashes.end());
-	}
+	bool exists(const Output* out);
 
-	template<TF_DataType DataTypeLabel> TF_Output add_operation(const Operation<DataTypeLabel>* op)
-	{
-		if(exists(op))
-			return hashes[op->hashcode()];
+	TF_Output add_output(const Output* out);
 
-		return (hashes[op->hashcode()] = op->add_to_graph(*this));
-	}
+	Tensor** eval(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions) const;
 
-	template<TF_DataType DataTypeLabel>
-	Tensor<DataTypeLabel>** eval(const std::map<std::string, std::shared_ptr<Tensor<DataTypeLabel>>>& substitutions) const
-	{
-		size_t count = output_nodes.size();
-		std::vector<TF_Tensor*> output_values(count);
+    Tensor** eval() const;
 
-		for(auto& ph : placeholders)
-		{
-			if(substitutions.count(ph.first) > 0)
-				continue;
-		      // TODO maybe only print what's missing
-		      std::string err;
-		      err += "Not all placeholders are substituted!\n";
-		      err += "Placeholders: ";
-		      for (const auto& kv : placeholders) {
-		        err += kv.first + ", ";
-		      }
-		      err += "\n";
-		      err += "Substitutions: ";
-		      for (const auto& kv : substitutions) {
-		        err += kv.first + ", ";
-		      }
-		      err += "\n";
+	void register_output_hash(size_t hash, TF_Output &out);
 
-			throw std::invalid_argument(err);
-		}
+	void register_placeholder(const std::string& name, TF_Output &out);
 
-		std::vector<TF_Output> placeholders_v;
-		std::vector<TF_Tensor*> tensor_v;
+	void add_fetched_output(TF_Output out);
 
-		for(auto elem : substitutions)
-		{
-			if(placeholders.find(elem.first) == placeholders.end()) //bypass obsolete substs
-				continue;
-			placeholders_v.push_back(placeholders.at(elem.first));
-			tensor_v.push_back(elem.second->get_underlying());
-		}
+	TF_Graph* get_underlying();
 
-		run_with_status<void>(std::bind(TF_SessionRun,
-		                                session,
-		                                nullptr,
-		                                placeholders_v.data(), tensor_v.data(), tensor_v.size(),
-		                                output_nodes.data(), output_values.data(), count,
-		                                nullptr, 0,
-		                                nullptr,
-		                                std::placeholders::_1));
-
-		auto return_values = (Tensor<DataTypeLabel>**) std::malloc(sizeof(Tensor<DataTypeLabel>*) * count);
-
-		for(unsigned i=0; i<count; ++i)
-		{
-			return_values[i] = LifetimeManager::instance().addOwnership(std::make_shared<Tensor<DataTypeLabel>>(output_values[i]));
-		}
-
-		return return_values;
-	}
-
-	template<TF_DataType DataTypeLabel>
-	Tensor<DataTypeLabel>** eval() const
-	{
-		return eval<DataTypeLabel>(std::map<std::string, std::shared_ptr<Tensor<DataTypeLabel>>>());
-	}
-
-	void register_output_hash(size_t hash, TF_Output &out) {
-		hashes[hash] = out;
-	}
-
-	void register_placeholder(const std::string& name, TF_Output &out)
-	{
-		placeholders.emplace(name, out);
-	}
-
-	void add_output(TF_Output out)
-	{
-		output_nodes.push_back(out);
-	}
-
-	TF_Graph* get_underlying() {
-		return graph;
-	}
-
-	TF_Session* get_underlying_session() {
-		return session;
-	}
+	TF_Session* get_underlying_session();
 };
 
 
