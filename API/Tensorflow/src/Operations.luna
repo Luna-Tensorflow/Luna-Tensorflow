@@ -106,6 +106,10 @@ def sign a:
     wrapper = makeUnaryOpWrapper "Sign" a.wrapper
     TFOutput wrapper
 
-def outputFromPtr ptr typetag:
-    wrapper = outputWrapperFromPtr ptr typetag
+def outputFromPtr typetag ptr:
+    wrapper = outputWrapperFromPtr typetag ptr
     TFOutput wrapper
+
+def qr a:
+    wrappers = makeOutputWrappers "Qr" [a] 2 ""
+    wrappers.each (wrapper: TFOutput wrapper)

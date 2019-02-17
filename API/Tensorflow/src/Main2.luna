@@ -143,6 +143,27 @@ def testString:
     print ""
     print ""
 
+def testMultiOutputOp:
+    print "MultiOutputOp"
+    aTensor = tensorFromList FloatType [4, 3] (1.upto 12 . map (x: x.toReal))
+
+    a = makeConst aTensor
+
+    [q, r] = qr a
+    b = matMul q r
+
+    bJSON = b.toJSON
+
+    print $ "a = " + a.toJSON.toText
+    print $ "q * r = " + bJSON.toText
+
+    expectedbText = '[0.9999996423721313,1.9999982118606567,2.9999983310699463,3.999999761581421,4.999999523162842,5.999999523162842,6.999999523162842,7.999999523162842,9,10,10.999999046325684,11.999998092651367]'
+    if (bJSON.toText == expectedbText).not then throw $ 'MultiOutputOp error: expected ' + expectedbText + ', got ' + bJSON.toText else None
+
+    print "MultiOutputOp OK"
+    print ""
+    print ""
+
 def main:
     testRegression
     testUInt8
@@ -150,3 +171,4 @@ def main:
     testString
     testGradients
     testMultidimensionalTensors
+    testMultiOutputOp

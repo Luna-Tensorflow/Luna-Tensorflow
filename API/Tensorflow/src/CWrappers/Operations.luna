@@ -118,7 +118,34 @@ def makePartialDerivativeWrapper a b:
     managedOut = ManagedPointer None . fromPointer releaseMethod out
     OutputWrapper managedOut a.typetag
 
-def outputWrapperFromPtr ptr typetag:
+def outputWrapperFromPtr typetag ptr:
     releaseMethod = lookupSymbol "TFL" "release"
     managedOutputPtr = ManagedPointer None . fromPointer releaseMethod ptr
     OutputWrapper managedOutputPtr typetag
+
+
+def makeOutputWrappers name inputs noutputs chosenName:
+    makeOp = lookupSymbol "TFL" "make_op"
+    releaseMethod = lookupSymbol "TFL" "release"
+
+    count = inputs.length
+    inputsCArr = ManagedPointer (Pointer None) . mallocElems count
+    indexed = 0 . upto count . zip inputs
+    indexed . each (idx, input):
+        inputsCArr . moveElems idx . write input.ptr.ptr
+
+    nameCStr = CString.fromText name
+    chosenNameCStr = CString.fromText chosenName
+
+    outsPtr = makeOp.call (Pointer (Pointer None)) [nameCStr.toCArg, inputsCArr.toCArg, CInt32.fromInt inputs.length . toCArg, CInt32.fromInt noutputs . toCArg, chosenNameCStr.toCArg]
+
+    outsArr = Array (Pointer None) . make noutputs outsPtr
+    outs = outsArr.toList.each (outputWrapperFromPtr FloatType) # TODO: different types support
+
+    nameCStr.free
+    chosenNameCStr.free
+
+    freePointer = lookupSymbol "TFL" "free_pointer"
+    freePointer.call None [outsPtr.toCArg]
+
+    outs

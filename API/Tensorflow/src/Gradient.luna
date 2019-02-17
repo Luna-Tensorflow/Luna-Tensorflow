@@ -18,7 +18,7 @@ def gradients ys xs dxs:
 
     dysArr = Array (Pointer None) . make xs.length dysPtr
 
-    dysRet = dysArr . toList . each (ptr: outputFromPtr ptr typetag)
+    dysRet = dysArr . toList . each (outputFromPtr typetag)
 
     dysArr.free
     ysArr.free
