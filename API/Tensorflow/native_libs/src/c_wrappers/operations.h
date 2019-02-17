@@ -31,6 +31,7 @@ TFL_API Tensor** eval_graph(GraphSession* graph);
 TFL_API Tensor** eval_graph_with_placeholders(GraphSession* graph, const char** ph_names, Tensor** ph_values,
 		size_t ph_count);
 
+TFL_API Output** make_op(const char *name, Output **inputs, int ninputs, int noutputs, const char *chosen_name);
 TFL_API Output* make_op_const(Tensor* tensor);
 TFL_API Output* make_op_placeholder(const char* name, TF_DataType type);
 TFL_API Output* make_op_binary(const char* name, Output* a, Output* b);

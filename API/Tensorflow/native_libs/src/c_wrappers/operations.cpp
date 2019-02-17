@@ -14,7 +14,8 @@
 #include "../ops/Attr.h"
 
 namespace {
-	Output **make_op(const char *name, std::vector<Output*> inputs, std::vector<std::shared_ptr<Attr>> attrs, int noutputs, const char *chosen_name) {
+	Output **make_op_helper(const char *name, std::vector<Output *> inputs, std::vector<std::shared_ptr<Attr>> attrs,
+                            int noutputs, const char *chosen_name) {
 		std::vector<std::shared_ptr<Output>> inputs_v(inputs.size());
 
 		std::transform(inputs.begin(), inputs.end(), inputs_v.begin(), [](Output* input){ return LifetimeManager::instance().accessOwned(input); });
@@ -31,16 +32,27 @@ namespace {
 
 		return output_ptrs;
 	}
+
+	template<typename T>
+	T get_first_and_free(T* arr) {
+		T ret = arr[0];
+		free(arr);
+		return ret;
+	}
+}
+
+Output **make_op(const char *name, Output **inputs, int ninputs, int noutputs, const char *chosen_name) { // TODO: attributes
+    return make_op_helper(name, std::vector<Output*>(inputs, inputs + ninputs), {}, noutputs, chosen_name);
 }
 
 Output *make_op_binary(const char *name, Output *a, Output *b) {
 	LOG(name, a, b);
-	return make_op(name, {a, b}, {}, 1, "")[0];
+	return get_first_and_free(make_op_helper(name, {a, b}, {}, 1, ""));
 }
 
 Output *make_op_unary(const char *name, Output *a) {
 	LOG(name, a);
-	return make_op(name, {a}, {}, 1, "")[0];
+	return get_first_and_free(make_op_helper(name, {a}, {}, 1, ""));
 }
 
 Output *make_op_partial_derivative(Output *a, Output *b) {
@@ -54,14 +66,14 @@ Output *make_op_partial_derivative(Output *a, Output *b) {
 
 Output *make_op_placeholder(const char* name, TF_DataType type) {
 	LOG(name);
-    return make_op("Placeholder", {}, {std::make_shared<AttrType>("dtype", type)}, 1, name)[0];
+    return get_first_and_free(make_op_helper("Placeholder", {}, {std::make_shared<AttrType>("dtype", type)}, 1, name));
 }
 
 Output *make_op_const(Tensor *tensor) {
 	LOG(tensor);
 	auto tensor_owned = LifetimeManager::instance().accessOwned(tensor);
-    return make_op("Const", {}, {std::make_shared<AttrTensor>("value", *tensor_owned),
-            std::make_shared<AttrType>("dtype", tensor_owned->getType())}, 1, "")[0];
+    return get_first_and_free(make_op_helper("Const", {}, {std::make_shared<AttrTensor>("value", *tensor_owned),
+                                        std::make_shared<AttrType>("dtype", tensor_owned->getType())}, 1, ""));
 }
 
 size_t operation_hashcode(Output *op) {

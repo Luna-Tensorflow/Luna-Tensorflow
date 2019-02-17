@@ -45,7 +45,10 @@ class GraphWrapper:
         returnedArr = Array (Pointer None) . make count returnedPtr
 
         retval = returnedArr . toList . each (tensorFromPtr FloatType)
-        returnedArr . free
+
+        freePointer = lookupSymbol "TFL" "free_pointer"
+        freePointer.call None [returnedPtr.toCArg]
+
         retval
 
 def makeGraphWrapperFromOutputList outputList:
@@ -61,4 +64,5 @@ def makeGraphWrapperFromOutputList outputList:
 
     returnedPtr = makeGraphFnc.call (Pointer None) [carr.toCArg, (CInt64.fromInt count).toCArg]
     managedGraph = ManagedPointer None . fromPointer releaseMethod returnedPtr
+
     GraphWrapper managedGraph

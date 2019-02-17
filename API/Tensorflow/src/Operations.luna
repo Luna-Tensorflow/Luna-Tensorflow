@@ -3,8 +3,8 @@ import Tensorflow.Tensor
 import Tensorflow.Types
 
 # not sure if we want separate classes for each op type or one class for all?
-class TFOperation:
-    wrapper :: OperationWrapper
+class TFOutput:
+    wrapper :: OutputWrapper
 
     # ptr :: ManagedPointer None
     def ptr:
@@ -18,15 +18,15 @@ class TFOperation:
     def toJSON:
         self.eval.toJSON
 
-    # + :: TFOperation a -> TFOperation a
+    # + :: TFOutput a -> TFOutput a
     def + other:
         add self other
 
-    # * :: TFOperation a -> TFOperation a
+    # * :: TFOutput a -> TFOutput a
     def * other:
         mul self other
 
-    # - :: TFOperation a -> TFOperation a
+    # - :: TFOutput a -> TFOutput a
     def - other:
         sub self other
 
@@ -34,15 +34,15 @@ class TFOperation:
     def toText:
         "Operation TODO" # TODO
 
-# makePlaceholder :: TypeTag -> Text -> TFOperation a
+# makePlaceholder :: TypeTag -> Text -> TFOutput a
 def makePlaceholder typetag name:
     wrapper = makePlaceholderWrapper typetag name
-    TFOperation wrapper
+    TFOutput wrapper
 
-# makeConst :: Tensor a -> TFOperation a
+# makeConst :: Tensor a -> TFOutput a
 def makeConst tensor:
     wrapper = makeConstWrapper tensor
-    TFOperation wrapper
+    TFOutput wrapper
 
 # constFromList :: TypeTag a -> List a -> Tensor a
 def constFromList typetag list:
@@ -53,59 +53,59 @@ def constFromList typetag list:
 def constFromScalar typetag x:
     constFromList typetag [x]
 
-# add :: (TFOperation a -> TFOperation a) -> TFOperation a
+# add :: (TFOutput a -> TFOutput a) -> TFOutput a
 def add a b:
     wrapper = makeBinaryOpWrapper "Add" a.wrapper b.wrapper
-    TFOperation wrapper
+    TFOutput wrapper
 
-# mul :: (TFOperation a -> TFOperation a) -> TFOperation a
+# mul :: (TFOutput a -> TFOutput a) -> TFOutput a
 def mul a b:
     wrapper = makeBinaryOpWrapper "Mul" a.wrapper b.wrapper
-    TFOperation wrapper
+    TFOutput wrapper
 
-# sub :: (TFOperation a -> TFOperation a) -> TFOperation a
+# sub :: (TFOutput a -> TFOutput a) -> TFOutput a
 def sub a b:
     wrapper = makeBinaryOpWrapper "Sub" a.wrapper b.wrapper
-    TFOperation wrapper
+    TFOutput wrapper
 
-# partial :: (TFOperation a -> TFOperation a) -> TFOperation a
+# partial :: (TFOutput a -> TFOutput a) -> TFOutput a
 def partial a b:
     wrapper = makePartialDerivativeWrapper a.wrapper b.wrapper
-    TFOperation wrapper
+    TFOutput wrapper
 
-# matMul :: (TFOperation a -> TFOperation a) -> TFOperation a
+# matMul :: (TFOutput a -> TFOutput a) -> TFOutput a
 def matMul a b:
     wrapper = makeBinaryOpWrapper "MatMul" a.wrapper b.wrapper
-    TFOperation wrapper
+    TFOutput wrapper
 
-# matMul :: (TFOperation a -> TFOperation a) -> TFOperation a
+# matMul :: (TFOutput a -> TFOutput a) -> TFOutput a
 def equal a b:
     wrapper = makeBinaryOpWrapper "Equal" a.wrapper b.wrapper
-    TFOperation wrapper
+    TFOutput wrapper
 
-# sqnorm :: TFOperation a -> TFOperation a
+# sqnorm :: TFOutput a -> TFOutput a
 def sqnorm a:
     mult = mul a a
     dim = constFromScalar Int32Type 1
 
     wrapper = makeBinaryOpWrapper "Sum" mult.wrapper dim.wrapper
-    TFOperation wrapper
+    TFOutput wrapper
 
-# tanh :: TFOperation a -> TFOperation a
+# tanh :: TFOutput a -> TFOutput a
 def tanh a:
     wrapper = makeUnaryOpWrapper "Tanh" a.wrapper
-    TFOperation wrapper
+    TFOutput wrapper
 
-# sigmoid :: TFOperation a -> TFOperation a
+# sigmoid :: TFOutput a -> TFOutput a
 def sigmoid a:
     wrapper = makeUnaryOpWrapper "Sigmoid" a.wrapper
-    TFOperation wrapper
+    TFOutput wrapper
 
-# sign :: TFOperation a -> TFOperation a
+# sign :: TFOutput a -> TFOutput a
 def sign a:
     wrapper = makeUnaryOpWrapper "Sign" a.wrapper
-    TFOperation wrapper
+    TFOutput wrapper
 
-def operationFromPtr ptr typetag:
-    wrapper = operationWrapperFromPtr ptr typetag
-    TFOperation wrapper
+def outputFromPtr ptr typetag:
+    wrapper = outputWrapperFromPtr ptr typetag
+    TFOutput wrapper

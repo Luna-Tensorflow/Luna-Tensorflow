@@ -21,11 +21,11 @@ class TFGraph:
     def toJSON:
         self.eval.toJSON
 
-# makeGraphFromOutputList :: List TFOperation -> TFGraph
+# makeGraphFromOutputList :: List TFOutput -> TFGraph
 def makeGraphFromOutputList outputList:
     wrapper = makeGraphWrapperFromOutputList outputList
     TFGraph wrapper outputList
 
-# makeGraphFromOutput :: TFOperation-> TFGraph
+# makeGraphFromOutput :: TFOutput-> TFGraph
 def makeGraphFromOutput output:
     makeGraphFromOutputList [output]

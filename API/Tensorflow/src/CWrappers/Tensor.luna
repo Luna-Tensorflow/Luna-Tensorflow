@@ -34,9 +34,15 @@ class TensorWrapper a:
     def at indexes:
         atFun = lookupSymbol "TFL" ("get_tensor_value_at_" + self.typetag.typename)
         cindexes = indexes.map CInt64.fromInt
-        res = atFun.call (self.typetag.ctype) [self.toCArg, Array CInt64 . fromList cindexes . toCArg, CInt64.fromInt cindexes.length . toCArg]
+
+        cindexesArr = Array CInt64 . fromList cindexes
+
+        res = atFun.call (self.typetag.ctype) [self.toCArg, cindexesArr . toCArg, CInt64.fromInt cindexes.length . toCArg]
         ret = self.typetag.fromC res
         self.typetag.cleanupC res
+
+        cindexesArr.free
+
         ret
 
     def atIndex index:
@@ -62,6 +68,8 @@ def createTensorWrapper typetag dims values:
     tensor = makeTensor.call (Pointer None) [cvaluesArray.toCArg, CInt32.fromInt typetag.num . toCArg, cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg]
 
     cvalues.each typetag.cleanupLuna
+    cvaluesArray.free
+    cdimsArray.free
 
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
     TensorWrapper managedTensor typetag
@@ -77,6 +85,10 @@ def createRandomTensorWrapper typetag dims minValue maxValue:
     releaseMethod = lookupSymbol "TFL" "release"
 
     tensor = makeRandomTensor.call (Pointer None) [cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg, minCVal . toCArg, maxCVal . toCArg]
+
+    typetag.cleanupLuna minValue
+    typetag.cleanupC maxValue
+    cdimsArray.free
 
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
     TensorWrapper managedTensor typetag
