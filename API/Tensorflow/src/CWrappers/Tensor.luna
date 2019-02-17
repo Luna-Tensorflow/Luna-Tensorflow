@@ -10,14 +10,14 @@ class TensorWrapper a:
         self.ptr.toCArg
 
     def numDims:
-        numDimsFun = lookupSymbol "TFL" ("get_tensor_num_dims_" + self.typetag.typename)
+        numDimsFun = lookupSymbol "TFL" "get_tensor_num_dims"
 
         res = numDimsFun.call CInt64 [self.toCArg]
 
         res.toInt
 
     def dim i:
-        dimFun = lookupSymbol "TFL" ("get_tensor_dim_" + self.typetag.typename)
+        dimFun = lookupSymbol "TFL" "get_tensor_dim"
 
         res = dimFun.call CInt64 [self.toCArg, CInt32.fromInt i . toCArg]
 
@@ -56,10 +56,10 @@ def createTensorWrapper typetag dims values:
     cdims = dims.map CInt64.fromInt
     cdimsArray = (Array CInt64) . fromList cdims
 
-    makeTensor = lookupSymbol "TFL" ("make_tensor_" + typetag.typename)
+    makeTensor = lookupSymbol "TFL" "make_tensor"
     releaseMethod = lookupSymbol "TFL" "release"
 
-    tensor = makeTensor.call (Pointer None) [cvaluesArray.toCArg, cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg]
+    tensor = makeTensor.call (Pointer None) [cvaluesArray.toCArg, CInt32.fromInt typetag.num . toCArg, cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg]
 
     cvalues.each typetag.cleanupLuna
 

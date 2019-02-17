@@ -5,7 +5,7 @@ import Tensorflow.Operations
 def gradients ys xs dxs:
     None # TODO check if argument types match
     typetag = ys.head.get.wrapper.typetag
-    addGradients = lookupSymbol "TFL" ("add_gradients_" + typetag.typename)
+    addGradients = lookupSymbol "TFL" "add_gradients"
     releaseMethod = lookupSymbol "TFL" "release"
 
     ysArr = Array (Pointer None) . fromList (ys.map y: y.ptr.ptr)

@@ -43,7 +43,7 @@ Output *make_op_unary(const char *name, Output *a) {
 	return make_op(name, {a}, {}, 1, "")[0];
 }
 
-Output *make_op_derivative(Output *a, Output *b) {
+Output *make_op_partial_derivative(Output *a, Output *b) {
 	LOG(a, b);
 	std::shared_ptr<Output> a_cpp = LifetimeManager::instance().accessOwned(a);
 	std::shared_ptr<Output> b_cpp = LifetimeManager::instance().accessOwned(b);
@@ -52,14 +52,16 @@ Output *make_op_derivative(Output *a, Output *b) {
 	return LifetimeManager::instance().addOwnership(std::move(outBase));
 }
 
-Output *make_op_placeholder(const char* name) {
+Output *make_op_placeholder(const char* name, TF_DataType type) {
 	LOG(name);
-    return make_op("Placeholder", {}, {}, 1, name)[0];
+    return make_op("Placeholder", {}, {std::make_shared<AttrType>("dtype", type)}, 1, name)[0];
 }
 
 Output *make_op_const(Tensor *tensor) {
 	LOG(tensor);
-    return make_op("Const", {}, {std::make_shared<AttrTensor>("value", *tensor)}, 1, "")[0];
+	auto tensor_owned = LifetimeManager::instance().accessOwned(tensor);
+    return make_op("Const", {}, {std::make_shared<AttrTensor>("value", *tensor_owned),
+            std::make_shared<AttrType>("dtype", tensor_owned->getType())}, 1, "")[0];
 }
 
 size_t operation_hashcode(Output *op) {
@@ -74,6 +76,7 @@ Tensor *eval_op(Output *op) {
 
 Tensor** batch_eval_op(Output** outs, size_t count)
 {
+    LOG(outs, count);
 	char suppress_tf_log[] = "TF_CPP_MIN_LOG_LEVEL=3";
 	putenv(suppress_tf_log);
 
@@ -88,6 +91,7 @@ Tensor** batch_eval_op(Output** outs, size_t count)
 Tensor** batch_eval_op_placeholders(Output** outs, size_t op_count,
 		const char* ph_names[], Tensor** ph_values, size_t ph_count)
 {
+    LOG(outs, op_count, ph_names, ph_values, ph_count);
 	char suppress_tf_log[] = "TF_CPP_MIN_LOG_LEVEL=3";
 	putenv(suppress_tf_log);
 
@@ -108,7 +112,7 @@ Tensor** batch_eval_op_placeholders(Output** outs, size_t op_count,
 
 GraphSession* make_graph_from_output(Output* out)
 {
-	LOG(op);
+	LOG(out);
 	auto graphPtr = std::make_shared<GraphSession>();
 	graphPtr->add_fetched_output(graphPtr->add_output(out));
 
@@ -117,7 +121,7 @@ GraphSession* make_graph_from_output(Output* out)
 
 GraphSession* make_graph_from_outputs(Output** out, size_t output_count)
 {
-	LOG(op, output_count);
+	LOG(out, output_count);
 	auto graphPtr = std::make_shared<GraphSession>();
 	for(size_t i=0; i<output_count; ++i)
 		graphPtr->add_fetched_output(graphPtr->add_output(out[i]));

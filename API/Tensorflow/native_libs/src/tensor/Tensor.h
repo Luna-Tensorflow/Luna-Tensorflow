@@ -49,6 +49,8 @@ public:
 
     size_t hash() const;
 
+    TF_DataType getType() const;
+
     size_t getOffset(size_t idx) const;
     size_t getLength(size_t idx) const;
 };

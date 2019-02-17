@@ -39,7 +39,7 @@ Tensor::Tensor(const Tensor& other) { // Not delegating the constructor here bec
     type = other.type;
     TF_Tensor *other_underlying = other.get_underlying();
     auto data_size = TF_TensorByteSize(other_underlying);
-    auto dims = shape();
+    auto dims = other.shape();
     underlying = TF_AllocateTensor(TF_TensorType(other_underlying), dims.data(), dims.size(), data_size);
     memcpy(TF_TensorData(underlying), TF_TensorData(other_underlying), data_size);
     flattenedLen = flatSize();
@@ -104,6 +104,10 @@ Type<TF_STRING>::tfattype Tensor::at<TF_STRING>(int64_t index) {
     memcpy(cpy, str, decoded_len);
     cpy[decoded_len] = 0;
     return cpy;
+}
+
+TF_DataType Tensor::getType() const {
+    return type;
 }
 
 size_t Tensor::getOffset(size_t idx) const {

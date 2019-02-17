@@ -32,7 +32,7 @@ TFL_API Tensor** eval_graph_with_placeholders(GraphSession* graph, const char** 
 		size_t ph_count);
 
 TFL_API Output* make_op_const(Tensor* tensor);
-TFL_API Output* make_op_placeholder(const char* name);
+TFL_API Output* make_op_placeholder(const char* name, TF_DataType type);
 TFL_API Output* make_op_binary(const char* name, Output* a, Output* b);
 TFL_API Output* make_op_unary(const char* name, Output* a);
 TFL_API Output* make_op_partial_derivative(Output* a, Output* b);

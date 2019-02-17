@@ -23,7 +23,7 @@ class GraphWrapper:
         count = outputCount
         phCount = substitutions . length
 
-        evalGraphOp = lookupSymbol "TFL" "eval_graph_with_placeholders_float"
+        evalGraphOp = lookupSymbol "TFL" "eval_graph_with_placeholders"
         releaseMethod = lookupSymbol "TFL" "release"
 
         (names, substs) = unzip substitutions
@@ -51,7 +51,7 @@ class GraphWrapper:
 def makeGraphWrapperFromOutputList outputList:
     count = outputList . length
 
-    makeGraphFnc = lookupSymbol "TFL" "make_graph_from_outputs_float"
+    makeGraphFnc = lookupSymbol "TFL" "make_graph_from_outputs"
     releaseMethod = lookupSymbol "TFL" "release"
 
     carr = ManagedPointer (Pointer None) . mallocElems count
