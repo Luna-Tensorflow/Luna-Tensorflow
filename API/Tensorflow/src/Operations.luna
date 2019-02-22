@@ -1,6 +1,7 @@
 import Tensorflow.CWrappers.Operations
 import Tensorflow.Tensor
 import Tensorflow.Types
+import Std.Foreign.C.Value
 
 # not sure if we want separate classes for each op type or one class for all?
 class TFOutput:
@@ -111,5 +112,5 @@ def outputFromPtr typetag ptr:
     TFOutput wrapper
 
 def qr a:
-    wrappers = makeOutputWrappers "Qr" [a] 2 ""
+    wrappers = makeOutputWrappers "Qr" [a] 2 nullPtr ""
     wrappers.each (wrapper: TFOutput wrapper)

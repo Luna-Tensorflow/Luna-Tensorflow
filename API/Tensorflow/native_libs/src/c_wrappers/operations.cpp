@@ -41,8 +41,11 @@ namespace {
 	}
 }
 
-Output **make_op(const char *name, Output **inputs, int ninputs, int noutputs, const char *chosen_name) { // TODO: attributes
-    return make_op_helper(name, std::vector<Output*>(inputs, inputs + ninputs), {}, noutputs, chosen_name);
+Output **make_op(const char *name, Output **inputs, int ninputs, int noutputs, std::vector<std::shared_ptr<Attr>>* attr_list, const char *chosen_name) {
+	if (attr_list == nullptr) {
+		return make_op_helper(name, std::vector<Output*>(inputs, inputs + ninputs), {}, noutputs, chosen_name);
+	}
+	return make_op_helper(name, std::vector<Output*>(inputs, inputs + ninputs), *LifetimeManager::instance().accessOwned(attr_list), noutputs, chosen_name);
 }
 
 Output *make_op_binary(const char *name, Output *a, Output *b) {

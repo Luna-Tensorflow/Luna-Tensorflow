@@ -6,6 +6,7 @@ import Tensorflow.Operations
 import Tensorflow.Tensor
 import Tensorflow.Gradient
 import Tensorflow.Types
+import Tensorflow.GeneratedOps
 
 def step func (x, y) [a, b]:
     func x y a b
@@ -164,6 +165,19 @@ def testMultiOutputOp:
     print ""
     print ""
 
+def testAttrs:
+    print "Attrs"
+    aTensor = tensorFromList1d FloatType [1.0, 2.0, 3.0]
+
+    a = constGen aTensor FloatType.num
+    aJSON = a.toJSON
+
+    if (aJSON.toText == '[1,2,3]').not then throw $ 'Attrs error: expected [1,2,3], got ' + aJSON.toText else None
+
+    print "Attrs OK"
+    print ""
+    print ""
+
 def main:
     testRegression
     testUInt8
@@ -172,3 +186,4 @@ def main:
     testGradients
     testMultidimensionalTensors
     testMultiOutputOp
+    testAttrs

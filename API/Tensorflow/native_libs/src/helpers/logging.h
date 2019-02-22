@@ -46,6 +46,12 @@ void log_function_call_with_return(const char* name, R ret, Args... args) {
 #endif
 
 #ifdef VERBOSE
+    #define LOG_PARAMLESS do { log_function_call(__FUNCTION__); } while(0)
+#else
+    #define LOG_PARAMLESS do {} while(0)
+#endif
+
+#ifdef VERBOSE
     #define LOGANDRETURN(ret, ...) do { log_function_call_with_return(__FUNCTION__, ret, __VA_ARGS__); return ret; } while(0)
 #else
     #define LOGANDRETURN(ret, ...) do { return ret; } while(0)

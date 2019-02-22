@@ -124,7 +124,7 @@ def outputWrapperFromPtr typetag ptr:
     OutputWrapper managedOutputPtr typetag
 
 
-def makeOutputWrappers name inputs noutputs chosenName:
+def makeOutputWrappers name inputs noutputs attrList chosenName:
     makeOp = lookupSymbol "TFL" "make_op"
     releaseMethod = lookupSymbol "TFL" "release"
 
@@ -137,7 +137,7 @@ def makeOutputWrappers name inputs noutputs chosenName:
     nameCStr = CString.fromText name
     chosenNameCStr = CString.fromText chosenName
 
-    outsPtr = makeOp.call (Pointer (Pointer None)) [nameCStr.toCArg, inputsCArr.toCArg, CInt32.fromInt inputs.length . toCArg, CInt32.fromInt noutputs . toCArg, chosenNameCStr.toCArg]
+    outsPtr = makeOp.call (Pointer (Pointer None)) [nameCStr.toCArg, inputsCArr.toCArg, CInt32.fromInt inputs.length . toCArg, CInt32.fromInt noutputs . toCArg, attrList.toCArg, chosenNameCStr.toCArg]
 
     outsArr = Array (Pointer None) . make noutputs outsPtr
     outs = outsArr.toList.each (outputWrapperFromPtr FloatType) # TODO: different types support

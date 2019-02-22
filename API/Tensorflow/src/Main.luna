@@ -167,4 +167,3 @@ def main:
     ratio = (train2 . fold [] fun) . reverse
     print "Outputs:"
     print ratio.toJSON
-
