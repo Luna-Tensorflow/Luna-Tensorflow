@@ -22,3 +22,27 @@ void add_attr_tensor(std::vector<std::shared_ptr<Attr>>* attr_list, char* name, 
     LOG(attr_list, name, tensor);
     LifetimeManager::instance().accessOwned(attr_list)->push_back(std::make_shared<AttrTensor>(std::string(name), *LifetimeManager::instance().accessOwned(tensor)));
 }
+
+void add_attr_int(std::vector<std::shared_ptr<Attr>> *attr_list, char *name, int64_t value) {
+    LOG(attr_list, name, value);
+    LifetimeManager::instance().accessOwned(attr_list)->push_back(std::make_shared<AttrInt>(std::string(name), value));
+}
+
+void add_attr_float(std::vector<std::shared_ptr<Attr>> *attr_list, char *name, float value) {
+    LOG(attr_list, name, value);
+    LifetimeManager::instance().accessOwned(attr_list)->push_back(std::make_shared<AttrFloat>(std::string(name), value));
+}
+
+void add_attr_bool(std::vector<std::shared_ptr<Attr>> *attr_list, char *name, unsigned char value) {
+    LOG(attr_list, name, value);
+    bool value_bool = 0;
+    if (value) {
+        value_bool = 1;
+    }
+    LifetimeManager::instance().accessOwned(attr_list)->push_back(std::make_shared<AttrBool>(std::string(name), value_bool));
+}
+
+void add_attr_string(std::vector<std::shared_ptr<Attr>> *attr_list, char *name, char *value) {
+    LOG(attr_list, name, value);
+    LifetimeManager::instance().accessOwned(attr_list)->push_back(std::make_shared<AttrString>(std::string(name), std::string(value)));
+}
