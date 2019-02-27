@@ -34,12 +34,32 @@ public:
     void set(TF_OperationDescription *desc) const;
 };
 
+class AttrTypeList : public Attr {
+private:
+    std::vector<TF_DataType> types;
+
+public:
+    AttrTypeList(const std::string &name, const std::vector<TF_DataType> &types);
+
+    void set(TF_OperationDescription *desc) const;
+};
+
 class AttrShape : public Attr {
 private:
     std::vector<int64_t> dims;
 
 public:
     AttrShape(const std::string &name, const std::vector<int64_t> &dims);
+
+    void set(TF_OperationDescription *desc) const;
+};
+
+class AttrShapeList : public Attr {
+private:
+    std::vector<std::vector<int64_t>> dims;
+
+public:
+    AttrShapeList(const std::string &name, std::vector<std::vector<int64_t>> dims);
 
     void set(TF_OperationDescription *desc) const;
 };
@@ -54,12 +74,32 @@ public:
     void set(TF_OperationDescription *desc) const;
 };
 
+class AttrTensorList : public Attr {
+private:
+    std::vector<Tensor> tensors;
+
+public:
+    AttrTensorList(const std::string &name, const std::vector<Tensor> &tensors);
+
+    void set(TF_OperationDescription *desc) const;
+};
+
 class AttrInt : public Attr {
 private:
     int64_t value;
 
 public:
     AttrInt(const std::string &name, int64_t value);
+
+    void set(TF_OperationDescription *desc) const;
+};
+
+class AttrIntList : public Attr {
+private:
+    std::vector<int64_t> values;
+
+public:
+    AttrIntList(const std::string &name, const std::vector<int64_t> &values);
 
     void set(TF_OperationDescription *desc) const;
 };
@@ -74,6 +114,16 @@ public:
     void set(TF_OperationDescription *desc) const;
 };
 
+class AttrFloatList : public Attr {
+private:
+    std::vector<float> values;
+
+public:
+    AttrFloatList(const std::string &name, const std::vector<float> &values);
+
+    void set (TF_OperationDescription *desc) const;
+};
+
 class AttrBool : public Attr {
 private:
     bool value;
@@ -84,12 +134,42 @@ public:
     void set(TF_OperationDescription *desc) const;
 };
 
+class AttrBoolList : public Attr {
+private:
+    std::vector<bool> values;
+
+public:
+    AttrBoolList(const std::string &name, const std::vector<bool> &values);
+
+    void set(TF_OperationDescription *desc) const;
+};
+
 class AttrString : public Attr {
 private:
     std::string value;
 
 public:
     AttrString(const std::string &name, const std::string &value);
+
+    void set(TF_OperationDescription *desc) const;
+};
+
+class AttrStringList : public Attr {
+private:
+    std::vector<std::string> values;
+
+public:
+    AttrStringList(const std::string& name, const std::vector<std::string> &values);
+
+    void set(TF_OperationDescription *desc) const;
+};
+
+class AttrFuncName : public Attr {
+private:
+    std::string func_name;
+
+public:
+    AttrFuncName(const std::string &name, const std::string &func_name);
 
     void set(TF_OperationDescription *desc) const;
 };
