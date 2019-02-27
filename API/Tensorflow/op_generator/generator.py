@@ -17,12 +17,13 @@ def attr_code(attr):
     attr_function_calls = {
         'type': '    addAttrType.call None [attrList.toCArg, nameCStr.toCArg, CInt32.fromInt {} . toCArg]\n'
                 .format(adjusted_name),
-        'shape': '    cdims = {0}.map CInt64.fromInt\n'
-                 '    cdimsArray = (Array CInt64) . fromList cdims\n'
+        'shape': '    cdims = {0}.map CUInt32.fromInt\n'
+                 '    cdimsArray = (Array CUInt32) . fromList cdims\n'
                  '    addAttrShape.call None '
-                 '[attrList.toCArg, nameCStr.toCArg, cdimsArray.toCArg, CInt64.fromInt {0}.length . toCArg]\n'
+                 '[attrList.toCArg, nameCStr.toCArg, cdimsArray.toCArg, CUInt32.fromInt {0}.length . toCArg]\n'
                  '    cdimsArray.free\n'.format(adjusted_name),
-        'tensor': '    addAttrTensor.call None [attrList.toCArg, nameCStr.toCArg, {}.ptr.toCArg]\n'.format(adjusted_name),
+        'tensor': '    addAttrTensor.call None [attrList.toCArg, nameCStr.toCArg, {}.ptr.toCArg]\n'
+                .format(adjusted_name),
         'int': '    addAttrInt.call None [attrList.toCArg, nameCStr.toCArg, CInt64.fromInt {} . toCArg]\n'
                 .format(adjusted_name),
         'float': '    addAttrFloat.call None [attrList.toCArg, nameCStr.toCArg, CFloat.fromReal {} . toCArg]\n'
@@ -32,7 +33,10 @@ def attr_code(attr):
                 .format(adjusted_name),
         'string': '    valCStr = CString.fromText "{}"\n'
                   '    addAttrString.call None [attrList.toCArg, nameCStr.toCArg, valCStr.toCArg]\n'
-                  '    valCStr.free\n'.format(adjusted_name)
+                  '    valCStr.free\n'.format(adjusted_name),
+        'func': '    funcNameCStr = CString.fromText "{}"\n'
+                '    addAttrFuncName.call None [attrList.toCArg, nameCStr.toCArg, funcNameCStr.toCArg]\n'
+                '    funcNameCStr.free\n'.format(adjusted_name)
     }
 
     return '    nameCStr = CString.fromText "{}"\n'.format(attr.name)\
@@ -52,7 +56,8 @@ def op_code(operation):
         'int': '    addAttrInt = lookupSymbol "TFL" "add_attr_int"\n',
         'float': '    addAttrFloat = lookupSymbol "TFL" "add_attr_float"\n',
         'bool': '    addAttrBool = lookupSymbol "TFL" "add_attr_bool"\n',
-        'string': '    addAttrString = lookupSymbol "TFL" "add_attr_string"\n'
+        'string': '    addAttrString = lookupSymbol "TFL" "add_attr_string"\n',
+        'func': '    addAttrFuncName = lookupSymbol "TFL" "add_attr_func_name"\n'
     }
 
     head = 'def ' + (operation.name[:1].lower() + operation.name[1:]).replace('_', underscore_replacement)
