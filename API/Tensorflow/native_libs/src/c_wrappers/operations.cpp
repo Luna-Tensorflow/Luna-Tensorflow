@@ -122,7 +122,7 @@ Tensor** batch_eval_op_placeholders(Output** outs, size_t op_count,
 			LifetimeManager::instance().accessOwned(ph_values[i]));
 	}
 
-	return graph.eval(substitutions);
+	return graph.eval(substitutions).allocate_raw_outputs();
 }
 
 GraphSession* make_graph_from_output(Output* out)
@@ -161,5 +161,5 @@ Tensor** eval_graph_with_placeholders(GraphSession *graph,
 							  LifetimeManager::instance().accessOwned(ph_values[i]));
 	}
 
-	return graph->eval(substitutions);
+	return graph->eval(substitutions).allocate_raw_outputs();
 }

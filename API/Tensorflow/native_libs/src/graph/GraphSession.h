@@ -16,8 +16,25 @@
 #include "../ops/Output.h"
 
 #include <any>
+#include "../state/State.h"
 
 class Output;
+
+struct EvaluationResult {
+	 std::vector<std::shared_ptr<Tensor>> outputs;
+	 std::shared_ptr<State> result_state;
+	 std::optional<std::exception> exception; // set in case evaluation ended in error
+
+	 Tensor** allocate_raw_outputs() {
+	 	auto count = outputs.size();
+		auto return_values = (Tensor**) std::malloc(sizeof(Tensor*) * count);
+		 for(unsigned i=0; i<count; ++i)
+		 {
+			 return_values[i] = outputs[i].get();
+		 }
+		return return_values;
+	 }
+};
 
 class GraphSession
 {
@@ -30,7 +47,6 @@ private:
 	std::vector<TF_Output> output_nodes;
 	std::map<std::string, TF_Output> placeholders;
 
-
 public:
 	GraphSession();
 	~GraphSession();
@@ -39,9 +55,9 @@ public:
 
 	TF_Output add_output(const Output* out);
 
-	Tensor** eval(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions) const;
+	EvaluationResult eval(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions) const;
 
-    Tensor** eval() const;
+	Tensor** eval() const;
 
 	void register_output_hash(size_t hash, TF_Output &out);
 

@@ -34,65 +34,72 @@ TF_Output GraphSession::add_output(const Output* out)
 	return (hashes[out->hashcode()] = out->add_to_graph(*this));
 }
 
-Tensor** GraphSession::eval(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions) const
+EvaluationResult GraphSession::eval(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions) const
 {
-	size_t count = output_nodes.size();
-	std::vector<TF_Tensor*> output_values(count);
+	try {
+		size_t count = output_nodes.size();
+		std::vector<TF_Tensor*> output_values(count);
 
-	for(auto& ph : placeholders)
-	{
-		if(substitutions.count(ph.first) > 0)
-			continue;
-		// TODO maybe only print what's missing
-		std::string err;
-		err += "Not all placeholders are substituted!\n";
-		err += "Placeholders: ";
-		for (const auto& kv : placeholders) {
-			err += kv.first + ", ";
+		for(auto& ph : placeholders)
+		{
+			if(substitutions.count(ph.first) > 0)
+				continue;
+			// TODO maybe only print what's missing
+			std::string err;
+			err += "Not all placeholders are substituted!\n";
+			err += "Placeholders: ";
+			for (const auto& kv : placeholders) {
+				err += kv.first + ", ";
+			}
+			err += "\n";
+			err += "Substitutions: ";
+			for (const auto& kv : substitutions) {
+				err += kv.first + ", ";
+			}
+			err += "\n";
+
+			throw std::invalid_argument(err);
 		}
-		err += "\n";
-		err += "Substitutions: ";
-		for (const auto& kv : substitutions) {
-			err += kv.first + ", ";
+
+		std::vector<TF_Output> placeholders_v;
+		std::vector<TF_Tensor*> tensor_v;
+
+		for(auto elem : substitutions)
+		{
+			if(placeholders.find(elem.first) == placeholders.end()) //bypass obsolete substs
+				continue;
+			placeholders_v.push_back(placeholders.at(elem.first));
+			tensor_v.push_back(elem.second->get_underlying());
 		}
-		err += "\n";
 
-		throw std::invalid_argument(err);
+		run_with_status<void>(std::bind(TF_SessionRun,
+												  session,
+												  nullptr,
+												  placeholders_v.data(), tensor_v.data(), tensor_v.size(),
+												  output_nodes.data(), output_values.data(), count,
+												  nullptr, 0,
+												  nullptr,
+												  std::placeholders::_1));
+
+
+		EvaluationResult r;
+		r.outputs.resize(count);
+		for(unsigned i=0; i<count; ++i)
+		{
+			//r.outputs[i] = LifetimeManager::instance().addOwnership(std::make_shared<Tensor>(output_values[i]));
+				// TODO
+		}
+		return r;
+	} catch (std::exception& e) {
+		EvaluationResult r;
+		r.exception = e;
+		return r;
 	}
-
-	std::vector<TF_Output> placeholders_v;
-	std::vector<TF_Tensor*> tensor_v;
-
-	for(auto elem : substitutions)
-	{
-		if(placeholders.find(elem.first) == placeholders.end()) //bypass obsolete substs
-			continue;
-		placeholders_v.push_back(placeholders.at(elem.first));
-		tensor_v.push_back(elem.second->get_underlying());
-	}
-
-	run_with_status<void>(std::bind(TF_SessionRun,
-									session,
-									nullptr,
-									placeholders_v.data(), tensor_v.data(), tensor_v.size(),
-									output_nodes.data(), output_values.data(), count,
-									nullptr, 0,
-									nullptr,
-									std::placeholders::_1));
-
-	auto return_values = (Tensor**) std::malloc(sizeof(Tensor*) * count);
-
-	for(unsigned i=0; i<count; ++i)
-	{
-		return_values[i] = LifetimeManager::instance().addOwnership(std::make_shared<Tensor>(output_values[i]));
-	}
-
-	return return_values;
 }
 
 Tensor** GraphSession::eval() const
 {
-	return eval(std::map<std::string, std::shared_ptr<Tensor>>());
+	return eval(std::map<std::string, std::shared_ptr<Tensor>>()).allocate_raw_outputs();
 }
 
 void GraphSession::register_output_hash(size_t hash, TF_Output &out) {
