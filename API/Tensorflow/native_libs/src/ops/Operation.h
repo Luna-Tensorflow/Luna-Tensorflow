@@ -32,6 +32,7 @@ private:
     std::vector<std::shared_ptr<Output>> inputs;
     std::vector<std::shared_ptr<Attr>> attrs;
     std::string chosen_name;
+    std::vector<Output*> outputs;
 };
 
 #endif //TFL_OPERATION_H

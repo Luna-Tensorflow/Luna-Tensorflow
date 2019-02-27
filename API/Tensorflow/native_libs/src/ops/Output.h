@@ -12,10 +12,11 @@
 #include "Binder.h"
 
 class GraphSession;
+class Binder;
 
 class Output {
 public:
-    Output(std::shared_ptr<Binder> bincer);
+    Output(std::shared_ptr<Binder> binder);
 
     TF_Output add_to_graph(GraphSession& graph) const;
 

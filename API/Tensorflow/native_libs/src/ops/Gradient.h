@@ -23,12 +23,13 @@ public:
     static std::vector<std::shared_ptr<Output>> add_gradients(std::vector<std::shared_ptr<Output>> ys,
             std::vector<std::shared_ptr<Output>> xs, std::vector<std::shared_ptr<Output>> dxs);
 
-    void add_to_graph(GraphSession &graph);
+    void add_to_graph(GraphSession &graph) override;
 
 private:
     std::vector<std::shared_ptr<Output>> ys;
     std::vector<std::shared_ptr<Output>> xs;
     std::vector<std::shared_ptr<Output>> dxs;
+    std::vector<Output*> outputs;
 };
 
 #endif //TFL_GRADIENT_H
