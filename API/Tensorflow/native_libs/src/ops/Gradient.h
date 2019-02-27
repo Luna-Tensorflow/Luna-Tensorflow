@@ -29,7 +29,7 @@ private:
     std::vector<std::shared_ptr<Output>> ys;
     std::vector<std::shared_ptr<Output>> xs;
     std::vector<std::shared_ptr<Output>> dxs;
-    std::vector<Output*> outputs;
+    std::vector<std::weak_ptr<Output>> outputs;
 };
 
 #endif //TFL_GRADIENT_H

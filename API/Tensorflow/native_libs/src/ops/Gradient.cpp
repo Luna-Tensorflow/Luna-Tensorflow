@@ -3,6 +3,7 @@
 //
 
 #include "Gradient.h"
+#include <utility>
 
 Gradient::Gradient(std::vector<std::shared_ptr<Output>> ys, std::vector<std::shared_ptr<Output>> xs,
         std::vector<std::shared_ptr<Output>> dxs) : ys(ys), xs(xs), dxs(dxs) {
@@ -12,22 +13,19 @@ Gradient::Gradient(std::vector<std::shared_ptr<Output>> ys, std::vector<std::sha
     if (xs.empty() || ys.empty()) {
         throw std::invalid_argument("xs and ys must not be empty!");
     }
-
-    std::shared_ptr<Gradient> ptr = std::shared_ptr<Gradient>(this);
-
-    for (unsigned int i = 0; i < xs.size(); ++i) {
-        outputs.push_back(new Output(ptr));
-    }
 }
 
 std::vector<std::shared_ptr<Output>> Gradient::add_gradients(std::vector<std::shared_ptr<Output>> ys,
                                                           std::vector<std::shared_ptr<Output>> xs,
                                                           std::vector<std::shared_ptr<Output>> dxs) {
-    Gradient *gradient = new Gradient(ys, xs, dxs);
+    // TODO it would be good to use make_shared instead, but constructor is private
+    auto gradient = std::shared_ptr<Gradient>(new Gradient(std::move(ys), std::move(xs), std::move(dxs)));
 
     std::vector<std::shared_ptr<Output>> ret;
-    for (auto output: gradient->outputs) {
-        ret.push_back(std::shared_ptr<Output>(output));
+    for (unsigned int i = 0; i < gradient->xs.size(); ++i) {
+        auto out = std::make_shared<Output>(gradient);
+        gradient->outputs.emplace_back(out); // create a weak pointer
+        ret.push_back(out);
     }
 
     return ret;
@@ -52,6 +50,9 @@ void Gradient::add_to_graph(GraphSession &graph) {
                                     x_outputs.data(), x_outputs.size(), dx_outputs.data(), std::placeholders::_1, results.data()));
 
     for (size_t i = 0; i < results.size(); ++i) {
-        graph.register_output_hash(outputs[i]->hashcode(), results[i]);
+        auto out = outputs[i].lock(); // promote to shared_ptr, will return null if pointer is already disposed of
+        if (out) {
+            graph.register_output_hash(out->hashcode(), results[i]);
+        }
     }
 }

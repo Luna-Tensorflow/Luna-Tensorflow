@@ -20,8 +20,8 @@ namespace {
 
 		std::transform(inputs.begin(), inputs.end(), inputs_v.begin(), [](Output* input){ return LifetimeManager::instance().accessOwned(input); });
 
-		std::vector<std::shared_ptr<Output>> outputs = Operation::add_operation(name, inputs_v, noutputs, attrs,
-																				chosen_name);
+		std::vector<std::shared_ptr<Output>> outputs = Operation::make_operation(name, inputs_v, noutputs, attrs,
+																				 chosen_name);
 
 		auto **output_ptrs = static_cast<Output **>(std::malloc(sizeof(Output *) * outputs.size()));
 

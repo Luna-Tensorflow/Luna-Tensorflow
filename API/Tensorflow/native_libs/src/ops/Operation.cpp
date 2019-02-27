@@ -4,7 +4,7 @@
 
 #include "Operation.h"
 
-Operation::Operation(std::string name, std::vector<std::shared_ptr<Output>> inputs, int num_outputs,
+Operation::Operation(std::string name, std::vector<std::shared_ptr<Output>> inputs,
         std::vector<std::shared_ptr<Attr>> attrs, std::string chosen_name)
         : name(name), inputs(inputs), attrs(attrs), chosen_name(chosen_name) {
     static size_t hash_ctr = 0;
@@ -13,21 +13,21 @@ Operation::Operation(std::string name, std::vector<std::shared_ptr<Output>> inpu
     if (chosen_name.empty()) {
         chosen_name = name + std::to_string(hash);
     }
-
-    std::shared_ptr<Operation> ptr = std::shared_ptr<Operation>(this);
-    for (int i = 0; i < num_outputs; ++i) {
-        outputs.push_back(new Output(ptr));
-    }
 }
 
-std::vector<std::shared_ptr<Output>> Operation::add_operation(std::string name, std::vector<std::shared_ptr<Output>> inputs,
-                                                          int num_outputs, std::vector<std::shared_ptr<Attr>> attrs,
-                                                          std::string chosen_name) {
-    Operation *operation = new Operation(name, inputs, num_outputs, attrs, chosen_name);
+std::vector<std::shared_ptr<Output>> Operation::make_operation(std::string name,
+                                                               std::vector<std::shared_ptr<Output>> inputs,
+                                                               int num_outputs,
+                                                               std::vector<std::shared_ptr<Attr>> attrs,
+                                                               std::string chosen_name) {
+    // TODO cannot use make_shared because constructor is private, it would be good to do something about this
+    auto operation = std::shared_ptr<Operation>(new Operation(name, inputs, attrs, chosen_name));
 
     std::vector<std::shared_ptr<Output>> ret;
-    for (auto output: operation->outputs) {
-        ret.push_back(std::shared_ptr<Output>(output));
+    for (int i = 0; i< num_outputs; ++i) {
+        auto out = std::make_shared<Output>(operation);
+        operation->outputs.emplace_back(out); // we construct a weak pointer to the output
+        ret.push_back(out);
     }
 
     return ret;
@@ -52,12 +52,15 @@ void Operation::add_to_graph(GraphSession &graph) {
 
     TF_Operation *operation = run_with_status<TF_Operation*>(std::bind(TF_FinishOperation, desc, std::placeholders::_1));
 
-    for (int i = 0; i < static_cast<int>(outputs.size()); ++i) {
-        TF_Output tf_output = {
-                .oper = operation,
-                .index = i
-        };
-        graph.register_output_hash(outputs[i]->hashcode(), tf_output);
+    for (size_t i = 0; i < outputs.size(); ++i) {
+        auto out = outputs[i].lock(); // promote to shared_ptr, will return null if pointer is already disposed of
+        if (out) {
+            TF_Output tf_output = {
+                    .oper = operation,
+                    .index = static_cast<int>(i)
+            };
+            graph.register_output_hash(out->hashcode(), tf_output);
+        }
     }
 
     if (name == "Placeholder") {

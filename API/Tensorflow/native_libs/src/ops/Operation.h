@@ -17,12 +17,15 @@
 
 class Operation : public Binder {
 private:
-    Operation(std::string name, std::vector<std::shared_ptr<Output>> inputs, int num_outputs,
+    Operation(std::string name, std::vector<std::shared_ptr<Output>> inputs,
             std::vector<std::shared_ptr<Attr>> attrs, std::string chosen_name);
 
 public:
-    static std::vector<std::shared_ptr<Output>> add_operation(std::string name, std::vector<std::shared_ptr<Output>> inputs,
-            int num_outputs, std::vector<std::shared_ptr<Attr>> attrs = {}, std::string chosen_name = "");
+    static std::vector<std::shared_ptr<Output>> make_operation(std::string name,
+                                                               std::vector<std::shared_ptr<Output>> inputs,
+                                                               int num_outputs,
+                                                               std::vector<std::shared_ptr<Attr>> attrs = {},
+                                                               std::string chosen_name = "");
 
     void add_to_graph(GraphSession &graph) override;
 
@@ -32,7 +35,7 @@ private:
     std::vector<std::shared_ptr<Output>> inputs;
     std::vector<std::shared_ptr<Attr>> attrs;
     std::string chosen_name;
-    std::vector<Output*> outputs;
+    std::vector<std::weak_ptr<Output>> outputs;
 };
 
 #endif //TFL_OPERATION_H
