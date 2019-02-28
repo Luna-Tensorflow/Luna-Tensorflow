@@ -19,6 +19,7 @@
 #include "../state/State.h"
 
 class Output;
+class Variable;
 
 struct EvaluationResult {
 	 std::vector<std::shared_ptr<Tensor>> outputs;
@@ -49,10 +50,11 @@ public:
 	TF_Output add_output(const Output* out);
 
 	// TODO not sure if always want this as a shared_ptr, but usually yes
-	std::shared_ptr<EvaluationResult> eval(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions, const std::shared_ptr<State>& state) const;
+	std::shared_ptr<EvaluationResult> eval(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions,
+		const std::shared_ptr<State>& state) const;
 
 	// TODO not sure if want to keep this simplified function ?
-	std::vector<std::shared_ptr<Tensor>> eval() const;
+	/*[[deprecated]]*/ std::vector<std::shared_ptr<Tensor>> eval() const;
 
 	void register_output_hash(size_t hash, TF_Output &out);
 
@@ -64,7 +66,8 @@ public:
 
 	// TODO this function may need more data
 	// variale dtype and shape are determined by its default value
-	void register_variable(const std::string& name, const std::shared_ptr<Tensor>& default_value);
+	std::shared_ptr<Variable>
+		register_variable(const std::string& name, const std::shared_ptr<Tensor>& default_value);
 
 	TF_Graph* get_underlying();
 

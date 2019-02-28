@@ -50,7 +50,7 @@ void Operation::add_to_graph(GraphSession &graph) {
         attr->set(desc);
     }
 
-    TF_Operation *operation = run_with_status<TF_Operation*>(std::bind(TF_FinishOperation, desc, std::placeholders::_1));
+    auto *operation = run_with_status<TF_Operation*>(std::bind(TF_FinishOperation, desc, std::placeholders::_1));
 
     for (size_t i = 0; i < outputs.size(); ++i) {
         auto out = outputs[i].lock(); // promote to shared_ptr, will return null if pointer is already disposed of

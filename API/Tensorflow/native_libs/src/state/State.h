@@ -30,7 +30,7 @@ public:
 
 
     // returns nullptr if values does not exist
-    std::shared_ptr<Tensor> get(std::string name) {
+    std::shared_ptr<Tensor> get(const std::string &name) {
         auto it = valuation.find(name);
         if (it == valuation.end()) {
             return nullptr;

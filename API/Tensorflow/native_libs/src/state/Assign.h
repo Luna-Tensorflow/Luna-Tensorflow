@@ -9,12 +9,14 @@
 #include "Variable.h"
 
 class Assign : public Binder {
-    static std::shared_ptr<Output> make_assign(std::shared_ptr<Variable> variable, std::shared_ptr<Output> value);
+public:
+	static std::shared_ptr<Output> make_assign(std::shared_ptr<Variable> variable, std::shared_ptr<Output> value);
 
     void add_to_graph(GraphSession &graph) override;
 private:
     Assign(std::shared_ptr<Variable> variable, std::shared_ptr<Output> value);
 
+    size_t hashcode;
     std::shared_ptr<Variable> variable;
     std::shared_ptr<Output> value;
     std::shared_ptr<Output> output;
