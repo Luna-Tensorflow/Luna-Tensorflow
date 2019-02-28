@@ -73,7 +73,7 @@ def attr_code(attr):
                      '    addAttrBoolList.call None '
                      '[attrList.toCArg, nameCStr.toCArg, cvaluesArray.toCArg, CUInt32.fromInt {0}.length . toCArg]\n'
                      '    cvaluesArray.free\n'.format(adjusted_name),
-        'string': '    valCStr = CString.fromText "{}"\n'
+        'string': '    valCStr = CString.fromText {}\n'
                   '    addAttrString.call None [attrList.toCArg, nameCStr.toCArg, valCStr.toCArg]\n'
                   '    valCStr.free\n'.format(adjusted_name),
         'list(string)': '    len = {0}.length\n'
@@ -84,7 +84,7 @@ def attr_code(attr):
                         '    addAttrStringList.call None '
                         '[attrList.toCArg, nameCStr.toCArg, cValues.toCArg, CUInt32.fromInt len . toCArg]\n'
                         '    0.upto (len - 1) . each (idx: cValues.moveElems idx . read . free)\n'.format(adjusted_name),
-        'func': '    funcNameCStr = CString.fromText "{}"\n'
+        'func': '    funcNameCStr = CString.fromText {}\n'
                 '    addAttrFuncName.call None [attrList.toCArg, nameCStr.toCArg, funcNameCStr.toCArg]\n'
                 '    funcNameCStr.free\n'.format(adjusted_name)
     }
