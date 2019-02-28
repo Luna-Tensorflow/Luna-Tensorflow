@@ -104,7 +104,7 @@ public:
     // NOTE: the array that is allocated here for transfer HAS to be freed by the caller
     template<typename T>
     T **addOwnershipOfArray(std::vector<std::shared_ptr<T>> arr) {
-        auto return_values = (T**) std::calloc(arr.size(), sizeof(T*));
+        auto return_values = (T**) std::malloc(arr.size() * sizeof(T*));
         for(size_t i=0; i<arr.size(); ++i)
         {
             return_values[i] = addOwnership(arr[i]);

@@ -55,11 +55,20 @@ std::shared_ptr<EvaluationResult> GraphSession::eval(const std::map<std::string,
     std::vector<TF_Output> placeholders_v;
     std::vector<TF_Tensor *> tensor_v;
 
-    for (auto elem : substitutions) {
+    for (auto &elem : substitutions) {
         if (placeholders.find(elem.first) == placeholders.end()) //bypass obsolete substs
             continue;
         placeholders_v.push_back(placeholders.at(elem.first));
         tensor_v.push_back(elem.second->get_underlying());
+    }
+
+    for (auto &elem : variable_default_values) {
+        placeholders_v.push_back(placeholders.at(elem.first)); // FIXME add exists check, will variables use placeholders data structure or a separate map for outputs?
+        auto tensor = state->get(elem.first);
+        if (tensor == nullptr) {
+            // if variable value is not provided, use the default value
+            tensor = variable_default_values.at(elem.first);
+        }
     }
 
     std::vector<TF_Output> computed_outs = output_nodes;
@@ -124,4 +133,8 @@ TF_Session *GraphSession::get_underlying_session() {
 
 void GraphSession::register_assignment(const std::string &name, TF_Output value) {
     assignments[name] = value;
+}
+
+void GraphSession::register_variable(const std::string &name, const std::shared_ptr<Tensor> &default_value) {
+    variable_default_values[name] = default_value;
 }

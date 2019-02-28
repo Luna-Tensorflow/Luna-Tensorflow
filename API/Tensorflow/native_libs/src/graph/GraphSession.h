@@ -37,6 +37,9 @@ private:
 	std::map<std::string, TF_Output> placeholders;
 	std::map<std::string, TF_Output> assignments;
 
+	// TODO implement reading variables from state + default values, may need more data here
+	std::map<std::string, std::shared_ptr<Tensor>> variable_default_values;
+
 public:
 	GraphSession();
 	~GraphSession();
@@ -58,6 +61,10 @@ public:
 	void add_fetched_output(TF_Output out);
 
 	void register_assignment(const std::string& name, TF_Output value);
+
+	// TODO this function may need more data
+	// variale dtype and shape are determined by its default value
+	void register_variable(const std::string& name, const std::shared_ptr<Tensor>& default_value);
 
 	TF_Graph* get_underlying();
 

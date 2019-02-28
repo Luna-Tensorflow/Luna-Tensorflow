@@ -27,6 +27,16 @@ public:
     static std::shared_ptr<State> make_empty() {
         return std::make_shared<State>();
     }
+
+
+    // returns nullptr if values does not exist
+    std::shared_ptr<Tensor> get(std::string name) {
+        auto it = valuation.find(name);
+        if (it == valuation.end()) {
+            return nullptr;
+        }
+        return it->second;
+    }
 };
 
 
