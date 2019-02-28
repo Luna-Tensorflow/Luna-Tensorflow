@@ -1,5 +1,6 @@
 import Tensorflow.CWrappers.Operations
 import Tensorflow.Tensor
+import Tensorflow.Types
 
 # not sure if we want separate classes for each op type or one class for all?
 class TFOperation:
@@ -29,9 +30,13 @@ class TFOperation:
     def - other:
         sub self other
 
-# makePlaceholder :: Text -> TFOperation a
-def makePlaceholder name:
-    wrapper = makePlaceholderWrapper name
+    # toText :: Text
+    def toText:
+        "Operation TODO" # TODO
+
+# makePlaceholder :: TypeTag -> Text -> TFOperation a
+def makePlaceholder typetag name:
+    wrapper = makePlaceholderWrapper typetag name
     TFOperation wrapper
 
 # makeConst :: Tensor a -> TFOperation a
@@ -39,37 +44,68 @@ def makeConst tensor:
     wrapper = makeConstWrapper tensor
     TFOperation wrapper
 
-# constFromList :: List a -> Tensor a
-def constFromList list:
-    tensor = tensorFromList list
+# constFromList :: TypeTag a -> List a -> Tensor a
+def constFromList typetag list:
+    tensor = tensorFromList1d typetag list
     makeConst tensor
 
 # constFromScalar :: a -> Tensor a
-def constFromScalar x:
-    constFromList [x]
+def constFromScalar typetag x:
+    constFromList typetag [x]
 
 # add :: (TFOperation a -> TFOperation a) -> TFOperation a
 def add a b:
-    wrapper = makeBinaryOpWrapper "Add" a b
+    wrapper = makeBinaryOpWrapper "Add" a.wrapper b.wrapper
     TFOperation wrapper
 
 # mul :: (TFOperation a -> TFOperation a) -> TFOperation a
 def mul a b:
-    wrapper = makeBinaryOpWrapper "Mul" a b
+    wrapper = makeBinaryOpWrapper "Mul" a.wrapper b.wrapper
     TFOperation wrapper
 
 # sub :: (TFOperation a -> TFOperation a) -> TFOperation a
 def sub a b:
-    wrapper = makeBinaryOpWrapper "Sub" a b
+    wrapper = makeBinaryOpWrapper "Sub" a.wrapper b.wrapper
     TFOperation wrapper
 
 # partial :: (TFOperation a -> TFOperation a) -> TFOperation a
 def partial a b:
-    wrapper = makePartialDerivativeWrapper a b
+    wrapper = makePartialDerivativeWrapper a.wrapper b.wrapper
+    TFOperation wrapper
+
+# matMul :: (TFOperation a -> TFOperation a) -> TFOperation a
+def matMul a b:
+    wrapper = makeBinaryOpWrapper "MatMul" a.wrapper b.wrapper
+    TFOperation wrapper
+
+# matMul :: (TFOperation a -> TFOperation a) -> TFOperation a
+def equal a b:
+    wrapper = makeBinaryOpWrapper "Equal" a.wrapper b.wrapper
+    TFOperation wrapper
+
+# sqnorm :: TFOperation a -> TFOperation a
+def sqnorm a:
+    mult = mul a a
+    dim = constFromScalar Int32Type 1
+
+    wrapper = makeBinaryOpWrapper "Sum" mult.wrapper dim.wrapper
+    TFOperation wrapper
+
+# tanh :: TFOperation a -> TFOperation a
+def tanh a:
+    wrapper = makeUnaryOpWrapper "Tanh" a.wrapper
     TFOperation wrapper
 
 # sigmoid :: TFOperation a -> TFOperation a
 def sigmoid a:
-    wrapper = makeUnaryOpWrapper "Sigmoid" a
+    wrapper = makeUnaryOpWrapper "Sigmoid" a.wrapper
     TFOperation wrapper
 
+# sign :: TFOperation a -> TFOperation a
+def sign a:
+    wrapper = makeUnaryOpWrapper "Sign" a.wrapper
+    TFOperation wrapper
+
+def operationFromPtr ptr typetag:
+    wrapper = operationWrapperFromPtr ptr typetag
+    TFOperation wrapper

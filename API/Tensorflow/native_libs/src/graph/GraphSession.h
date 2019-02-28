@@ -53,10 +53,25 @@ public:
 		size_t count = output_nodes.size();
 		std::vector<TF_Tensor*> output_values(count);
 
-		if(!std::equal(placeholders.begin(), placeholders.end(), substitutions.begin(),
-			[](auto& a, auto& b) -> bool {return a.first == b.first; }))
+		for(auto& ph : placeholders)
 		{
-			throw std::invalid_argument("Not all placeholders are substituted!");
+			if(substitutions.count(ph.first) > 0)
+				continue;
+		      // TODO maybe only print what's missing
+		      std::string err;
+		      err += "Not all placeholders are substituted!\n";
+		      err += "Placeholders: ";
+		      for (const auto& kv : placeholders) {
+		        err += kv.first + ", ";
+		      }
+		      err += "\n";
+		      err += "Substitutions: ";
+		      for (const auto& kv : substitutions) {
+		        err += kv.first + ", ";
+		      }
+		      err += "\n";
+
+			throw std::invalid_argument(err);
 		}
 
 		std::vector<TF_Output> placeholders_v;
@@ -64,10 +79,11 @@ public:
 
 		for(auto elem : substitutions)
 		{
+			if(placeholders.find(elem.first) == placeholders.end()) //bypass obsolete substs
+				continue;
 			placeholders_v.push_back(placeholders.at(elem.first));
 			tensor_v.push_back(elem.second->get_underlying());
 		}
-
 
 		run_with_status<void>(std::bind(TF_SessionRun,
 		                                session,
@@ -78,7 +94,7 @@ public:
 		                                nullptr,
 		                                std::placeholders::_1));
 
-		auto return_values = (Tensor<DataTypeLabel>**) std::calloc(sizeof(Tensor<DataTypeLabel>*), count);
+		auto return_values = (Tensor<DataTypeLabel>**) std::malloc(sizeof(Tensor<DataTypeLabel>*) * count);
 
 		for(unsigned i=0; i<count; ++i)
 		{

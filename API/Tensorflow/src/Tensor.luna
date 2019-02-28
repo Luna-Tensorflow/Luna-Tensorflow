@@ -1,44 +1,62 @@
 import Tensorflow.CWrappers.Tensor
 
+import Std.Foreign
 import Std.Foreign.C.Value
 
 # For now we assume tensors are 1D
-class Tensor:
-    wrapper :: TensorWrapper
+# Tensor T
+class Tensor a:
+    wrapper :: TensorWrapper a
 
     # ptr :: ManagedPointer None
     def ptr:
         self.wrapper.ptr
 
-    # length :: Int
-    def length:
-        self.wrapper.length
+    # dims :: List Int
+    def dims:
+        self.wrapper.dims
 
-    # at Multi :: List Int -> Real
-    def atMulti indices:
+    # at :: List Int -> T
+    def at indices:
         self.wrapper.at indices
 
-    # at :: Int -> Real
-    def at index:
-        self.atMulti [index]
+    # atIndex :: Int -> T
+    def atIndex index:
+        self.wrapper.atIndex index
 
     # toList :: List Real
     def toList:
-        indices = 0.upto (self.length - 1)
-        indices.map self.at
+        indices = 0.upto (self.dims.foldLeft 1 (x: a: a * x) - 1)
+        indices.each self.atIndex
 
     # toJSON :: JSON
     def toJSON:
         self.toList.toJSON
 
-# tensorFromPtr :: (Pointer -> None) -> Pointer None -> Tensor a
-def tensorFromPtr releaseMethod tensorPtr:
+    # toText :: Text
+    def toText:
+        "Tensor " + (self.dims.toText)
+
+
+# tensorFromPtr :: TypeTag a -> Pointer None -> Tensor a
+def tensorFromPtr typetag tensorPtr:
+    releaseMethod = lookupSymbol "TFL" "release"
     managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
 
-    wrapper = TensorWrapper managedTensorPtr
+    wrapper = TensorWrapper managedTensorPtr typetag
     Tensor wrapper
 
-# tensorFromList :: List a -> Tensor a
-def tensorFromList list:
-    wrapper = create1dTensorWrapper list
+# tensorFromList1d :: TypeTag a -> List a -> Tensor a
+def tensorFromList1d typetag list:
+    wrapper = createTensorWrapper typetag [list.length] list
+    Tensor wrapper
+
+# tensorFromList :: TypeTag a -> List Int -> List a -> Tensor a
+def tensorFromList typetag dims list:
+    wrapper = createTensorWrapper typetag dims list
+    Tensor wrapper
+
+# randomTensor :: TypeTag a -> List Int -> a -> a -> Tensor a
+def randomTensor typetag dims minVal maxVal:
+    wrapper = createRandomTensorWrapper typetag dims minVal maxVal
     Tensor wrapper

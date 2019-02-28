@@ -1,7 +1,6 @@
 //
 // Created by mateusz on 04.12.18.
 //
-
 #include <cstdlib>
 
 #include "GraphSession.h"

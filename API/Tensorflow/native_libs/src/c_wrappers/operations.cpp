@@ -10,9 +10,10 @@
 #include "../ops/Const.h"
 #include "../ops/BinaryOperation.h"
 #include "../ops/UnaryOperation.h"
-#include "../ops/Gradient.h"
+#include "../ops/Partial.h"
 #include "../ops/Placeholder.h"
 #include "../helpers/LifeTimeManager.h"
+#include "../gradient/Gradient.h"
 
 namespace {
     template<TF_DataType DataTypeLabel>
@@ -58,13 +59,13 @@ namespace {
 	Operation<DT> *make_op_derivative(Operation<DT> *a, Operation<DT> *b) {
 		std::shared_ptr<Operation<DT>> a_cpp = LifetimeManager::instance().accessOwned(a);
 		std::shared_ptr<Operation<DT>> b_cpp = LifetimeManager::instance().accessOwned(b);
-		auto op = std::make_shared<Gradient<DT>>(a_cpp, b_cpp);
+		auto op = Gradient<DT>::add_gradients({a_cpp}, {b_cpp}, {})[0];
 		auto opBase = std::dynamic_pointer_cast<Operation<DT>>(op);
 		return LifetimeManager::instance().addOwnership(std::move(opBase));
 	}
 }
 
-Operation<TF_FLOAT>* make_op_partial_derivative(Operation<TF_FLOAT>* a, Operation<TF_FLOAT> *b) {
+Operation<TF_FLOAT>* make_op_partial_derivative_float(Operation<TF_FLOAT>* a, Operation<TF_FLOAT> *b) {
 	LOG(a, b);
 	return make_op_derivative(a, b);
 }
@@ -192,6 +193,7 @@ namespace {
 	template<TF_DataType DataTypeLabel>
 	GraphSession* make_graph_from_output(Operation<DataTypeLabel>* op)
 	{
+		LOG(op);
 		auto graphPtr = std::make_shared<GraphSession>();
 		graphPtr->add_output(graphPtr->add_operation(op));
 
@@ -201,6 +203,7 @@ namespace {
 	template<TF_DataType DataTypeLabel>
 	GraphSession* make_graph_from_outputs(Operation<DataTypeLabel>** op, size_t output_count)
 	{
+		LOG(op, output_count);
 		auto graphPtr = std::make_shared<GraphSession>();
 		for(size_t i=0; i<output_count; ++i)
 			graphPtr->add_output(graphPtr->add_operation(op[i]));
@@ -211,6 +214,7 @@ namespace {
 	template<TF_DataType DataTypeLabel>
 	Tensor<DataTypeLabel>** eval_graph(GraphSession *graph)
 	{
+		LOG(graph);
 		return graph->eval<DataTypeLabel>();
 	}
 
@@ -218,6 +222,7 @@ namespace {
 	Tensor<DataTypeLabel>** eval_graph_with_placeholders(GraphSession *graph,
 		const char **ph_names, Tensor<DataTypeLabel> **ph_values, size_t ph_count)
 	{
+		LOG(graph, ph_names, ph_values, ph_count);
 		std::map<std::string, std::shared_ptr<Tensor<DataTypeLabel>>> substitutions;
 		for(size_t i=0; i<ph_count; ++i)
 		{
@@ -250,3 +255,46 @@ Tensor<TF_FLOAT>** eval_graph_with_placeholders_float(GraphSession *graph, const
 	return eval_graph_with_placeholders<TF_FLOAT>(graph, ph_names, ph_values, ph_count);
 }
 
+#define DECLARE_OPS(typelabel) \
+TFL_API Operation<typelabel>* make_op_const_##typelabel(Tensor<typelabel>* tensor) { \
+	LOG(tensor); \
+	return make_op_const(tensor); \
+} \
+TFL_API Operation<typelabel>* make_op_placeholder_##typelabel(const char* name) { \
+	LOG(name); \
+	return make_op_placeholder<typelabel>(name); \
+} \
+TFL_API Operation<typelabel>* make_op_binary_##typelabel(const char* name, Operation<typelabel>* a, Operation<typelabel>* b) { \
+	LOG(name, a, b); \
+	return make_op_binary(name, a, b); \
+} \
+TFL_API Operation<typelabel>* make_op_unary_##typelabel(const char* name, Operation<typelabel>* a) { \
+	LOG(name, a); \
+	return make_op_unary(name, a); \
+} \
+TFL_API Operation<typelabel>* make_op_partial_derivative_##typelabel(Operation<typelabel>* a, Operation<typelabel>* b) { \
+	LOG(a, b); \
+	return make_op_derivative(a, b); \
+} \
+TFL_API size_t operation_hashcode_##typelabel(Operation<typelabel>* op) { \
+	LOG(op); \
+	return operation_hashcode(op); \
+} \
+TFL_API Tensor<typelabel>* eval_op_##typelabel(Operation<typelabel>* op) { \
+	LOG(op); \
+	return eval_op(op); \
+}
+
+DECLARE_OPS(TF_FLOAT);
+DECLARE_OPS(TF_DOUBLE);
+DECLARE_OPS(TF_INT8);
+DECLARE_OPS(TF_INT16);
+DECLARE_OPS(TF_INT32);
+DECLARE_OPS(TF_INT64);
+DECLARE_OPS(TF_UINT8);
+DECLARE_OPS(TF_UINT16);
+DECLARE_OPS(TF_UINT32);
+DECLARE_OPS(TF_UINT64);
+DECLARE_OPS(TF_BOOL);
+DECLARE_OPS(TF_STRING);
+//DECLARE_OPS(TF_HALF);

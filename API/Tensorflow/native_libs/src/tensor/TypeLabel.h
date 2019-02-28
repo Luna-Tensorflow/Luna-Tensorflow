@@ -7,48 +7,42 @@ template<TF_DataType DataTypeLabel>
 class Type {
 };
 
-template<>
-class Type<TF_FLOAT> {
+template<typename type>
+class SimpleType {
 public:
-	using type = float;
+    using tftype = type;
+    using lunatype = type;
+};
+
+#define SIMPLETYPE(label, type) template<> class Type<label> { \
+public: \
+    using tftype = type; \
+    using lunatype = type; \
+}
+
+SIMPLETYPE(TF_FLOAT, float);
+SIMPLETYPE(TF_DOUBLE, double);
+SIMPLETYPE(TF_INT8, int8_t);
+SIMPLETYPE(TF_INT16, int16_t);
+SIMPLETYPE(TF_INT32, int32_t);
+SIMPLETYPE(TF_INT64, int64_t);
+SIMPLETYPE(TF_UINT8, int8_t);
+SIMPLETYPE(TF_UINT16, uint16_t);
+SIMPLETYPE(TF_UINT32, uint32_t);
+SIMPLETYPE(TF_UINT64, uint64_t);
+
+template<>
+class Type<TF_BOOL> {
+public:
+    using tftype = bool;
+    using lunatype = uint8_t;
 };
 
 template<>
-class Type<TF_DOUBLE> {
+class Type<TF_STRING> {
 public:
-	using type = double;
+    using tftype = const char*;
+    using lunatype = char*;
 };
-
-
-template<>
-class Type<TF_INT8> {
-public:
-	using type = int8_t;
-};
-
-template<>
-class Type<TF_INT16> {
-public:
-	using type = int16_t;
-};
-
-template<>
-class Type<TF_INT32> {
-public:
-	using type = int32_t;
-};
-
-template<>
-class Type<TF_UINT32> {
-public:
-	using type = uint32_t;
-};
-
-template<>
-class Type<TF_UINT64> {
-public:
-	using type = uint64_t;
-};
-
 
 #endif //TFL_TYPELABEL_H

@@ -1,28 +1,84 @@
 import Std.Foreign
 import Std.Foreign.C.Value
+import Tensorflow.Types
 
-class TensorWrapper:
+class TensorWrapper a:
     ptr :: ManagedPointer None
-    #typename :: Text # TODO
+    typetag :: a
 
     def toCArg:
         self.ptr.toCArg
 
-    def length:
-        lengthFun = lookupSymbol "TFL" ("tensor_float_length")
-        res = lengthFun.call CInt64 [self.toCArg]
+    def numDims:
+        numDimsFun = lookupSymbol "TFL" ("get_tensor_num_dims_" + self.typetag.typename)
+
+        res = numDimsFun.call CInt64 [self.toCArg]
+
         res.toInt
 
-    def at indexes:
-        atFun = lookupSymbol "TFL" ("get_tensor_float_value_at")
-        cindexes = indexes.map CInt64.fromInt
-        res = atFun.call CFloat [self.toCArg, Array CInt64 . fromList cindexes . toCArg, CInt64.fromInt cindexes.length . toCArg]
-        res.toReal
+    def dim i:
+        dimFun = lookupSymbol "TFL" ("get_tensor_dim_" + self.typetag.typename)
 
-def create1dTensorWrapper values:
-    cvalues = values.map CFloat.fromReal
-    makeTensor = lookupSymbol "TFL" ("make_float_tensor")
+        res = dimFun.call CInt64 [self.toCArg, CInt32.fromInt i . toCArg]
+
+        res.toInt
+
+    def dims:
+        n = self.numDims
+
+        def fillDims i list:
+            if i >= 0 then fillDims (i - 1) (Prepend (self.dim i) list) else list
+
+        fillDims (n - 1) []
+
+    def at indexes:
+        atFun = lookupSymbol "TFL" ("get_tensor_value_at_" + self.typetag.typename)
+        cindexes = indexes.map CInt64.fromInt
+        res = atFun.call (self.typetag.ctype) [self.toCArg, Array CInt64 . fromList cindexes . toCArg, CInt64.fromInt cindexes.length . toCArg]
+        ret = self.typetag.fromC res
+        self.typetag.cleanupC res
+        ret
+
+    def atIndex index:
+        atIndexFun = lookupSymbol "TFL" ("get_tensor_value_at_index_" + self.typetag.typename)
+        res = atIndexFun.call (self.typetag.ctype) [self.toCArg, CInt64.fromInt index . toCArg]
+        ret = self.typetag.fromC res
+        self.typetag.cleanupC res
+        ret
+
+def createTensorWrapper typetag dims values:
+    expectedValuesCount = dims.foldLeft 1 (x: a: a * x)
+    if (values.length == expectedValuesCount).not then throw "values must be exactly of the size needed to fill a tensor with dimensions dims" else None
+
+    cvalues = values.each typetag.toC
+    cvaluesArray = (Array typetag.ctype) . fromList cvalues
+
+    cdims = dims.map CInt64.fromInt
+    cdimsArray = (Array CInt64) . fromList cdims
+
+    makeTensor = lookupSymbol "TFL" ("make_tensor_" + typetag.typename)
     releaseMethod = lookupSymbol "TFL" "release"
-    tensor = makeTensor.call (Pointer None) [Array CFloat . fromList cvalues . toCArg, CInt64.fromInt cvalues.length . toCArg]
+
+    tensor = makeTensor.call (Pointer None) [cvaluesArray.toCArg, cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg]
+
+    cvalues.each typetag.cleanupLuna
+
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
-    TensorWrapper managedTensor #"float" # TODO
+    TensorWrapper managedTensor typetag
+
+def createRandomTensorWrapper typetag dims minValue maxValue:
+    minCVal = typetag.toC minValue
+    maxCVal = typetag.toC maxValue
+
+    cdims = dims.map CInt64.fromInt
+    cdimsArray = (Array CInt64) . fromList cdims
+
+    makeRandomTensor = lookupSymbol "TFL" ("make_random_tensor_" + typetag.typename)
+    releaseMethod = lookupSymbol "TFL" "release"
+
+    tensor = makeRandomTensor.call (Pointer None) [cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg, minCVal . toCArg, maxCVal . toCArg]
+
+    managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
+    TensorWrapper managedTensor typetag
+
+

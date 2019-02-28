@@ -1,0 +1,28 @@
+import Std.Foreign
+import Std.Foreign.C.Value
+import Tensorflow.Operations
+
+def gradients ys xs dxs:
+    None # TODO check if argument types match
+    typetag = ys.head.get.wrapper.typetag
+    addGradients = lookupSymbol "TFL" ("add_gradients_" + typetag.typename)
+    releaseMethod = lookupSymbol "TFL" "release"
+
+    ysArr = Array (Pointer None) . fromList (ys.map y: y.ptr.ptr)
+    xsArr = Array (Pointer None) . fromList (xs.map x: x.ptr.ptr)
+
+    dxsPtr = if dxs.isEmpty then nullPtr else if dxs.length == ys.length then Array (Pointer None) . fromList (dxs.map dx: dx.ptr.ptr) . ptr . ptr else throw "gradients: dxs must be empty or of the same size as ys"
+
+    dysPtr = addGradients.call (Pointer (Pointer None)) [ysArr.toCArg, CInt64.fromInt ys.length . toCArg, xsArr.toCArg,
+            CInt64.fromInt xs.length . toCArg, dxsPtr.toCArg]
+
+    dysArr = Array (Pointer None) . make xs.length dysPtr
+
+    dysRet = dysArr . toList . each (ptr: operationFromPtr ptr typetag)
+
+    dysArr.free
+    ysArr.free
+    xsArr.free
+    dxsPtr.free
+
+    dysRet
