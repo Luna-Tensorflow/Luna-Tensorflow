@@ -169,10 +169,15 @@ def testAttrs:
     print "Attrs"
     aTensor = tensorFromList1d FloatType [1.0, 2.0, 3.0]
 
-    a = constGen aTensor FloatType.num
+    a = constGen "Const1" aTensor FloatType.num
     aJSON = a.toJSON
 
     if (aJSON.toText == '[1,2,3]').not then throw $ 'Attrs error: expected [1,2,3], got ' + aJSON.toText else None
+
+    numberOfNaNs = debugNanCountGen "NanCount1" a FloatType.num "" "" [] False
+
+    nansJSON = numberOfNaNs.toJSON
+    print nansJSON
 
     print "Attrs OK"
     print ""

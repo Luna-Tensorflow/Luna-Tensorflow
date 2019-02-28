@@ -35,20 +35,20 @@ def batchEvalSubstitutions list substitutions:
     releaseMethod = lookupSymbol "TFL" "release"
 
     carr = ManagedPointer (Pointer None) . mallocElems count
-    indexed = 0 . upto count . zip list
+    indexed = 0 . upto (count - 1) . zip list
     indexed . each (idx, elem):
         carr . moveElems idx . write (elem.ptr.ptr)
 
     (names, substs) = unzip substitutions
 
     subsNameArr = ManagedPointer CString . mallocElems phCount
-    indexed = 0 . upto phCount . zip names
+    indexed = 0 . upto (phCount - 1) . zip names
     indexed . each (idx, elem):
         subsNameArr . moveElems idx . write (CString . fromText elem)
 
 
     substsArr = ManagedPointer (Pointer None) . mallocElems phCount
-    indexed = 0 . upto phCount . zip substs
+    indexed = 0 . upto (phCount - 1) . zip substs
     indexed . each (idx, elem):
         substsArr . moveElems idx . write (elem.ptr.ptr)
 
@@ -61,6 +61,8 @@ def batchEvalSubstitutions list substitutions:
 
     freePointer = lookupSymbol "TFL" "free_pointer"
     freePointer.call None [returnedPtr.toCArg]
+
+    0.upto (phCount - 1) . each (idx: subsNameArr . moveElems idx . read . free)
 
     retval
 
@@ -130,7 +132,7 @@ def makeOutputWrappers name inputs noutputs attrList chosenName:
 
     count = inputs.length
     inputsCArr = ManagedPointer (Pointer None) . mallocElems count
-    indexed = 0 . upto count . zip inputs
+    indexed = 0 . upto (count - 1) . zip inputs
     indexed . each (idx, input):
         inputsCArr . moveElems idx . write input.ptr.ptr
 
