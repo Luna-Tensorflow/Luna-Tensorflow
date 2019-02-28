@@ -100,7 +100,7 @@ Tensor** batch_eval_op(Output** outs, size_t count)
 	for(size_t i=0; i<count; ++i)
 		graph.add_fetched_output(graph.add_output(outs[i]));
 
-	return graph.eval();
+	return LifetimeManager::instance().addOwnershipOfArray(graph.eval());
 }
 
 Tensor** batch_eval_op_placeholders(Output** outs, size_t op_count,
@@ -122,7 +122,8 @@ Tensor** batch_eval_op_placeholders(Output** outs, size_t op_count,
 			LifetimeManager::instance().accessOwned(ph_values[i]));
 	}
 
-	return graph.eval(substitutions).allocate_raw_outputs();
+	auto r = graph.eval(substitutions, State::make_empty()); // TODO support for state
+	return LifetimeManager::instance().addOwnershipOfArray(r->outputs);
 }
 
 GraphSession* make_graph_from_output(Output* out)
@@ -147,7 +148,7 @@ GraphSession* make_graph_from_outputs(Output** out, size_t output_count)
 Tensor** eval_graph(GraphSession *graph)
 {
 	LOG(graph);
-	return graph->eval();
+	return LifetimeManager::instance().addOwnershipOfArray(graph->eval());
 }
 
 Tensor** eval_graph_with_placeholders(GraphSession *graph,
@@ -161,5 +162,6 @@ Tensor** eval_graph_with_placeholders(GraphSession *graph,
 							  LifetimeManager::instance().accessOwned(ph_values[i]));
 	}
 
-	return graph->eval(substitutions).allocate_raw_outputs();
+	auto r = graph->eval(substitutions, State::make_empty()); // TODO support for state
+	return LifetimeManager::instance().addOwnershipOfArray(r->outputs);
 }

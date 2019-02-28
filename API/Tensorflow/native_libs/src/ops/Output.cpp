@@ -26,7 +26,7 @@ std::shared_ptr<Tensor> Output::eval() const {
     GraphSession graph;
     graph.add_fetched_output(graph.add_output(this));
 
-    Tensor** values = graph.eval();
+    Tensor** values = LifetimeManager::instance().addOwnershipOfArray(graph.eval());
 
     auto ptr = values[0];
     free(values);

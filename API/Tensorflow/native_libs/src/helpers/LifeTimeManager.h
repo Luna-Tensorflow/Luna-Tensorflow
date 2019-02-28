@@ -101,6 +101,16 @@ public:
         return ret;
     }
 
+    // NOTE: the array that is allocated here for transfer HAS to be freed by the caller
+    template<typename T>
+    T **addOwnershipOfArray(std::vector<std::shared_ptr<T>> arr) {
+        auto return_values = (T**) std::calloc(arr.size(), sizeof(T*));
+        for(size_t i=0; i<arr.size(); ++i)
+        {
+            return_values[i] = addOwnership(arr[i]);
+        }
+        return return_values;
+    }
 
     // TODO reconsider at some stage more explicit global state
     static auto &instance()
