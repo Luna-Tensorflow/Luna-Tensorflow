@@ -15,7 +15,7 @@ TF_Output Output::add_to_graph(GraphSession& graph) const {
         binder->add_to_graph(graph);
     }
 
-    return graph.add_output(this);
+    return graph.get_output(this);
 };
 
 size_t Output::hashcode() const {

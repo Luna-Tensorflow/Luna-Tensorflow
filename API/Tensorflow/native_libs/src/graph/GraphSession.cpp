@@ -27,9 +27,13 @@ bool GraphSession::exists(const Output *out) {
 
 TF_Output GraphSession::add_output(const Output *out) {
     if (exists(out))
-        return hashes[out->hashcode()];
+        return get_output(out);
 
     return (hashes[out->hashcode()] = out->add_to_graph(*this));
+}
+
+TF_Output GraphSession::get_output(const Output *out) {
+    return hashes[out->hashcode()];
 }
 
 std::shared_ptr<EvaluationResult> GraphSession::eval(
@@ -140,8 +144,6 @@ void GraphSession::register_assignment(const std::string &name, TF_Output value)
     assignments[name] = value;
 }
 
-std::shared_ptr<Variable> GraphSession::register_variable(const std::string &name, const std::shared_ptr<Tensor> &default_value) {
+void GraphSession::register_variable(const std::string &name, const std::shared_ptr<Tensor> &default_value) {
     variable_default_values[name] = default_value;
-
-    return not_implemented<std::shared_ptr<Variable>>();
 }

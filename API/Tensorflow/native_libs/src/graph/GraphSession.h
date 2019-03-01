@@ -48,6 +48,7 @@ public:
 	bool exists(const Output* out);
 
 	TF_Output add_output(const Output* out);
+	TF_Output get_output(const Output* out);
 
 	// TODO not sure if always want this as a shared_ptr, but usually yes
 	std::shared_ptr<EvaluationResult> eval(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions,
@@ -66,8 +67,7 @@ public:
 
 	// TODO this function may need more data
 	// variale dtype and shape are determined by its default value
-	std::shared_ptr<Variable>
-		register_variable(const std::string& name, const std::shared_ptr<Tensor>& default_value);
+	void register_variable(const std::string& name, const std::shared_ptr<Tensor>& default_value);
 
 	TF_Graph* get_underlying();
 
