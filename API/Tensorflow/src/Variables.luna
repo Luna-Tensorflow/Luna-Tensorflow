@@ -1,15 +1,17 @@
 import Tensorflow.CWrappers.Operations
+import Tensorflow.CWrappers.Variables
 import Tensorflow.Tensor
 import Tensorflow.Types
 import Tensorflow.Operations
 import Std.Foreign.C.Value
 
 class Variable a:
-     varwrapper :: ManagedPointer None # TODO
+     varrefwrapper :: VariableRefWrapper a
+     outputwrapper :: OutputWrapper a
 
      # :: OutputWrapper a
      def wrapper:
-         self.varwrapper.output
+         self.outputwrapper
 
      def eval:
          self.wrapper.eval

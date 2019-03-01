@@ -1,0 +1,8 @@
+import Std.Foreign
+import Std.Foreign.C.Value
+
+class VariableRefWrapper a:
+      ptr :: ManagedPointer
+      typetag :: a
+
+      # TODO
