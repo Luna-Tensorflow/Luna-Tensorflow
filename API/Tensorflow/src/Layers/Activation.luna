@@ -1,0 +1,24 @@
+import Tensorflow.Tensor
+import Tensorflow.Types
+import Tensorflow.Operations
+
+class ActivationLayer:
+    activationFunction :: Operation a -> Operation a
+    parentLayer # :: Layer # TODO no interfaces
+
+    # shape :: List Int
+    def shape: # activation function inherits parent's shape
+        self.parentLayer.shape
+
+    # forward :: Operation a -> Operation a
+    def forward inp:
+        myin = self.parentLayer.forward inp
+        out = self.activationFunction myin
+        out
+
+    # trainableVariables :: List Variable a
+    def trainableVariables:
+        []
+
+def tanhlayer parent:
+    ActivationLayer tanh parent

@@ -1,0 +1,34 @@
+import Tensorflow.Tensor
+import Tensorflow.Types
+import Tensorflow.Operations
+import Tensorflow.Layers.Activation
+
+def mockVar:
+    constFromScalar 1
+
+class DenseLayer:
+      shape :: List Int
+      weights # :: Variable a
+      biases # :: Variable a
+      parentLayer # :: Layer # TODO no interfaces
+
+      # forward :: Operation a -> Operation a
+      def forward inp:
+          myin = self.parentLayer.forward inp
+          prod = matMul weights myin
+          out = add prod biases
+          out
+
+      # trainableVariables :: List Variable a
+      def trainableVariables:
+          [self.weights, self.biases]
+
+def dense shape parent:
+    w = mockVar # TODO
+    b = mockVar # TODO
+    DenseLayer shape w b parent
+
+def denseWithActivation shape activationFunction parent:
+    d = dense shape parent
+    a = ActivationLayer activationFunction d
+    a

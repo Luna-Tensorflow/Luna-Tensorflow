@@ -1,0 +1,8 @@
+class GradientDescent:
+      lr :: Real
+
+      def makeOptimizingGraph todo:
+          [] # TODO
+
+def gradientDescentOptimizer lr:
+    GradientDescent

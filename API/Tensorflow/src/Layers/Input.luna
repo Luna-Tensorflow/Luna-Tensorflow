@@ -1,0 +1,17 @@
+import Tensorflow.Tensor
+import Tensorflow.Types
+import Tensorflow.Operations
+
+class InputLayer:
+      shape :: List Int
+
+      # forward :: Operation a -> Operation a
+      def forward inp:
+          inp
+
+      # trainableVariables :: List Variable a
+      def trainableVariables:
+          []
+
+def input shape:
+    InputLayer shape

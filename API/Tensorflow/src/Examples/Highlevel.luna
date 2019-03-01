@@ -1,0 +1,9 @@
+import Tensorflow.Layers.Input
+import Tensorflow.Layers.Dense
+import Tensorflow.Operations
+
+def exampleNet:
+    i = input [10]
+    d1 = denseWithActivation [20] tanh i
+    d2 = denseWithActivation [3] tanh d1
+    # TODO

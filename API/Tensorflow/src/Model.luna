@@ -1,0 +1,16 @@
+class Model:
+      evalgraph # TODO
+      traingraph # TODO
+      state # TODO
+
+      # evaluate :: Tensor a -> Tensor b
+      def evaluate inp:
+          0 # TODO
+
+      # train :: Model # TODO also take real time visualization of loss in GUI
+      def train x y:
+          self # TODO
+
+
+def makeModel input output optimizer loss:
+    Model [] [] [] # TODO
