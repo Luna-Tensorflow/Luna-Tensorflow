@@ -14,6 +14,15 @@
 class GraphSession;
 class Binder;
 
+/*
+ * An Output represents one of the outputs of the computation
+ * represented by it's parent Node (now: Binder).
+ * When creating a Node, we fetch its Outputs and may use them as inputs into other operations.
+ * Outputs are what is provided for a graph during evaluation to compute.
+ *
+ * Output's lifetime is managed by its owner and the shared_ptr reference to its Node
+ * makes sure the Node is alive as long as at least one of its Outputs need it.
+ */
 class Output {
 public:
     Output(std::shared_ptr<Binder> binder);
