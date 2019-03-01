@@ -10,16 +10,17 @@
 
 class Assign : public Binder {
 public:
-	static std::shared_ptr<Output> make_assign(std::shared_ptr<Variable> variable, std::shared_ptr<Output> value);
+	static std::shared_ptr<Output> make_assign(std::shared_ptr<Output> unit, std::shared_ptr<Variable> variable, std::shared_ptr<Output> value);
 
     void add_to_graph(GraphSession &graph) override;
 private:
-    Assign(std::shared_ptr<Variable> variable, std::shared_ptr<Output> value);
+    Assign(std::shared_ptr<Output> unit, std::shared_ptr<Variable> variable, std::shared_ptr<Output> value);
 
     size_t hashcode;
+    std::shared_ptr<Output> unit;
     std::shared_ptr<Variable> variable;
     std::shared_ptr<Output> value;
-    std::shared_ptr<Output> output;
+    std::weak_ptr<Output> output;
 };
 
 

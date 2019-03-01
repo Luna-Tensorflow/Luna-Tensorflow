@@ -36,6 +36,7 @@ private:
 
 	std::vector<TF_Output> output_nodes;
 	std::map<std::string, TF_Output> placeholders;
+	std::map<std::string, TF_Output> variables;
 	std::map<std::string, TF_Output> assignments;
 
 	// TODO implement reading variables from state + default values, may need more data here
@@ -58,7 +59,6 @@ public:
 	/*[[deprecated]]*/ std::vector<std::shared_ptr<Tensor>> eval() const;
 
 	void register_output_hash(size_t hash, TF_Output &out);
-
 	void register_placeholder(const std::string& name, TF_Output &out);
 
 	void add_fetched_output(TF_Output out);
@@ -67,7 +67,8 @@ public:
 
 	// TODO this function may need more data
 	// variale dtype and shape are determined by its default value
-	void register_variable(const std::string& name, const std::shared_ptr<Tensor>& default_value);
+	void register_variable(const std::string& name, const std::shared_ptr<Tensor>& default_value,
+		TF_Output tf_output);
 
 	TF_Graph* get_underlying();
 

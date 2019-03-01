@@ -14,14 +14,17 @@ public:
     // most likely it can be erased at this point, as we will try typechecking in Luna
     // and runtime errors shall be handled by TF anyway
     std::string get_name();
-    std::weak_ptr<Output> get_output();
+
+    static std::pair<std::shared_ptr<Variable>, std::shared_ptr<Output>> make_variable(std::string& name,
+        std::shared_ptr<Tensor> default_value);
 
 private:
-    Variable(std::shared_ptr<Tensor> defaultValue, std::string name);
+    Variable(std::string& name, std::shared_ptr<Tensor> default_value);
     void add_to_graph(GraphSession&);
 
-    std::weak_ptr<Output> my_output;
     std::string name;
+    std::shared_ptr<Tensor> default_value;
+    std::weak_ptr<Output> my_output;
 };
 
 

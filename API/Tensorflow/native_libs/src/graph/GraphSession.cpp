@@ -81,9 +81,15 @@ std::shared_ptr<EvaluationResult> GraphSession::eval(
 	    }
 
 	    std::vector<TF_Output> computed_outs = output_nodes;
+
 	    for (auto & p : assignments) {
 	        computed_outs.push_back(p.second);
 	    }
+	    for(auto & p : variables)
+	    {
+	    	computed_outs.push_back(p.second);
+	    }
+
 	    std::vector<TF_Tensor *> output_values(computed_outs.size());
 
 	    run_with_status<void>(std::bind(TF_SessionRun,
@@ -144,6 +150,8 @@ void GraphSession::register_assignment(const std::string &name, TF_Output value)
     assignments[name] = value;
 }
 
-void GraphSession::register_variable(const std::string &name, const std::shared_ptr<Tensor> &default_value) {
+void GraphSession::register_variable(const std::string &name, const std::shared_ptr<Tensor> &default_value,
+	TF_Output tf_output) {
     variable_default_values[name] = default_value;
+    variables[name] = tf_output;
 }
