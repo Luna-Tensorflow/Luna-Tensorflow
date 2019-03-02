@@ -19,7 +19,7 @@ class ActivationLayer layerT:
 
     # trainableVariables :: List Variable a
     def trainableVariables:
-        []
+        self.parentLayer.trainableVariables
 
 def tanhlayer parent:
     ActivationLayer tanh parent

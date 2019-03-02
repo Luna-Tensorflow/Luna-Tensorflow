@@ -35,6 +35,10 @@ class TFOutput:
     def toText:
         "Operation TODO" # TODO
 
+    # not sure if this is pretty to stay, but for now it's very useful
+    def typetag:
+        self.wrapper.typetag
+
 # makePlaceholder :: TypeTag -> Text -> TFOutput a
 def makePlaceholder typetag name:
     wrapper = makePlaceholderWrapper typetag name

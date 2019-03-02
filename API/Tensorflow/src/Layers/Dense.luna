@@ -1,11 +1,8 @@
 import Tensorflow.Tensor
 import Tensorflow.Types
 import Tensorflow.Operations
+import Tensorflow.Variables
 import Tensorflow.Layers.Activation
-
-def mockVar:
-    constFromScalar Int8Type 1
-
 
 # TODO these type parameters are temporary
 class DenseLayer varT layerT:
@@ -23,14 +20,16 @@ class DenseLayer varT layerT:
 
       # trainableVariables :: List Variable a
       def trainableVariables:
-          [self.weights, self.biases]
+          [self.weights, self.biases] + self.parentLayer.trainableVariables
 
+# dense :: List Int -> Layer -> Layer
 def dense shape parent:
-    w = mockVar # TODO
-    b = mockVar # TODO
+    w = variable "w" [] # TODO defaultValue, TODO name scope to layer - need a mechanism for prefixes
+    b = variable "b" [] # TODO j.w.
     d = DenseLayer shape w b parent
     d
 
+# denseWithActivation :: List Int -> (Operation a -> Operation a) -> Layer -> Layer
 def denseWithActivation shape activationFunction parent:
     d = dense shape parent
     a = ActivationLayer activationFunction d

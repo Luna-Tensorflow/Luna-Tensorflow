@@ -8,18 +8,24 @@ import Tensorflow.Losses.MSE
 import Tensorflow.Model
 
 def exampleNet:
+    print "Loading data"
     x = [] # TODO
     y = []
 
+    print "Building net"
     i = input FloatType [10]
     d1 = denseWithActivation [20] tanh i
     d2 = denseWithActivation [3] tanh d1
 
+    print "Compiling model"
     opt = gradientDescentOptimizer 0.1
     loss = meanSquareError
 
     model = makeModel i d2 opt loss
+
+    print "Training"
     fitted = model.train x y
 
+    print "Evaluation"
     pred = model.evaluate x
 

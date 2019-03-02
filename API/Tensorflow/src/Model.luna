@@ -11,7 +11,7 @@ class Model stateT:
       def evaluate x:
           self.evalgraph.evalSubsts [("x", x)] # TODO state
 
-      # train :: Model # TODO also take real time visualization of loss in GUI
+      # train :: Model # TODO also consider real time visualization of loss in GUI
       def train x y:
           self.traingraph.evalSubsts [("x", x), ("y", y)]
           newstate = self.state # TODO update state
@@ -20,10 +20,14 @@ class Model stateT:
 
 def makeModel input output optimizer loss:
     inputPlaceholder = makePlaceholder input.typetag "x"
-    out = output.forward inputPlaceholder
-    0 # TODO y placeholder
-    evalgraph = makeGraphFromOutput out
+    yPred = output.forward inputPlaceholder
+    outType = yPred.typetag
 
-    traingraph = evalgraph # TODO actually implement training using optimizer, loss
+    yTruePlaceholder = makePlaceholder outType "y"
+
+    evalgraph = makeGraphFromOutput yPred
+
+    variables = output.trainableVariables
+    traingraph = optimizer.makeOptimizingGraph yTruePlaceholder yPred loss variables
 
     Model evalgraph traingraph [] # TODO
