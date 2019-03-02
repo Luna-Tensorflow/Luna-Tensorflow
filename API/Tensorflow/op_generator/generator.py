@@ -33,7 +33,7 @@ def attr_code(attr):
                  '    cdimsArray.free\n'.format(adjusted_name),
         'list(shape)': '    len = {0}.length\n'
                        '    cValues = ManagedPointer (Pointer CInt64) . mallocElems len\n'
-                       '    indexed = 0.upto len . zip {0}\n'
+                       '    indexed = 0.upto (len - 1) . zip {0}\n'
                        '    indexed.each (idx, elem):\n'
                        '            cValues.moveElems idx . write (Array CInt64 . fromList (elem.map CInt64.fromInt))\n'
                        '    cLengths = ManagedPointer CUInt32 . mallocElems len\n'
@@ -78,12 +78,13 @@ def attr_code(attr):
                   '    valCStr.free\n'.format(adjusted_name),
         'list(string)': '    len = {0}.length\n'
                         '    cValues = ManagedPointer (Pointer CInt64) . mallocElems len\n'
-                        '    indexed = 0.upto len . zip {0}\n'
+                        '    indexed = 0.upto (len - 1) . zip {0}\n'
                         '    indexed.each (idx, elem):\n'
                         '            cValues.moveElems idx . write (CString.fromText elem)\n'
                         '    addAttrStringList.call None '
                         '[attrList.toCArg, nameCStr.toCArg, cValues.toCArg, CUInt32.fromInt len . toCArg]\n'
-                        '    0.upto (len - 1) . each (idx: cValues.moveElems idx . read . free)\n'.format(adjusted_name),
+                        '    0.upto (len - 1) . each (idx: cValues.moveElems idx . read . free)\n'
+                        .format(adjusted_name),
         'func': '    funcNameCStr = CString.fromText {}\n'
                 '    addAttrFuncName.call None [attrList.toCArg, nameCStr.toCArg, funcNameCStr.toCArg]\n'
                 '    funcNameCStr.free\n'.format(adjusted_name)
