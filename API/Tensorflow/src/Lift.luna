@@ -14,7 +14,7 @@ def lift1 fun:
     graph = makeGraphFromOutputList result
 
     def liftedf a:
-        graph . evalSubsts [("1", a)]
+        (graph . evalSubsts makeEmptyState [("1", a)]).first
     liftedf
 
 # lift2 :: (TFOutput a1 -> TFOutput a2 -> (List TFOutput b)) -> Tensor a1 -> Tensor a2 -> (List Tensor b)
@@ -25,7 +25,7 @@ def lift2 fun:
     graph = makeGraphFromOutputList result
 
     def liftedf a b:
-        graph . evalSubsts [("1", a), ("2", b)]
+        (graph . evalSubsts makeEmptyState [("1", a), ("2", b)]).first
     liftedf
 
 # lift3 :: (TFOutput a1 -> TFOutput a2 -> TFOutput a3 -> (List TFOutput b)) -> Tensor a1 -> Tensor a2 -> Tensor a3 -> (List Tensor b)
@@ -37,7 +37,7 @@ def lift3 fun:
     graph = makeGraphFromOutputList result
 
     def liftedf a b c:
-        graph . evalSubsts [("1", a), ("2", b), ("3", c)]
+        (graph . evalSubsts makeEmptyState [("1", a), ("2", b), ("3", c)]).first
     liftedf
 
 # lift4 :: (TFOutput a1 -> TFOutput a2 -> TFOutput a3 -> TFOutput a4 -> (List TFOutput b)) -> Tensor a1 -> Tensor a2 -> Tensor a3 -> Tensor a4 -> (List Tensor b)
@@ -50,7 +50,7 @@ def lift4 fun:
     graph = makeGraphFromOutputList result
 
     def liftedf a b c d:
-        graph . evalSubsts [("1", a), ("2", b), ("3", c), ("4", d)]
+        (graph . evalSubsts makeEmptyState [("1", a), ("2", b), ("3", c), ("4", d)]).first
     liftedf
 
 # lift5 :: (TFOutput a1 -> TFOutput a2 -> TFOutput a3 -> TFOutput a4 -> TFOutput a5 -> (List TFOutput b)) -> Tensor a1 -> Tensor a2 -> Tensor a3 -> Tensor a4 -> Tensor a5 -> (List Tensor b)
@@ -64,6 +64,6 @@ def lift5 fun:
     graph = makeGraphFromOutputList result
 
     def liftedf a b c d e:
-        graph . evalSubsts [("1", a), ("2", b), ("3", c), ("4", d), ("5", e)]
+        (graph . evalSubsts makeEmptyState [("1", a), ("2", b), ("3", c), ("4", d), ("5", e)]).first
     liftedf
 

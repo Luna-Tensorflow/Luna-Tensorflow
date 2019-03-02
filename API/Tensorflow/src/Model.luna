@@ -9,13 +9,13 @@ class Model stateT:
 
       # evaluate :: Tensor a -> Tensor b
       def evaluate x:
-          self.evalgraph.evalSubsts [("x", x)] # TODO state
+          (res, state') = self.evalgraph.evalSubsts self.state [("x", x)]
+          res
 
       # train :: Model # TODO also consider real time visualization of loss in GUI
       def train x y:
-          self.traingraph.evalSubsts [("x", x), ("y", y)]
-          newstate = self.state # TODO update state
-          Model self.evalgraph self.traingraph newstate
+          (res, state') = self.traingraph.evalSubsts self.state [("x", x), ("y", y)]
+          Model self.evalgraph self.traingraph state'
 
 
 def makeModel input output optimizer loss:

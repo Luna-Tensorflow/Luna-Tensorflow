@@ -1,6 +1,21 @@
 import Tensorflow.CWrappers.Graph
 import Tensorflow.Operations
 
+class State a:
+      wrapper :: a # TODO make C wrapper for this
+
+# makeEmptyState :: State
+def makeEmptyState:
+    State []
+
+# alterState :: State -> List Tuple2 String Tensor -> State
+def alterState state values:
+    state # TODO call C
+
+# setVarInState :: State -> String -> Tensor -> State
+def setVarInState state varname value:
+    alterState state [(varname, value)]
+
 class TFGraph:
     wrapper :: GraphWrapper
     outputs :: List (Operation)
@@ -9,13 +24,13 @@ class TFGraph:
     def ptr:
         self.wrapper.ptr
 
-    # eval :: List Tensor a
-    def eval:
-        self.evalSubsts []
+    # eval :: State -> (List Tensor a, State)
+    def eval state:
+        self.evalSubsts state []
 
-    # evalSubsts :: List Tuple2 String (Tensor a) -> List Tensor a
-    def evalSubsts substs:
-        self.wrapper.evalSubsts self.outputs.length substs
+    # evalSubsts :: State -> List Tuple2 String (Tensor a) -> (List Tensor a, State)
+    def evalSubsts state substs:
+        (self.wrapper.evalSubsts self.outputs.length substs, []) # TODO implement State
 
     # toJSON :: JSON
     def toJSON:

@@ -61,7 +61,7 @@ def liftNet fun layercount:
 
         params = [("lr", lr), ("in", in), ("out", out)]
         inputs = params + weights + biases
-        res = graph . evalSubsts inputs
+        res = (graph . evalSubsts makeEmptyState inputs).first
         res1 = res . take layercount
         res2 = res . drop layercount
         [res1, res2]
@@ -83,7 +83,7 @@ def liftNet2 fun layercount:
 
         params = [("in", in)]
         inputs = params + weights + biases
-        res = graph . evalSubsts inputs
+        res = (graph . evalSubsts makeEmptyState inputs).first
         res
     liftedNet
 
