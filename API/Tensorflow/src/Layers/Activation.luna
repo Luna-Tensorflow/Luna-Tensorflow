@@ -2,9 +2,10 @@ import Tensorflow.Tensor
 import Tensorflow.Types
 import Tensorflow.Operations
 
-class ActivationLayer:
+# TODO this type parameter is temporary, due to lack of interfaces
+class ActivationLayer layerT:
     activationFunction :: Operation a -> Operation a
-    parentLayer # :: Layer # TODO no interfaces
+    parentLayer :: layerT # :: Layer # TODO no interfaces
 
     # shape :: List Int
     def shape: # activation function inherits parent's shape

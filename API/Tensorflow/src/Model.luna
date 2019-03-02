@@ -1,16 +1,29 @@
-class Model:
-      evalgraph # TODO
-      traingraph # TODO
-      state # TODO
+import Tensorflow.Graph
+import Tensorflow.Operations
+
+# TODO add state type once it's implemented
+class Model stateT:
+      evalgraph :: TFGraph
+      traingraph :: TFGraph
+      state :: stateT # TODO
 
       # evaluate :: Tensor a -> Tensor b
-      def evaluate inp:
-          0 # TODO
+      def evaluate x:
+          self.evalgraph.evalSubsts [("x", x)] # TODO state
 
       # train :: Model # TODO also take real time visualization of loss in GUI
       def train x y:
-          self # TODO
+          self.traingraph.evalSubsts [("x", x), ("y", y)]
+          newstate = self.state # TODO update state
+          Model self.evalgraph self.traingraph newstate
 
 
 def makeModel input output optimizer loss:
-    Model [] [] [] # TODO
+    inputPlaceholder = makePlaceholder input.typetag "x"
+    out = output.forward inputPlaceholder
+    0 # TODO y placeholder
+    evalgraph = makeGraphFromOutput out
+
+    traingraph = evalgraph # TODO actually implement training using optimizer, loss
+
+    Model evalgraph traingraph [] # TODO

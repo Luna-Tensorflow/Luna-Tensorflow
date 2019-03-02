@@ -1,9 +1,25 @@
-import Tensorflow.Layers.Input
-import Tensorflow.Layers.Dense
+import Tensorflow.Types
 import Tensorflow.Operations
 
+import Tensorflow.Layers.Input
+import Tensorflow.Layers.Dense
+import Tensorflow.Optimizers.GradientDescent
+import Tensorflow.Losses.MSE
+import Tensorflow.Model
+
 def exampleNet:
-    i = input [10]
+    x = [] # TODO
+    y = []
+
+    i = input FloatType [10]
     d1 = denseWithActivation [20] tanh i
     d2 = denseWithActivation [3] tanh d1
-    # TODO
+
+    opt = gradientDescentOptimizer 0.1
+    loss = meanSquareError
+
+    model = makeModel i d2 opt loss
+    fitted = model.train x y
+
+    pred = model.evaluate x
+
