@@ -35,6 +35,13 @@ TFL_API Tensor** eval_graph_with_placeholders(GraphSession* graph, const char** 
 TFL_API void** make_variable(const char* name, Tensor* default_value);
 TFL_API Output* make_assign(Output* unit, Variable* var, Output* value);
 
+TFL_API State* make_empty_state(void);
+TFL_API Tensor* get_value_from_state(State* ptr, const char* name);
+TFL_API Tensor** get_values_from_state(State* ptr, const char** names, size_t count);
+
+TFL_API State* update_value_state(State* ptr, const char* name, const Tensor* newvalue);
+TFL_API State* update_state(State* ptr, const char** names, const Tensor** newvalues, size_t count);
+
 TFL_API Output** make_op(const char *name, Output **inputs, int ninputs, int noutputs, std::vector<std::shared_ptr<Attr>> *attr_list, const char *chosen_name);
 TFL_API Output* make_op_const(Tensor* tensor);
 TFL_API Output* make_op_placeholder(const char* name, TF_DataType type);

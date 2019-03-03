@@ -1,20 +1,41 @@
 import Tensorflow.CWrappers.Graph
+import Tensorflow.CWrappers.State
 import Tensorflow.Operations
 
-class State a:
-      wrapper :: a # TODO make C wrapper for this
+class State:
+    wrapper :: StateWrapper
+
+    def values names:
+        wrappers = self.wrapper.values names
+        wrappers . each(x: Tensor x)
+
+    def value name:
+        wrapper = self.wrapper.value name
+        Tensor wrapper
+
+    def updateOne name value:
+        wrapper = self.wrapper.updateOne name value
+        Tensor wrapper
+
+    def update values:
+        wrapper = self.wrappers.update values
+        State wrapper
+
 
 # makeEmptyState :: State
 def makeEmptyState:
-    State []
+    wrapper = emptyState
+    State wrapper
 
-# alterState :: State -> List Tuple2 String Tensor -> State
+# alterState :: State -> List Tuple2 Text Tensor -> State
 def alterState state values:
-    state # TODO call C
+    newstate = state . update values
+    newstate
 
-# setVarInState :: State -> String -> Tensor -> State
+# setVarInState :: State -> Text -> Tensor -> State
 def setVarInState state varname value:
-    alterState state [(varname, value)]
+    newstate = state . updateOne varname value
+    newstate
 
 class TFGraph:
     wrapper :: GraphWrapper
@@ -28,9 +49,9 @@ class TFGraph:
     def eval state:
         self.evalSubsts state []
 
-    # evalSubsts :: State -> List Tuple2 String (Tensor a) -> (List Tensor a, State)
+    # evalSubsts :: State -> List Tuple2 Text (Tensor a) -> (List Tensor a, State)
     def evalSubsts state substs:
-        (self.wrapper.evalSubsts self.outputs.length substs, []) # TODO implement State
+        (self.wrapper.evalSubsts self.outputs.length substs, makeEmptyState) # TODO implement State
 
     # toJSON :: JSON
     def toJSON:

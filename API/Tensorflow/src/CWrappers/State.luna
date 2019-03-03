@@ -1,0 +1,76 @@
+import Std.Foreign.C.Value
+
+import Tensorflow.CWrappers.Tensor
+
+def unzip listpair: case listpair of
+    Empty: (Empty, Empty)
+    Prepend (x,y) tail: case unzip tail of
+        (tailx, taily): ((Prepend x tailx), (Prepend y taily))
+
+class StateWrapper:
+    ptr :: ManagedPointer None
+
+    def toCArg:
+        self.ptr.toCArg
+
+    def values names:
+        count = names . length
+        releaseMethod = lookupSymbol "TFL" "release"
+        getValuesOp = lookupSymbol "TFL" "get_values_from_state"
+
+        varNameArr = ManagedPointer CString . mallocElems phCount
+        indexed = 0 . upto phCount . zip names
+        indexed . each (idx, elem):
+            varNameArr . moveElems idx . write (CString . fromText elem)
+
+        returnedPtr = getValuesOp.call (Pointer (Pointer None)) [self.toCArg,
+                varNameArr.toCArg, (CInt64.fromInt count).toCArg]
+
+        returnedArr = Array (Pointer None) . make count returnedPtr
+
+        retval = returnedArr . toList . each (x: TensorWrapper ManagedPointer None . fromPtr releaseMethod x)
+
+        freePointer = lookupSymbol "TFL" "free_pointer"
+        freePointer.call None [returnedPtr.toCArg]
+
+        retval
+
+    def value name:
+        releaseMethod = lookupSymbol "TFL" "release"
+        getValueOp = lookupSymbol "TFL" "get_value_from_state"
+
+        retptr =  getValueOp . call (Pointer None) [self.toCArg, CString . fromText name . toCArg]
+        managed = ManagedPointer None . fromPtr releaseMethod retptr
+        TensorWrapper managed
+
+    def update values:
+        count = values . length
+        releaseMethod = lookupSymbol "TFL" "release"
+        updateOp = lookupSymbol "TFL" "update_values_state"
+
+        (valnames, vals) = unzip values
+
+        varNameArr = ManagedPointer CString . mallocElems count
+        indexed = 0 . upto count . zip names
+        indexed . each (idx, elem):
+            varNameArr . moveElems idx . write (CString . fromText elem)
+
+        valsArr = ManagedPointer (Pointer None) . mallocElems count
+        indexed = 0 . upto count . zip substs
+        indexed . each (idx, elem):
+            valsArr . moveElems idx . write (elem.ptr.ptr)
+
+        newstatePtr = updateOp.call (Pointer None) [self.toCArg,
+                varNameArr.toCArg, valsArr.toCArg, (CInt64.fromInt count).toCArg]
+
+        managed = ManagedPointer None . fromPtr releaseMethod newstatePtr
+        StateWrapper managed
+
+
+def emptyState:
+    releaseMethod = lookupSymbol "TFL" "release"
+    newstateOp = lookupSymbol "TFL" "make_empty_state"
+
+    ptr = newstateOp . call (Pointer None) []
+    managed = ManagedPointer None . fromPtr releaseMethod ptr
+    StateWrapper managed

@@ -7,13 +7,17 @@
 #include <cstdio>
 #include <vector>
 #include <algorithm>
+
 #include "../helpers/utils.h"
-#include "../ops/Operation.h"
 #include "../helpers/LifeTimeManager.h"
+
+#include "../ops/Operation.h"
 #include "../ops/Gradient.h"
 #include "../ops/Attr.h"
+
 #include "../state/Variable.h"
 #include "../state/Assign.h"
+#include "../state/State.h"
 
 namespace {
 	Output **make_op_helper(const char *name, std::vector<Output *> inputs, std::vector<std::shared_ptr<Attr>> attrs,
@@ -56,6 +60,63 @@ void** make_variable(const char* name, Tensor* val)
 	arr[1] = static_cast<void*>(LifetimeManager::instance().addOwnership(out_var.second));
 
 	return arr;
+}
+
+State* make_empty_state(void)
+{
+	LOG();
+	auto state = State::make_empty();
+	return LifetimeManager::instance().addOwnership(state);
+}
+
+Tensor* get_value_from_state(State* ptr, const char* name)
+{
+    LOG(ptr, name);
+    auto stateptr = LifetimeManager::instance().accessOwned(ptr);
+    return ptr->get(std::string(name)).get();
+}
+
+Tensor** get_values_from_state(State* ptr, const char** names, size_t count)
+{
+    LOG(ptr, names, count);
+    auto stateptr = LifetimeManager::instance().accessOwned(ptr);
+	std::vector<std::string> names_v(count);
+	std::transform(names, names+count, names_v.begin(), [](auto name) {
+	    return std::string(name);
+	});
+
+	auto returned = stateptr->get(names_v);
+
+	auto returned_ptrs = static_cast<Tensor**>(malloc(count * sizeof(Tensor*)));
+	std::transform(returned.begin(), returned.end(), returned_ptrs, [](auto ptr) {
+	    return ptr.get();
+	});
+
+	return returned_ptrs;
+}
+
+State* update_value_state(State* ptr, const char* name, const Tensor* newvalue)
+{
+    LOG(ptr, name, newvalue);
+    std::string sname(name);
+    auto tensorptr = LifetimeManager::instance().accessOwned(newvalue);
+    auto stateptr = LifetimeManager::instance().accessOwned(ptr);
+
+    return LifetimeManager::instance().addOwnership(stateptr->updated(sname, tensorptr));
+}
+
+State* update_state(State* ptr, const char** names, const Tensor** newvalues, size_t count)
+{
+    LOG(ptr, names, newvalues, count);
+    std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> valuation;
+    valuation.reserve(count);
+
+    for(size_t i=0; i<count; ++i)
+        valuation.emplace_back(std::string(names[i]),
+            LifetimeManager::instance().accessOwned(newvalues[i]));
+
+    auto newvals = LifetimeManager::instance().accessOwned(ptr)->updated(valuation);
+    return LifetimeManager::instance().addOwnership(newvals);
 }
 
 Output* make_assign(Output* unit, Variable* var, Output* value)

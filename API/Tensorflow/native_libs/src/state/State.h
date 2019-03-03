@@ -28,7 +28,6 @@ public:
         return std::make_shared<State>();
     }
 
-
     // returns nullptr if values does not exist
     std::shared_ptr<Tensor> get(const std::string &name) {
         auto it = valuation.find(name);
@@ -36,6 +35,17 @@ public:
             return nullptr;
         }
         return it->second;
+    }
+
+    std::vector<std::shared_ptr<Tensor>> get(const std::vector<std::string>& names)
+    {
+        std::vector<std::shared_ptr<Tensor>> values(names.size());
+        std::transform(names.begin(), names.end(), values.begin(), [&](const std::string& name)
+        {
+            return get(name);
+        });
+
+        return values;
     }
 };
 
