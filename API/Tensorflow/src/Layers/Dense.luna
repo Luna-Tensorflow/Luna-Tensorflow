@@ -24,8 +24,8 @@ class DenseLayer varT layerT:
 
 # dense :: List Int -> Layer -> Layer
 def dense shape parent:
-    w = variable "w" [] # TODO defaultValue, TODO name scope to layer - need a mechanism for prefixes
-    b = variable "b" [] # TODO j.w.
+    w = variable "w" (randomTensor FloatType [1] 0.0 1.0)  # TODO defaultValue, TODO name scope to layer - need a mechanism for prefixes
+    b = variable "b" (randomTensor FloatType [1] 0.0 1.0) # TODO j.w.
     d = DenseLayer shape w b parent
     d
 

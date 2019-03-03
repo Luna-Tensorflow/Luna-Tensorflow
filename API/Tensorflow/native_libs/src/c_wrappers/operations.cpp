@@ -12,6 +12,8 @@
 #include "../helpers/LifeTimeManager.h"
 #include "../ops/Gradient.h"
 #include "../ops/Attr.h"
+#include "../state/Variable.h"
+#include "../state/Assign.h"
 
 namespace {
 	Output **make_op_helper(const char *name, std::vector<Output *> inputs, std::vector<std::shared_ptr<Attr>> attrs,
@@ -39,6 +41,33 @@ namespace {
 		free(arr);
 		return ret;
 	}
+}
+
+void** make_variable(const char* name, Tensor* val)
+{
+	LOG(name, val);
+	auto tensor_ptr = LifetimeManager::instance().accessOwned(val);
+	std::string sname(name);
+
+	auto arr = static_cast<void**> (malloc(2 * sizeof(void*)));
+	auto out_var = Variable::make_variable(sname, tensor_ptr);
+
+	arr[0] = static_cast<void*>(LifetimeManager::instance().addOwnership(out_var.first));
+	arr[1] = static_cast<void*>(LifetimeManager::instance().addOwnership(out_var.second));
+
+	return arr;
+}
+
+Output* make_assign(Output* unit, Variable* var, Output* value)
+{
+	LOG(unit, var, value);
+	auto unitPtr = LifetimeManager::instance().accessOwned(unit);
+	auto varPtr = LifetimeManager::instance().accessOwned(var);
+	auto valPtr = LifetimeManager::instance().accessOwned(value);
+
+	auto newUnitPtr = Assign::make_assign(unitPtr, varPtr, valPtr);
+
+	return LifetimeManager::instance().addOwnership(newUnitPtr);
 }
 
 Output **make_op(const char *name, Output **inputs, int ninputs, int noutputs, std::vector<std::shared_ptr<Attr>>* attr_list, const char *chosen_name) {

@@ -19,19 +19,22 @@ class Variable a:
      def toJSON:
          self.eval.toJSON
 
-# makeVariable :: Text -> Tensor a -> Variable a
+     def ptr:
+        self.varrefwrapper.ptr
+
+# variable :: Text -> Tensor a -> Variable a
 def variable name defaultValue:
-    print "not implemented"
-    constFromScalar FloatType 1.0 # mock var with const
+    (varref, output) = makeVariableWrappers name defaultValue
+    Variable varref output
 
 # returns the same operation as its first argument but enriched with a side effect of assigning val to var when this operation is computed in a graph
 # assign :: Operation a -> Variable b -> Operation b -> Operation a
 def assign unit var val:
-    print "not implemented"
-    unit
+    wrapper = makeAssign unit var val
+    TFOutput wrapper
 
 # this is an operation that is meant to have no value, it may be used to build graphs that consist of only side effects
 # for now it's implemented as a constant, but it should be rewritten so that no TF operations can be done on it besides providing it as a first argument of apply and output to compute in a graph
 # Operation ()
 def unitOp:
-    constFromScalar Int8Type 1
+    constFromScalar FloatType 1.0
