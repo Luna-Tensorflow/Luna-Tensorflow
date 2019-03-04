@@ -126,7 +126,9 @@ def outputWrapperFromPtr typetag ptr:
     OutputWrapper managedOutputPtr typetag
 
 
-def makeOutputWrappers name inputs noutputs attrList chosenName:
+def makeOutputWrappers name inputs outputTypetags attrList chosenName:
+    noutputs = outputTypetags.length
+
     makeOp = lookupSymbol "TFL" "make_op"
     releaseMethod = lookupSymbol "TFL" "release"
 
@@ -142,7 +144,8 @@ def makeOutputWrappers name inputs noutputs attrList chosenName:
     outsPtr = makeOp.call (Pointer (Pointer None)) [nameCStr.toCArg, inputsCArr.toCArg, CInt32.fromInt inputs.length . toCArg, CInt32.fromInt noutputs . toCArg, attrList.toCArg, chosenNameCStr.toCArg]
 
     outsArr = Array (Pointer None) . make noutputs outsPtr
-    outs = outsArr.toList.each (outputWrapperFromPtr FloatType) # TODO: different types support
+    typedOuts = outputTypetags.zip outsArr.toList
+    outs = typedOuts.each (typetag, output): outputWrapperFromPtr typetag output
 
     nameCStr.free
     chosenNameCStr.free

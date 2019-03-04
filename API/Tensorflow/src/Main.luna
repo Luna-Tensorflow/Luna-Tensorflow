@@ -169,12 +169,12 @@ def testAttrs:
     print "Attrs"
     aTensor = tensorFromList1d FloatType [1.0, 2.0, 3.0]
 
-    a = constGen "testAttrs_a" aTensor FloatType.num
+    a = constGen "testAttrs_a" aTensor FloatType
     aJSON = a.toJSON
 
     if (aJSON.toText == '[1,2,3]').not then throw $ 'Attrs error: expected [1,2,3], got ' + aJSON.toText else None
 
-    aIdentity = debugIdentityGen "testAttrs_aIdentity" a FloatType.num "" "InputTensorName" [] False
+    aIdentity = debugIdentityGen "testAttrs_aIdentity" a FloatType "" "InputTensorName" [] False
 
     aIdentityJSON = aIdentity.toJSON
     if (aIdentityJSON == aJSON).not then throw $ 'Attrs error: expected [1,2,3], got ' + aIdentityJSON.toText else None

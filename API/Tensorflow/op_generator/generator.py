@@ -1,5 +1,6 @@
 from tensorflow.core.framework import op_def_pb2
 from cffi import FFI
+from itertools import chain
 
 generated_ops_file = '../src/GeneratedOps.luna'
 file_header = """import Std.Foreign
@@ -10,6 +11,21 @@ import Tensorflow.Operations"""
 
 underscore_replacement = 'x'  # TODO: what to do with this?
 
+typetags = {
+    1: 'FloatType',
+    2: 'DoubleType',
+    3: 'Int32Type',
+    4: 'UInt8Type',
+    5: 'Int16Type',
+    6: 'Int8Type',
+    7: 'StringType',
+    9: 'Int64Type',
+    10: 'BoolType',
+    17: 'UInt16Type',
+    22: 'UInt32Type',
+    23: 'UInt64Type'
+}
+
 
 def lunify_name(name):
     return (name[:1].lower() + name[1:]).replace('_', underscore_replacement)
@@ -19,9 +35,9 @@ def attr_code(attr):
     adjusted_name = lunify_name(attr.name)
 
     attr_function_calls = {
-        'type': '    addAttrType.call None [attrList.toCArg, nameCStr.toCArg, CInt32.fromInt {} . toCArg]\n'
+        'type': '    addAttrType.call None [attrList.toCArg, nameCStr.toCArg, CInt32.fromInt {}.num . toCArg]\n'
                 .format(adjusted_name),
-        'list(type)': '    ctypes = {0}.map CInt32.fromInt\n'
+        'list(type)': '    ctypes = {0}.map (type: CInt32.fromInt type.num)\n'
                       '    ctypesArray = (Array CInt32) . fromList ctypes\n'
                       '    addAttrTypeList.call None '
                       '[attrList.toCArg, nameCStr.toCArg, ctypesArray.toCArg, CUInt32.fromInt {0}.length . toCArg]\n'
@@ -95,6 +111,17 @@ def attr_code(attr):
         + '    nameCStr.free\n'
 
 
+def output_arg_typetag(output_arg, op):
+    if output_arg.type:
+        return typetags[output_arg.type]
+
+    for input_arg in op.input_arg:
+        if input_arg.type_attr == output_arg.type_attr:
+            return '{}.wrapper.typetag'.format(lunify_name(input_arg.name))
+
+    return lunify_name(output_arg.type_attr)
+
+
 def op_code(operation):
     nargs = len(operation.input_arg)
     noutputs = len(operation.output_arg)
@@ -145,7 +172,12 @@ def op_code(operation):
         make_wrappers += lunify_name(operation.input_arg[i].name)
         if i < nargs - 1:
             make_wrappers += ', '
-    make_wrappers += '] ' + str(noutputs) + ' attrList chosenName\n'
+    make_wrappers += '] ['
+    for i in range(noutputs):
+        make_wrappers += output_arg_typetag(operation.output_arg[i], operation)
+        if i < noutputs - 1:
+            make_wrappers += ', '
+    make_wrappers += '] attrList chosenName\n'
 
     if noutputs == 1:
         return_line = '    TFOutput wrappers.head.get'
@@ -174,10 +206,28 @@ ops = TF.TF_GetAllOpList()
 opList = op_def_pb2.OpList()
 opList.ParseFromString(ffi.buffer(ops.data, ops.length)[:])
 
-with open(generated_ops_file, 'w+') as f:
+
+def has_tensor_list(op):
+    return any(arg.type_list_attr or arg.number_attr for arg in chain(op.input_arg, op.output_arg))
+
+
+def has_supported_types(op):
+    for arg in chain(op.input_arg, op.output_arg):
+        if arg.type:
+            if arg.type not in typetags.keys():
+                return False
+        else:
+            type_attr = next(filter(lambda attr: attr.name == arg.type_attr, op.attr))
+            if type_attr.HasField('allowed_values') and \
+                    not any(dtype in typetags.keys() for dtype in type_attr.allowed_values.list.type):
+                return False
+    return True
+
+
+with open(generated_ops_file, 'w') as f:
     f.write(file_header)
     for op in opList.op:
-        if not op.is_stateful:
+        if not op.is_stateful and not has_tensor_list(op) and has_supported_types(op):
             f.write('\n\n' + op_code(op))
     f.write('\n')
 
