@@ -4,12 +4,13 @@ import Tensorflow.Operations
 
 # TODO this type parameter is temporary, due to lack of interfaces
 class ActivationLayer layerT:
+    name :: Text
     activationFunction :: Operation a -> Operation a
     parentLayer :: layerT # :: Layer # TODO no interfaces
 
     # shape :: List Int
-    def shape: # activation function inherits parent's shape
-        self.parentLayer.shape
+    def shape:
+        self.parentLayer.shape # activation function inherits parent's shape
 
     # forward :: Operation a -> Operation a
     def forward inp:
@@ -21,5 +22,8 @@ class ActivationLayer layerT:
     def trainableVariables:
         self.parentLayer.trainableVariables
 
+    def outputType:
+        self.parentLayer.outputType
+
 def tanhlayer parent:
-    ActivationLayer tanh parent
+    ActivationLayer "TODO" tanh parent

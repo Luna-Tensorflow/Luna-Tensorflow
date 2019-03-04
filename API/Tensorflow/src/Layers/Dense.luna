@@ -6,10 +6,15 @@ import Tensorflow.Layers.Activation
 
 # TODO these type parameters are temporary
 class DenseLayer varT layerT:
-      shape :: List Int
+      name :: Text
+      nOutputs :: Int
       weights :: varT # :: Variable a
       biases :: varT # :: Variable a
       parentLayer :: layerT # :: Layer # TODO no interfaces
+
+      # shape :: List Int
+      def shape:
+          [self.nOutputs]
 
       # forward :: Operation a -> Operation a
       def forward inp:
@@ -22,15 +27,24 @@ class DenseLayer varT layerT:
       def trainableVariables:
           [self.weights, self.biases] + self.parentLayer.trainableVariables
 
-# dense :: List Int -> Layer -> Layer
-def dense shape parent:
-    w = variable "w" (randomTensor FloatType [1] 0.0 1.0)  # TODO defaultValue, TODO name scope to layer - need a mechanism for prefixes
-    b = variable "b" (randomTensor FloatType [1] 0.0 1.0) # TODO j.w.
-    d = DenseLayer shape w b parent
+      def outputType:
+          self.parentLayer.outputType
+
+# dense :: Int -> Layer -> Layer
+def dense nOutputs parent:
+    if (parent.shape.length == 1).not then throw $ "Dense layer requires its input to be a flat tensor" else None
+
+    [nInputs] = parent.shape
+    vartype = parent.outputType
+
+    w = variable "w" (randomTensor vartype [nInputs, nOutputs] 0.0 1.0)  # TODO defaultValue, TODO name scope to layer - need a mechanism for prefixes
+    b = variable "b" (randomTensor vartype [nOutputs] 0.0 1.0) # TODO j.w.
+
+    d = DenseLayer "TODO" nOutputs w b parent
     d
 
-# denseWithActivation :: List Int -> (Operation a -> Operation a) -> Layer -> Layer
-def denseWithActivation shape activationFunction parent:
-    d = dense shape parent
-    a = ActivationLayer activationFunction d
+# denseWithActivation :: Int -> (Operation a -> Operation a) -> Layer -> Layer
+def denseWithActivation nOutputs activationFunction parent:
+    d = dense nOutputs parent
+    a = ActivationLayer "TODO" activationFunction d
     a

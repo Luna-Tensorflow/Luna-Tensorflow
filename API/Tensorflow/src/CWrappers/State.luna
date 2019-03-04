@@ -1,4 +1,5 @@
 import Std.Foreign.C.Value
+import Std.Foreign
 
 import Tensorflow.CWrappers.Tensor
 
@@ -28,7 +29,7 @@ class StateWrapper:
 
         returnedArr = Array (Pointer None) . make count returnedPtr
 
-        retval = returnedArr . toList . each (x: TensorWrapper ManagedPointer None . fromPtr releaseMethod x)
+        retval = returnedArr . toList . each (x: TensorWrapper ManagedPointer None . fromPointer releaseMethod x)
 
         freePointer = lookupSymbol "TFL" "free_pointer"
         freePointer.call None [returnedPtr.toCArg]
@@ -40,7 +41,7 @@ class StateWrapper:
         getValueOp = lookupSymbol "TFL" "get_value_from_state"
 
         retptr =  getValueOp . call (Pointer None) [self.toCArg, CString . fromText name . toCArg]
-        managed = ManagedPointer None . fromPtr releaseMethod retptr
+        managed = ManagedPointer None . fromPointer releaseMethod retptr
         TensorWrapper managed
 
     def update values:
@@ -63,7 +64,7 @@ class StateWrapper:
         newstatePtr = updateOp.call (Pointer None) [self.toCArg,
                 varNameArr.toCArg, valsArr.toCArg, (CInt64.fromInt count).toCArg]
 
-        managed = ManagedPointer None . fromPtr releaseMethod newstatePtr
+        managed = ManagedPointer None . fromPointer releaseMethod newstatePtr
         StateWrapper managed
 
 
@@ -72,5 +73,5 @@ def emptyState:
     newstateOp = lookupSymbol "TFL" "make_empty_state"
 
     ptr = newstateOp . call (Pointer None) []
-    managed = ManagedPointer None . fromPtr releaseMethod ptr
+    managed = ManagedPointer None . fromPointer releaseMethod ptr
     StateWrapper managed

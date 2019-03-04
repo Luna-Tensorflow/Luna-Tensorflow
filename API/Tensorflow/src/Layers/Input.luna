@@ -3,6 +3,7 @@ import Tensorflow.Types
 import Tensorflow.Operations
 
 class InputLayer a:
+      name :: Text
       typetag :: a
       shape :: List Int
 
@@ -14,5 +15,8 @@ class InputLayer a:
       def trainableVariables:
           []
 
+      def outputType:
+          self.typetag
+
 def input typetag shape:
-    InputLayer typetag shape
+    InputLayer "TODO" typetag shape

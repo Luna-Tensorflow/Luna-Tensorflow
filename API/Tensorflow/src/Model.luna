@@ -12,9 +12,10 @@ class Model stateT:
           (res, state') = self.evalgraph.evalSubsts self.state [("x", x)]
           res
 
-      # train :: Model # TODO also consider real time visualization of loss in GUI
+      # train :: List Tensor a -> List Tensor b -> Model # TODO also consider real time visualization of loss in GUI
       def train x y:
-          (res, state') = self.traingraph.evalSubsts self.state [("x", x), ("y", y)]
+          0 # TODO we'd prefer to use batched fold that runs in C++ directly
+          state' = (x.zip y).foldLeft self.state ((x,y): state: (self.traingraph.evalSubsts state [("x", x), ("y", y)]).second)
           Model self.evalgraph self.traingraph state'
 
 
@@ -30,4 +31,6 @@ def makeModel input output optimizer loss:
     variables = output.trainableVariables
     traingraph = optimizer.makeOptimizingGraph yTruePlaceholder yPred loss variables
 
-    Model evalgraph traingraph [] # TODO
+    initialState = makeEmptyState # TODO state initialization by layers
+
+    Model evalgraph traingraph initialState
