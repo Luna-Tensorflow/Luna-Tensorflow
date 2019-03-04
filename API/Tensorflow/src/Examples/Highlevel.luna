@@ -10,8 +10,10 @@ import Tensorflow.Model
 
 def exampleNet:
     print "Loading data"
-    x = [tensorFromList1d FloatType [1.0,1.0]] # TODO
-    y = [tensorFromList1d FloatType [1.0]]
+    xl = tensorFromList1d FloatType [1.0,1.0]
+    x = [xl] # TODO
+    yl = tensorFromList1d FloatType [1.0]
+    y = [yl]
 
     print "Building net"
     i = input FloatType [10]

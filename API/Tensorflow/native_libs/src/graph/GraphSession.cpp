@@ -60,18 +60,20 @@ std::shared_ptr<EvaluationResult> GraphSession::eval(
 	        throw std::invalid_argument(err);
 	    }
 
-	    std::vector<TF_Output> placeholders_v;
+	    std::vector<TF_Output> placeholders_vars_v;
 	    std::vector<TF_Tensor *> tensor_v;
 
 	    for (auto &elem : substitutions) {
+	    	LOG("subs", elem.first);
 	        if (placeholders.find(elem.first) == placeholders.end()) //bypass obsolete substs
 	            continue;
-	        placeholders_v.push_back(placeholders.at(elem.first));
+	        placeholders_vars_v.push_back(placeholders.at(elem.first));
 	        tensor_v.push_back(elem.second->get_underlying());
 	    }
 
 	    for (auto &elem : variable_default_values) {
-	        placeholders_v.push_back(placeholders.at(elem.first)); // FIXME add exists check, will variables use placeholders data structure or a separate map for outputs?
+	    	LOG("vars", elem.first);
+	        placeholders_vars_v.push_back(variables.at(elem.first)); // FIXME add exists check, will variables use placeholders data structure or a separate map for outputs?
 	        auto tensor = state->get(elem.first);
 	        if (tensor == nullptr) {
 	            // if variable value is not provided, use the default value
@@ -95,7 +97,7 @@ std::shared_ptr<EvaluationResult> GraphSession::eval(
 	    run_with_status<void>(std::bind(TF_SessionRun,
 	                                    session,
 	                                    nullptr,
-	                                    placeholders_v.data(), tensor_v.data(), tensor_v.size(),
+	                                    placeholders_vars_v.data(), tensor_v.data(), tensor_v.size(),
 	                                    computed_outs.data(), output_values.data(), output_values.size(),
 	                                    nullptr, 0,
 	                                    nullptr,
