@@ -64,7 +64,7 @@ void** make_variable(const char* name, Tensor* val)
 
 State* make_empty_state(void)
 {
-	LOG();
+	LOG("empty_state");
 	auto state = State::make_empty();
 	return LifetimeManager::instance().addOwnership(state);
 }
