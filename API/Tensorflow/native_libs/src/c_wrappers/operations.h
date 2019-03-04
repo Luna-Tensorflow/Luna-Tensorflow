@@ -27,10 +27,9 @@ TFL_API Tensor** batch_eval_op_placeholders(Output** ops, size_t count, const ch
 TFL_API GraphSession* make_graph_from_output(Output* output);
 TFL_API GraphSession* make_graph_from_outputs(Output** outputs, size_t output_count);
 
-TFL_API Tensor** eval_graph(GraphSession* graph);
-
-TFL_API Tensor** eval_graph_with_placeholders(GraphSession* graph, const char** ph_names, Tensor** ph_values,
-		size_t ph_count);
+TFL_API void** eval_graph(GraphSession* graph, State* state);
+TFL_API void** eval_graph_with_placeholders(GraphSession* graph, const char** ph_names, Tensor** ph_values,
+		size_t ph_count, State* state);
 
 TFL_API void** make_variable(const char* name, Tensor* default_value);
 TFL_API Output* make_assign(Output* unit, Variable* var, Output* value);

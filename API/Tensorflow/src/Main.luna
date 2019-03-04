@@ -16,5 +16,5 @@ def vartest:
 
 def main:
     vartest
-    0 # lowlevelNetExample
+    0 #lowlevelNetExample
     exampleNet

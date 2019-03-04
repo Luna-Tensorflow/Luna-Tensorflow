@@ -1,6 +1,8 @@
 import Tensorflow.CWrappers.Graph
 import Tensorflow.CWrappers.State
+
 import Tensorflow.Operations
+import Tensorflow.Tensor
 
 class State:
     wrapper :: StateWrapper
@@ -39,7 +41,7 @@ def setVarInState state varname value:
 
 class TFGraph:
     wrapper :: GraphWrapper
-    outputs :: List (Operation)
+    outputs :: List (TFOutput)
 
     # ptr :: ManagedPointer None
     def ptr:
@@ -51,7 +53,12 @@ class TFGraph:
 
     # evalSubsts :: State -> List Tuple2 Text (Tensor a) -> (List Tensor a, State)
     def evalSubsts state substs:
-        (self.wrapper.evalSubsts self.outputs.length substs, makeEmptyState) # TODO implement State
+        (statewrapper, tensorwrappers) = self.wrapper.evalSubsts (self.outputs.length) substs state
+
+        tensors = (tensorwrappers . zip ((self . outputs) . map (x: x.typetag))) . each ((wrp, tag): Tensor (wrp tag))
+        newstate = State statewrapper
+
+        (tensors, newstate)
 
     # toJSON :: JSON
     def toJSON:

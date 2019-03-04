@@ -190,7 +190,7 @@ Tensor** batch_eval_op(Output** outs, size_t count)
 	for(size_t i=0; i<count; ++i)
 		graph.add_fetched_output(graph.add_output(outs[i]));
 
-	return LifetimeManager::instance().addOwnershipOfArray(graph.eval());
+	return LifetimeManager::instance().addOwnershipOfArray(graph.eval()->outputs);
 }
 
 Tensor** batch_eval_op_placeholders(Output** outs, size_t op_count,
@@ -235,16 +235,29 @@ GraphSession* make_graph_from_outputs(Output** out, size_t output_count)
 	return LifetimeManager::instance().addOwnership(graphPtr);
 }
 
-Tensor** eval_graph(GraphSession *graph)
+void** eval_graph(GraphSession *graph, State* state)
 {
-	LOG(graph);
-	return LifetimeManager::instance().addOwnershipOfArray(graph->eval());
+	LOG(graph, state);
+	auto statptr = LifetimeManager::instance().accessOwned(state);
+	auto result = graph->eval(statptr);
+
+	auto retv = static_cast<void**>(malloc((1 + result->outputs.size()) * sizeof(void*)));
+
+	retv[0] = static_cast<void*>(LifetimeManager::instance().addOwnership(result->result_state));
+	std::transform(result->outputs.begin(), result->outputs.end(), retv + 1, [](auto tensorptr)
+	{
+		return static_cast<void*>(LifetimeManager::instance().addOwnership(tensorptr));
+	});
+
+	return retv;
 }
 
-Tensor** eval_graph_with_placeholders(GraphSession *graph,
-		const char **ph_names, Tensor **ph_values, size_t ph_count)
+void** eval_graph_with_placeholders(GraphSession *graph,
+		const char **ph_names, Tensor **ph_values, size_t ph_count, State* state)
 {
-	LOG(graph, ph_names, ph_values, ph_count);
+	LOG(graph, ph_names, ph_values, ph_count, state);
+	auto statptr = LifetimeManager::instance().accessOwned(state);
+
 	std::map<std::string, std::shared_ptr<Tensor>> substitutions;
 	for(size_t i=0; i<ph_count; ++i)
 	{
@@ -252,6 +265,15 @@ Tensor** eval_graph_with_placeholders(GraphSession *graph,
 							  LifetimeManager::instance().accessOwned(ph_values[i]));
 	}
 
-	auto r = graph->eval(substitutions, State::make_empty()); // TODO support for state
-	return LifetimeManager::instance().addOwnershipOfArray(r->outputs);
+	auto result = graph->eval(substitutions, statptr);
+
+	auto retv = static_cast<void**>(malloc((1 + result->outputs.size()) * sizeof(void*)));
+
+	retv[0] = static_cast<void*>(LifetimeManager::instance().addOwnership(result->result_state));
+	std::transform(result->outputs.begin(), result->outputs.end(), retv + 1, [](auto tensorptr)
+	{
+		return static_cast<void*>(LifetimeManager::instance().addOwnership(tensorptr));
+	});
+
+	return retv;
 }

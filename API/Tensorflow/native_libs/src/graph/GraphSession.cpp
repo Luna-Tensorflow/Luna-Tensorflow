@@ -122,8 +122,8 @@ std::shared_ptr<EvaluationResult> GraphSession::eval(
 	    return r;
 }
 
-std::vector<std::shared_ptr<Tensor>> GraphSession::eval() const {
-    return eval(std::map<std::string, std::shared_ptr<Tensor>>(), State::make_empty())->outputs;
+std::shared_ptr<EvaluationResult> GraphSession::eval(const std::shared_ptr<State>& state) const {
+    return eval(std::map<std::string, std::shared_ptr<Tensor>>(), state);
 }
 
 void GraphSession::register_output_hash(size_t hash, TF_Output &out) {

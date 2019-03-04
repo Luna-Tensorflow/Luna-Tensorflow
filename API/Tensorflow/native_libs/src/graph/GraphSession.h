@@ -39,7 +39,6 @@ private:
 	std::map<std::string, TF_Output> variables;
 	std::map<std::string, TF_Output> assignments;
 
-	// TODO implement reading variables from state + default values, may need more data here
 	std::map<std::string, std::shared_ptr<Tensor>> variable_default_values;
 
 public:
@@ -51,12 +50,11 @@ public:
 	TF_Output add_output(const Output* out);
 	TF_Output get_output(const Output* out);
 
-	// TODO not sure if always want this as a shared_ptr, but usually yes
-	std::shared_ptr<EvaluationResult> eval(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions,
-		const std::shared_ptr<State>& state) const;
 
-	// TODO not sure if want to keep this simplified function ?
-	/*[[deprecated]]*/ std::vector<std::shared_ptr<Tensor>> eval() const;
+	std::shared_ptr<EvaluationResult> eval(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions,
+		const std::shared_ptr<State>& state = State::make_empty()) const;
+
+	std::shared_ptr<EvaluationResult> eval(const std::shared_ptr<State>& state = State::make_empty()) const;
 
 	void register_output_hash(size_t hash, TF_Output &out);
 	void register_placeholder(const std::string& name, TF_Output &out);
@@ -65,8 +63,6 @@ public:
 
 	void register_assignment(const std::string& name, TF_Output value);
 
-	// TODO this function may need more data
-	// variale dtype and shape are determined by its default value
 	void register_variable(const std::string& name, const std::shared_ptr<Tensor>& default_value,
 		TF_Output tf_output);
 

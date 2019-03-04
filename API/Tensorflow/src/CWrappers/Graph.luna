@@ -1,14 +1,12 @@
 import Std.Foreign
 import Std.Foreign.C.Value
 
-import Tensorflow.Operations
-import Tensorflow.Tensor
-import Tensorflow.Types
+import Tensorflow.CWrappers.Tensor
+import Tensorflow.CWrappers.State
 
-def unzip listpair: case listpair of
-    Empty: (Empty, Empty)
-    Prepend (x,y) tail: case unzip tail of
-        (tailx, taily): ((Prepend x tailx), (Prepend y taily))
+import Tensorflow.Operations
+import Tensorflow.Types
+import Tensorflow.Graph
 
 class GraphWrapper:
     ptr :: ManagedPointer None
@@ -16,10 +14,10 @@ class GraphWrapper:
     def toCArg:
         self.ptr.toCArg
 
-    def eval outputCount:
-        evalSubsts outputCount []
+    def eval outputCount state:
+        evalSubsts outputCount [] state
 
-    def evalSubsts outputCount substitutions:
+    def evalSubsts outputCount substitutions state:
         count = outputCount
         phCount = substitutions . length
 
@@ -40,16 +38,19 @@ class GraphWrapper:
             substsArr . moveElems idx . write (elem.ptr.ptr)
 
         returnedPtr = evalGraphOp.call (Pointer (Pointer None)) [self.toCArg,
-                subsNameArr.toCArg, substsArr.toCArg, (CInt64.fromInt phCount).toCArg]
+                subsNameArr.toCArg, substsArr.toCArg, (CInt64.fromInt phCount).toCArg, state.wrapper.toCArg]
 
-        returnedArr = Array (Pointer None) . make count returnedPtr
+        returnedArr = Array (Pointer None) . make (1+count) returnedPtr
 
-        retval = returnedArr . toList . each (tensorFromPtr FloatType)
+        statewrapper = StateWrapper (ManagedPointer None . fromPointer releaseMethod (returnedArr . readAt 0))
+
+        managed = (returnedArr . toList . drop 1) . each (x: ManagedPointer None . fromPointer releaseMethod x)
+        retwrappers = managed . each (ptr: TensorWrapper ptr)
 
         freePointer = lookupSymbol "TFL" "free_pointer"
         freePointer.call None [returnedPtr.toCArg]
 
-        retval
+        (statewrapper, retwrappers)
 
 def makeGraphWrapperFromOutputList outputList:
     count = outputList . length
