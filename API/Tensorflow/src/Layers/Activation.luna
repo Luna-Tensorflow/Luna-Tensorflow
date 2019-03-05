@@ -1,6 +1,7 @@
 import Tensorflow.Tensor
 import Tensorflow.Types
 import Tensorflow.Operations
+import Tensorflow.CWrappers.Helpers
 
 # TODO this type parameter is temporary, due to lack of interfaces
 class ActivationLayer layerT:
@@ -26,4 +27,5 @@ class ActivationLayer layerT:
         self.parentLayer.outputType
 
 def tanhlayer parent:
-    ActivationLayer "TODO" tanh parent
+    name = getNextName "tanh"
+    ActivationLayer name tanh parent

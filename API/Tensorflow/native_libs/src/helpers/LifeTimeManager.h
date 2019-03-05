@@ -50,7 +50,7 @@ public:
     template<typename T>
     T *addOwnership(std::shared_ptr<T> ptr)
     {
-        LOG(ptr);
+        LOG(ptr, typeid(T).name());
         // we don't bother tracking nullptr - there is no object with a lifetime to manage
         if(!ptr)
             return nullptr;
@@ -67,6 +67,7 @@ public:
         {
             // TODO should separate retrieving any from storage and deleting it
             // deleting can take time and lock is not needed then
+            LOG("removing type ", itr->second.type().name());
             storage.erase(itr);
         });
     }
@@ -77,7 +78,7 @@ public:
     {
         return access(ptr, [&] (auto itr)
         {
-        	LOG("Accessing member of type ", itr->second.type().name());
+        	LOG("Accessing member of type ", itr->second.type().name(), "at", ptr, "as", typeid(T).name());
             return std::any_cast<std::shared_ptr<T>>(itr->second);
         });
     }

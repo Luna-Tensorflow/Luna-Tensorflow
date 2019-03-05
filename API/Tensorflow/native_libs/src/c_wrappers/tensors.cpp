@@ -14,7 +14,8 @@
 TFL_API Tensor *make_tensor(void const *array, TF_DataType type, const int64_t *dims, size_t num_dims) {
     LOG(array, type, dims, num_dims);
 	auto tensor_ptr = std::make_shared<Tensor>(array, dims, num_dims, type);
-	return LifetimeManager::instance().addOwnership(std::move(tensor_ptr));
+	auto t = LifetimeManager::instance().addOwnership(std::move(tensor_ptr));
+	LOGANDRETURN(t, array, type, dims, num_dims);
 }
 
 TFL_API int get_tensor_num_dims(Tensor *tensor) {

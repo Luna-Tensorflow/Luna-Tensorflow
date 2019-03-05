@@ -3,6 +3,7 @@ import Tensorflow.Types
 import Tensorflow.Operations
 import Tensorflow.Variables
 import Tensorflow.Layers.Activation
+import Tensorflow.CWrappers.Helpers
 
 # TODO these type parameters are temporary
 class DenseLayer varT layerT:
@@ -37,14 +38,19 @@ def dense nOutputs parent:
     [nInputs] = parent.shape
     vartype = parent.outputType
 
-    w = variable "w" (randomTensor vartype [nInputs, nOutputs] 0.0 1.0)  # TODO defaultValue, TODO name scope to layer - need a mechanism for prefixes
-    b = variable "b" (randomTensor vartype [nOutputs] 0.0 1.0) # TODO j.w.
+    name = getNextName "Dense"
 
-    d = DenseLayer "TODO" nOutputs w b parent
+    winit = randomTensor vartype [nInputs, nOutputs] 0.0 1.0
+    binit = randomTensor vartype [nOutputs] 0.0 1.0
+    w = variable (name + "w") winit  # TODO defaultValue, TODO name scope to layer - need a mechanism for prefixes
+    b = variable (name + "b") binit # TODO j.w.
+
+    d = DenseLayer name nOutputs w b parent
     d
 
 # denseWithActivation :: Int -> (Operation a -> Operation a) -> Layer -> Layer
 def denseWithActivation nOutputs activationFunction parent:
     d = dense nOutputs parent
-    a = ActivationLayer "TODO" activationFunction d
+    name = getNextName "Activation"
+    a = ActivationLayer name activationFunction d
     a

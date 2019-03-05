@@ -11,7 +11,7 @@ class GraphSession;
 
 class Hashable {
 public:
-	virtual size_t hashcode() const;
+	virtual size_t hashcode() const = 0;
 };
 
 // TODO rename to Node or something like that

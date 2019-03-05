@@ -1,0 +1,11 @@
+import Std.Foreign
+import Std.Foreign.C.Value
+
+# this is a temporary workaround to get easy names for Layers etc. until State monad is available
+def getNextName name:
+    evalOp = lookupSymbol "TFL" "get_and_increase_layer_counter"
+    nameCStr = CString.fromText name
+
+    id = evalOp.call CInt64 [nameCStr.toCArg]
+    nameCStr.free
+    name + "_" + id.toInt.toText

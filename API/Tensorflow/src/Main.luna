@@ -8,7 +8,8 @@ import Tensorflow.Examples.LowlevelNet
 import Tensorflow.Examples.Highlevel
 
 def vartest:
-    x = variable "x" (tensorFromList1d FloatType [1.0])
+    defaultValue = tensorFromList1d FloatType [1.0]
+    x = variable "x" defaultValue
     c = constFromScalar FloatType 1.0
     u1 = assign unitOp x c
 

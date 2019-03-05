@@ -1,6 +1,7 @@
 import Tensorflow.Tensor
 import Tensorflow.Types
 import Tensorflow.Operations
+import Tensorflow.CWrappers.Helpers
 
 class InputLayer a:
       name :: Text
@@ -19,4 +20,5 @@ class InputLayer a:
           self.typetag
 
 def input typetag shape:
-    InputLayer "TODO" typetag shape
+    name = getNextName "Input"
+    InputLayer name typetag shape
