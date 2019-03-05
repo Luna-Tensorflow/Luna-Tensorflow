@@ -13,6 +13,9 @@ Gradient::Gradient(std::vector<std::shared_ptr<Output>> ys, std::vector<std::sha
     if (xs.empty() || ys.empty()) {
         throw std::invalid_argument("xs and ys must not be empty!");
     }
+    
+    static size_t hash_ctr = 0;
+    hash = ++hash_ctr;
 }
 
 std::vector<std::shared_ptr<Output>> Gradient::add_gradients(std::vector<std::shared_ptr<Output>> ys,
@@ -55,4 +58,8 @@ void Gradient::add_to_graph(GraphSession &graph) {
             graph.register_output_hash(out->hashcode(), results[i]);
         }
     }
+}
+
+size_t Gradient::hashcode() const {
+    return hash;
 }

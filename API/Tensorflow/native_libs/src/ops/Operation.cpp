@@ -7,8 +7,14 @@
 Operation::Operation(std::string name, std::vector<std::shared_ptr<Output>> inputs,
         std::vector<std::shared_ptr<Attr>> attrs, std::string chosen_name)
         : name(name), inputs(inputs), attrs(attrs), chosen_name(chosen_name) {
-    static size_t hash_ctr = 0;
-    hash = ++hash_ctr;
+
+    hash = std::hash<std::string>()(name);
+    for(auto &input : inputs) {
+        hash = hash_combine(hash, input->hashcode());
+    }
+    for(auto &attr : attrs) {
+        hash = hash_combine(hash, attr->hashcode());
+    }
 
     if (chosen_name.empty()) {
         chosen_name = name + std::to_string(hash);
@@ -70,4 +76,8 @@ void Operation::add_to_graph(GraphSession &graph) {
         };
         graph.register_placeholder(chosen_name, tf_output);
     }
+}
+
+size_t Operation::hashcode() const {
+    return hash;
 }

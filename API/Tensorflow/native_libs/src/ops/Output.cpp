@@ -5,10 +5,8 @@
 #include "Output.h"
 
 Output::Output(std::shared_ptr<Binder> binder) : binder(std::move(binder)) {
-    static size_t hash_ctr = 0;
-    hash = ++hash_ctr;
+    hash = binder->hashcode();
 }
-
 
 TF_Output Output::add_to_graph(GraphSession& graph) const {
     if (!graph.exists(this)) {

@@ -6,7 +6,10 @@
 
 Assign::Assign(std::shared_ptr<Output> unit,
     std::shared_ptr<Variable> variable, std::shared_ptr<Output> value)
-    : unit(unit), variable(variable), value(value) {}
+    : unit(unit), variable(variable), value(value) {
+        static size_t hash_ctr = 0;
+        hash = ++hash_ctr;
+    }
 
 std::shared_ptr<Output> Assign::make_assign(std::shared_ptr<Output> unit, std::shared_ptr<Variable> variable, std::shared_ptr<Output> value) {
     auto assignment = std::shared_ptr<Assign>(new Assign(unit, variable, value));
@@ -34,3 +37,7 @@ void Assign::add_to_graph(GraphSession &graph) {
         throw std::logic_error("Causality violation");
     }
 }
+
+size_t Assign::hashcode() const {
+    return hash;
+} 

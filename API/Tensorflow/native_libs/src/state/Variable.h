@@ -17,6 +17,7 @@ public:
 
     static std::pair<std::shared_ptr<Variable>, std::shared_ptr<Output>> make_variable(std::string& name,
         std::shared_ptr<Tensor> default_value);
+    size_t hashcode() const override;
 
 private:
     Variable(std::string& name, std::shared_ptr<Tensor> default_value);
@@ -25,6 +26,7 @@ private:
     std::string name;
     std::shared_ptr<Tensor> default_value;
     std::weak_ptr<Output> my_output;
+    size_t hash;
 };
 
 

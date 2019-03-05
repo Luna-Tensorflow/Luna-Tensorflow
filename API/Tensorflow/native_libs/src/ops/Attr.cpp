@@ -6,12 +6,16 @@
 #include "Attr.h"
 #include "../helpers/utils.h"
 
-using namespace std;
-
-Attr::Attr(const string &name) : name(name) {
+Attr::Attr(const std::string &name) : name(name) {
+    static size_t hash_ctr = 0;
+    hash = ++hash_ctr;
 }
 
-AttrType::AttrType(const string &name, TF_DataType type) : Attr(name), type(type) {
+size_t Attr::hashcode() const {
+    return hash;
+}
+
+AttrType::AttrType(const std::string &name, TF_DataType type) : Attr(name), type(type) {
 }
 
 void AttrType::set(TF_OperationDescription *desc) const {

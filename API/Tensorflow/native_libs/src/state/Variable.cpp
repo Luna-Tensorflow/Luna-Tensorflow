@@ -6,7 +6,10 @@
 #include "../ops/Operation.h"
 
 Variable::Variable(std::string& name, std::shared_ptr<Tensor> default_value)
-    : name(name), default_value(default_value) {}
+    : name(name), default_value(default_value) {
+        static size_t hash_ctr = 0;
+        hash = ++hash_ctr;  
+    }
 
 void Variable::add_to_graph(GraphSession &graph)
 {
@@ -44,4 +47,8 @@ std::pair<std::shared_ptr<Variable>, std::shared_ptr<Output>> Variable::make_var
     variable->my_output = output;
 
     return std::make_pair(variable, output);
+}
+
+size_t Variable::hashcode() const {
+    return hash;
 }

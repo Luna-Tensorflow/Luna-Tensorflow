@@ -24,12 +24,14 @@ public:
             std::vector<std::shared_ptr<Output>> xs, std::vector<std::shared_ptr<Output>> dxs);
 
     void add_to_graph(GraphSession &graph) override;
+    size_t hashcode() const override;
 
 private:
     std::vector<std::shared_ptr<Output>> ys;
     std::vector<std::shared_ptr<Output>> xs;
     std::vector<std::shared_ptr<Output>> dxs;
     std::vector<std::weak_ptr<Output>> outputs;
+    size_t hash;
 };
 
 #endif //TFL_GRADIENT_H

@@ -15,6 +15,7 @@
 class Attr {
 protected:
     std::string name;
+    size_t hash;
 
     Attr(const std::string &name);
 
@@ -22,6 +23,8 @@ public:
     virtual ~Attr() = default;
 
     virtual void set(TF_OperationDescription *desc) const = 0;
+
+    size_t hashcode() const;
 };
 
 class AttrType : public Attr {

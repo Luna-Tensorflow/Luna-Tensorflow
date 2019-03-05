@@ -28,14 +28,15 @@ public:
                                                                std::string chosen_name = "");
 
     void add_to_graph(GraphSession &graph) override;
+    size_t hashcode() const override;
 
 private:
     std::string name;
-    size_t hash;
     std::vector<std::shared_ptr<Output>> inputs;
     std::vector<std::shared_ptr<Attr>> attrs;
     std::string chosen_name;
     std::vector<std::weak_ptr<Output>> outputs;
+    size_t hash;
 };
 
 #endif //TFL_OPERATION_H

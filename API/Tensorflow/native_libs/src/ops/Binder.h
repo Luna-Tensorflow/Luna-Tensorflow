@@ -9,6 +9,11 @@
 
 class GraphSession;
 
+class Hashable {
+public:
+	virtual size_t hashcode() const;
+};
+
 // TODO rename to Node or something like that
 /*
  *  Each Node has a set of Outputs associated with it,
@@ -22,7 +27,7 @@ class GraphSession;
  *  but Node's lifetime should be bound to the Outputs
  *  in such a way that it won't prevent from their deallocation.
  */
-class Binder {
+class Binder : public Hashable {
 protected:
     Binder() = default;
 
