@@ -1,11 +1,37 @@
+language: cpp
+language: cpp
+compiler: gcc
+distr: precise
+
+before_script:
+  - g++ -v
+  - mkdir tensorflow
+  - cd tensorflow
+  - wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.12.0.tar.gz -O libtensorflow.tar.gz
+  - tar -xvf libtensorflow.tar.gz
+  - mkdir build
+  - mkdir release
+  - cd build
+  - cmake ../API/Tensorflow/native_libs/src/
+
 jobs:
   include:
-    - script: echo "Building (TODO)"
-    - stage: GitHub Release
+    - script:
+      - cd build
+      - make
+      - cd ../release
+      - echo "TODO"
+      - cp -r ../API/Tensorflow/native_libs/linux/* .
+      - cp -r ../tensorflow/* .
+      - tar -cvf tensorflow_luna_linux.tar.gz *
+      - cd ..
+    - stage: Github Release
       script: echo "Deploying to GitHub releases ..."
       deploy:
         provider: releases
         api_key: $GITHUB_OAUTH_TOKEN
         skip_cleanup: true
+        draft: true
+        file: tensorflow_luna_linux.tar.gz
         on:
           tags: true
