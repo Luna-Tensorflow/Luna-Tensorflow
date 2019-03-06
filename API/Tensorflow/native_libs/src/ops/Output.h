@@ -25,7 +25,7 @@ class Binder;
  */
 class Output {
 public:
-    Output(std::shared_ptr<Binder> binder);
+    Output(std::shared_ptr<Binder> binder, size_t index);
 
     TF_Output add_to_graph(GraphSession& graph) const;
 

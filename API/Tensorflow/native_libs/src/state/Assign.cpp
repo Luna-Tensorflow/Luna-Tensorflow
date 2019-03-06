@@ -7,14 +7,15 @@
 Assign::Assign(std::shared_ptr<Output> unit,
     std::shared_ptr<Variable> variable, std::shared_ptr<Output> value)
     : unit(unit), variable(variable), value(value) {
-        static size_t hash_ctr = 0;
-        hash = ++hash_ctr;
+        hash = unit->hashcode();
+        hash = hash_combine(hash, variable->hashcode());
+        hash = hash_combine(hash, value->hashcode());
     }
 
 std::shared_ptr<Output> Assign::make_assign(std::shared_ptr<Output> unit, std::shared_ptr<Variable> variable, std::shared_ptr<Output> value) {
     auto assignment = std::shared_ptr<Assign>(new Assign(unit, variable, value));
 
-    auto out = std::make_shared<Output>(assignment);
+    auto out = std::make_shared<Output>(assignment, 0);
     assignment->output = out;
 
     return out;

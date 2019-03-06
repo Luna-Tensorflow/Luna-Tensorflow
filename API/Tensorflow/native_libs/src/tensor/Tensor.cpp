@@ -71,7 +71,7 @@ TF_Tensor* Tensor::get_underlying() const {
     return underlying;
 }
 
-size_t Tensor::hash() const {
+size_t Tensor::hashcode() const {
     size_t bytes = TF_TensorByteSize(underlying);
 
     char* data = (char*) TF_TensorData(underlying);

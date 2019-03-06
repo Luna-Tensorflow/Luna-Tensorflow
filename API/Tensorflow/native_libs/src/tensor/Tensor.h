@@ -47,7 +47,7 @@ public:
 
     TF_Tensor* get_underlying() const;
 
-    size_t hash() const;
+    size_t hashcode() const;
 
     TF_DataType getType() const;
 

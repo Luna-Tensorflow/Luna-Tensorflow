@@ -14,8 +14,17 @@ Gradient::Gradient(std::vector<std::shared_ptr<Output>> ys, std::vector<std::sha
         throw std::invalid_argument("xs and ys must not be empty!");
     }
     
-    static size_t hash_ctr = 0;
-    hash = ++hash_ctr;
+    hash = 0;
+
+    for(auto &input : ys) {
+        hash = hash_combine(hash, input->hashcode());
+    }
+    for(auto &input : xs) {
+        hash = hash_combine(hash, input->hashcode());
+    }
+    for(auto &input : dxs) {
+        hash = hash_combine(hash, input->hashcode());
+    }
 }
 
 std::vector<std::shared_ptr<Output>> Gradient::add_gradients(std::vector<std::shared_ptr<Output>> ys,
@@ -26,7 +35,7 @@ std::vector<std::shared_ptr<Output>> Gradient::add_gradients(std::vector<std::sh
 
     std::vector<std::shared_ptr<Output>> ret;
     for (unsigned int i = 0; i < gradient->xs.size(); ++i) {
-        auto out = std::make_shared<Output>(gradient);
+        auto out = std::make_shared<Output>(gradient, i);
         gradient->outputs.emplace_back(out); // create a weak pointer
         ret.push_back(out);
     }

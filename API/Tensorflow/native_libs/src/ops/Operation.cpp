@@ -30,8 +30,8 @@ std::vector<std::shared_ptr<Output>> Operation::make_operation(std::string name,
     auto operation = std::shared_ptr<Operation>(new Operation(name, inputs, attrs, chosen_name));
 
     std::vector<std::shared_ptr<Output>> ret;
-    for (int i = 0; i< num_outputs; ++i) {
-        auto out = std::make_shared<Output>(operation);
+    for (int i = 0; i < num_outputs; ++i) {
+        auto out = std::make_shared<Output>(operation, i);
         operation->outputs.emplace_back(out); // we construct a weak pointer to the output
         ret.push_back(out);
     }

@@ -7,8 +7,8 @@
 
 Variable::Variable(std::string& name, std::shared_ptr<Tensor> default_value)
     : name(name), default_value(default_value) {
-        static size_t hash_ctr = 0;
-        hash = ++hash_ctr;  
+        hash = std::hash<std::string>()(name);
+        hash = hash_combine(hash, default_value->hashcode());
     }
 
 void Variable::add_to_graph(GraphSession &graph)
@@ -42,7 +42,7 @@ std::pair<std::shared_ptr<Variable>, std::shared_ptr<Output>> Variable::make_var
     std::shared_ptr<Tensor> default_value)
 {
     auto variable = std::shared_ptr<Variable>(new Variable(name, default_value));
-    auto output = std::make_shared<Output>(variable);
+    auto output = std::make_shared<Output>(variable, 0);
 
     variable->my_output = output;
 
