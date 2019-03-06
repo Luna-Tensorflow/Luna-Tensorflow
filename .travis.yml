@@ -1,29 +1,16 @@
 language: cpp
 language: cpp
 compiler: gcc
-distr: xenial # TODO older versions don't have patchelf in apt
-matrix:
-  include:
-    - env: COMPILER=g++-7 BUILD_TYPE=Release
-      addons: &gcc7
-        apt:
-          packages: g++-7
-          sources:
-            - ubuntu-toolchain-r-test
-    # - env: COMPILER=g++-6 BUILD_TYPE=Release
-    #   addons: &gcc6
-    #     apt:
-    #       packages: g++-6
-    #       sources:
-    #         - ubuntu-toolchain-r-test
-addons:
-  apt:
-    update: true
+dist: xenial # TODO older versions don't have patchelf in apt
 before_install:
-  - sudo apt-get install patchelf
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  - sudo apt-get update
+  - sudo apt-get install patchelf gcc-7
 
 before_script:
+  - export COMPILER=g++-7
   - export CXX=${COMPILER}
+  - export CC=gcc-7
   - ${CXX} --version
   - mkdir tensorflow
   - cd tensorflow
