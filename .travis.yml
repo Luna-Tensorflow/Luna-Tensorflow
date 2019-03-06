@@ -3,13 +3,24 @@ language: cpp
 compiler: gcc
 distr: precise
 matrix:
-# GCC 6
-    - env: COMPILER=g++-6 BUILD_TYPE=Release
-      addons: &gcc6
+  include:
+    - env: COMPILER=g++-7 BUILD_TYPE=Release
+      addons: &gcc7
         apt:
-          packages: g++-6
+          packages: g++-7
           sources:
             - ubuntu-toolchain-r-test
+    # - env: COMPILER=g++-6 BUILD_TYPE=Release
+    #   addons: &gcc6
+    #     apt:
+    #       packages: g++-6
+    #       sources:
+    #         - ubuntu-toolchain-r-test
+addons:
+  apt:
+    update: true
+before_install:
+  - sudo apt-get install patchelf
 
 before_script:
   - export CXX=${COMPILER}
