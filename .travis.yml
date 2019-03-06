@@ -1,7 +1,7 @@
 language: cpp
 language: cpp
 compiler: gcc
-distr: precise
+distr: xenial # TODO older versions don't have patchelf in apt
 matrix:
   include:
     - env: COMPILER=g++-7 BUILD_TYPE=Release
