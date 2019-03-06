@@ -3,19 +3,17 @@ language: cpp
 compiler: gcc
 distr: precise
 matrix:
-# works on Precise and Trusty
-    - os: linux
-      addons:
+# GCC 6
+    - env: COMPILER=g++-6 BUILD_TYPE=Release
+      addons: &gcc6
         apt:
+          packages: g++-6
           sources:
             - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-      env:
-        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
 
 before_script:
-  - eval "${MATRIX_EVAL}"
+  - export CXX=${COMPILER}
+  - ${CXX} --version
   - mkdir tensorflow
   - cd tensorflow
   - wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.12.0.tar.gz -O libtensorflow.tar.gz
@@ -33,9 +31,12 @@ jobs:
       - cd build
       - make
       - cd ../release
-      - echo "TODO"
-      - cp -r ../API/Tensorflow/native_libs/linux/* .
-      - cp -r ../tensorflow/* .
+      - echo "TODO rewriting?"
+      - mkdir src
+      - cp -r ../API/Tensorflow/src/ .
+      - cp -r ../API/Tensorflow/.luna-package/ .
+      - cp -r ../API/Tensorflow/native_libs/ .
+      - cp -r ../tensorflow/* native_libs/linux/
       - tar -cvf tensorflow_luna_linux.tar.gz *
       - cd ..
     - stage: Github Release
