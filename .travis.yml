@@ -1,7 +1,7 @@
 language: cpp
 language: cpp
 compiler: gcc
-distr: precise
+distr: trusty
 
 before_script:
   - g++ -v
@@ -9,10 +9,12 @@ before_script:
   - cd tensorflow
   - wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.12.0.tar.gz -O libtensorflow.tar.gz
   - tar -xvf libtensorflow.tar.gz
+  - cd ..
   - mkdir build
   - mkdir release
   - cd build
   - cmake ../API/Tensorflow/native_libs/src/
+  - cd ..
 
 jobs:
   include:
