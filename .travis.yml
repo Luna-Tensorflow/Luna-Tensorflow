@@ -38,6 +38,7 @@ jobs:
       - cp -r ../API/Tensorflow/native_libs/linux/ native_libs/
       - tar -cvf tensorflow_luna_linux.tar.gz *
       - cd ..
+      - mv release/tensorflow_luna_linux.tar.gz .
     - stage: Github Release
       script: echo "Deploying to GitHub releases ..."
       deploy:
