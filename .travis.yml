@@ -11,6 +11,7 @@ before_script:
   - export COMPILER=g++-7
   - export CXX=${COMPILER}
   - export CC=gcc-7
+  - export TF_USE_LOCAL_LIBRARY=1
   - ${CXX} --version
   - mkdir tensorflow
   - cd tensorflow
@@ -33,8 +34,8 @@ jobs:
       - mkdir src
       - cp -r ../API/Tensorflow/src/ .
       - cp -r ../API/Tensorflow/.luna-package/ .
-      - cp -r ../API/Tensorflow/native_libs/ .
-      - cp -r ../tensorflow/* native_libs/linux/
+      - mkdir native_libs/
+      - cp -r ../API/Tensorflow/native_libs/linux/ native_libs/
       - tar -cvf tensorflow_luna_linux.tar.gz *
       - cd ..
     - stage: Github Release
