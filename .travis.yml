@@ -34,7 +34,8 @@ before_script:
 - cd ..
 jobs:
   include:
-  - script:
+  - stage: Github Release
+    script:
     - cd build
     - make
     - cd ..
@@ -46,8 +47,6 @@ jobs:
     - tar -cvf tensorflow_luna_linux.tar.gz * # package it all
     - cd ..
     - mv release/tensorflow_luna_linux.tar.gz . # move to root
-  - stage: Github Release
-    script: echo "Deploying to GitHub releases ..."
     deploy:
       provider: releases
       api_key:
