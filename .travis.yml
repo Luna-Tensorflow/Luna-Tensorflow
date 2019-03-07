@@ -4,7 +4,8 @@ dist: xenial
 before_install:
 - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
 - sudo apt-get update -y
-- sudo apt-get install -y patchelf gcc-7 g++-7 haskell-stack
+- sudo apt-get install -y patchelf gcc-7 g++-7
+- curl -sSL https://get.haskellstack.org/ | sudo sh
 before_script:
 - export COMPILER=g++-7 # prepare compiler
 - export CXX=${COMPILER}
