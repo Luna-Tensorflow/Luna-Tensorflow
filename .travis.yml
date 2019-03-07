@@ -23,9 +23,10 @@ before_script:
 - mkdir release/native_libs/
 - mkdir release/native_libs/linux/
 - cd scripts/ # download and patch the patching script
-- mv Main.hs ..
-- git clone https://github.com/luna/dataframes .
-- mv ../Main.hs .
+- mv Main.hs Main2.hs
+- git clone https://github.com/luna/dataframes
+- mv dataframes/scripts/* .
+- mv Main2.hs Main.hs
 - cd ..
 - cd build
 - cmake ../API/Tensorflow/native_libs/src/
