@@ -1,51 +1,56 @@
 language: cpp
-language: cpp
 compiler: gcc
-dist: xenial # TODO older versions don't have patchelf in apt
+dist: xenial
 before_install:
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update -y
-  - sudo apt-get install -y patchelf gcc-7 g++-7
-
+- sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+- sudo apt-get update -y
+- sudo apt-get install -y patchelf gcc-7 g++-7 haskell-stack
 before_script:
-  - export COMPILER=g++-7
-  - export CXX=${COMPILER}
-  - export CC=gcc-7
-  - export TF_USE_LOCAL_LIBRARY=1
-  - ${CXX} --version
-  - mkdir tensorflow
-  - cd tensorflow
-  - wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.12.0.tar.gz -O libtensorflow.tar.gz
-  - tar -xvf libtensorflow.tar.gz
-  - cd ..
-  - mkdir build
-  - mkdir release
-  - cd build
-  - cmake ../API/Tensorflow/native_libs/src/
-  - cd ..
-
+- export COMPILER=g++-7 # prepare compiler
+- export CXX=${COMPILER}
+- export CC=gcc-7
+- export TF_USE_LOCAL_LIBRARY=1
+- "${CXX} --version"
+- mkdir tensorflow # download TF dependency, TODO downloading protobufs
+- cd tensorflow
+- wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.12.0.tar.gz
+  -O libtensorflow.tar.gz
+- tar -xvf libtensorflow.tar.gz
+- cd ..
+- mkdir build # prepare folders
+- mkdir release
+- mkdir release/native_libs/
+- mkdir release/native_libs/linux/
+- cd scripts/ # download and patch the patching script
+- mv Main.hs ..
+- git clone https://github.com/luna/dataframes .
+- mv ../Main.hs .
+- cd ..
+- cd build
+- cmake ../API/Tensorflow/native_libs/src/
+- cd ..
 jobs:
   include:
-    - script:
-      - cd build
-      - make
-      - cd ../release
-      - echo "TODO rewriting?"
-      - mkdir src
-      - cp -r ../API/Tensorflow/src/ .
-      - cp -r ../API/Tensorflow/.luna-package/ .
-      - mkdir native_libs/
-      - cp -r ../API/Tensorflow/native_libs/linux/ native_libs/
-      - tar -cvf tensorflow_luna_linux.tar.gz *
-      - cd ..
-      - mv release/tensorflow_luna_linux.tar.gz .
-    - stage: Github Release
-      script: echo "Deploying to GitHub releases ..."
-      deploy:
-        provider: releases
-        api_key: $GITHUB_OAUTH_TOKEN
-        skip_cleanup: true
-        draft: true
-        file: tensorflow_luna_linux.tar.gz
-        on:
-          tags: true
+  - script:
+    - cd build
+    - make
+    - cd ..
+    - cd scripts/ # patch binaries
+    - stack run ../release/native_libs/linux/ ../API/Tensorflow/native_libs/linux/libTFL.so
+    - cd ../release/
+    - cp -r ../API/Tensorflow/src/ . # copy Luna srcs and metadata
+    - cp -r ../API/Tensorflow/.luna-package/ .
+    - tar -cvf tensorflow_luna_linux.tar.gz * # package it all
+    - cd ..
+    - mv release/tensorflow_luna_linux.tar.gz . # move to root
+  - stage: Github Release
+    script: echo "Deploying to GitHub releases ..."
+    deploy:
+      provider: releases
+      api_key:
+        secure: SaSxqPy/G6iw9LtcfPqy08A6T6Pr7y2dahYefr+tSJ6tpro7UDUv8RaNSbaeHQIMT9uaYrkfl9I4TPXzOTvvDv+sgi5dUSE8XFUeDm5ZHJQMMD5bIcR2ITorqOoivOFgysVc92vRTr4ghMUA3t8AZ9YKIQuRF67mR7gE1b6Xh2N4AMULFNVQ20kUFU8Js2vSPjggd7PLy0BuQiNnkCUmuQZUzkIJhNymIqK9gQXeCSdCn9pqLp3Frb1P6goSvrggBYLtB9s3u/CuoSAIDvXy79F1ymmUJKOSESr1HHoFcP/p9EED+79/B0p3GfWdXqbmVPGDV5gNb56JYiRjGy8SMLotg8BTM+EzOcl6M/SRJlYKr6TQF5WZv+2EK2SOYu7r/vtywo7rImhq0mGxjxND4nU5yBJzlnV7BxGbFuoNp3BAAqCip5yezx5zGYxyWzYyqQkF9vOSyR7L5AomkaZSRA39NmhS47dtk8FZuFVTePjKTUwLP9qneUkzCUrk2NkP9wXH9vZSBn4BF9SIeOBMw2j1fYF6wlj9TSeY2773x5a3xzGLcPckpIngREUHZncB8HSxqXsKU/y6Css3w3aotrIOCzl6Z3YdfTkLrpCVsuu4cZ21LbI/Im1XHLcCetTxNbkkRGDyBiJ//wxiH64deacurNqCY+dVm3iI0/FJbBI=
+      skip_cleanup: true
+      draft: true
+      file: tensorflow_luna_linux.tar.gz
+      on:
+        tags: true
