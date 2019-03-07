@@ -18,4 +18,4 @@ def vartest:
 def main:
     vartest
     0 #lowlevelNetExample
-    exampleNet
+    0 #exampleNet

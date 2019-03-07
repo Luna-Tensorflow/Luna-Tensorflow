@@ -33,7 +33,6 @@ def makeVariableWrappers name defaultValue:
     managed = array . toList . each(x: ManagedPointer None . fromPointer releaseMethod x)
     refWrapper = VariableRefWrapper (managed . at 0 . get) (defaultValue.wrapper.typetag)
     outWrapper = OutputWrapper (managed . at 1 . get) (defaultValue.wrapper.typetag)
-    array.free
 
     (lookupSymbol "TFL" "free_pointer") . call None [ptr.toCArg]
     (refWrapper, outWrapper)

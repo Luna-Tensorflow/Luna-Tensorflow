@@ -6,7 +6,7 @@
 
 Output::Output(std::shared_ptr<Binder> binder, size_t index) : binder(std::move(binder)) {
     hash = std::hash<int>()(index);
-    hash = hash_combine(hash, binder->hashcode());
+    hash = hash_combine(hash, this->binder->hashcode());
 }
 
 TF_Output Output::add_to_graph(GraphSession& graph) const {
