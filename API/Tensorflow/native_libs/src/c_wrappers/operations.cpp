@@ -49,7 +49,7 @@ namespace {
 
 void** make_variable(const char* name, Tensor* val)
 {
-	LOG(name, val);
+	FFILOG(name, val);
 	auto tensor_ptr = LifetimeManager::instance().accessOwned(val);
 	std::string sname(name);
 
@@ -64,21 +64,21 @@ void** make_variable(const char* name, Tensor* val)
 
 State* make_empty_state(void)
 {
-	LOG("empty_state");
+	FFILOG("empty_state");
 	auto state = State::make_empty();
 	return LifetimeManager::instance().addOwnership(state);
 }
 
 Tensor* get_value_from_state(State* ptr, const char* name)
 {
-    LOG(ptr, name);
+    FFILOG(ptr, name);
     auto stateptr = LifetimeManager::instance().accessOwned(ptr);
     return ptr->get(std::string(name)).get();
 }
 
 Tensor** get_values_from_state(State* ptr, const char** names, size_t count)
 {
-    LOG(ptr, names, count);
+    FFILOG(ptr, names, count);
     auto stateptr = LifetimeManager::instance().accessOwned(ptr);
 	std::vector<std::string> names_v(count);
 	std::transform(names, names+count, names_v.begin(), [](auto name) {
@@ -97,7 +97,7 @@ Tensor** get_values_from_state(State* ptr, const char** names, size_t count)
 
 State* update_value_state(State* ptr, const char* name, const Tensor* newvalue)
 {
-    LOG(ptr, name, newvalue);
+    FFILOG(ptr, name, newvalue);
     std::string sname(name);
     auto tensorptr = LifetimeManager::instance().accessOwned(newvalue);
     auto stateptr = LifetimeManager::instance().accessOwned(ptr);
@@ -107,7 +107,7 @@ State* update_value_state(State* ptr, const char* name, const Tensor* newvalue)
 
 State* update_state(State* ptr, const char** names, const Tensor** newvalues, size_t count)
 {
-    LOG(ptr, names, newvalues, count);
+    FFILOG(ptr, names, newvalues, count);
     std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> valuation;
     valuation.reserve(count);
 
@@ -121,7 +121,7 @@ State* update_state(State* ptr, const char** names, const Tensor** newvalues, si
 
 Output* make_assign(Output* unit, Variable* var, Output* value)
 {
-	LOG(unit, var, value);
+	FFILOG(unit, var, value);
 	auto unitPtr = LifetimeManager::instance().accessOwned(unit);
 	auto varPtr = LifetimeManager::instance().accessOwned(var);
 	auto valPtr = LifetimeManager::instance().accessOwned(value);
@@ -139,17 +139,17 @@ Output **make_op(const char *name, Output **inputs, int ninputs, int noutputs, s
 }
 
 Output *make_op_binary(const char *name, Output *a, Output *b) {
-	LOG(name, a, b);
+	FFILOG(name, a, b);
 	return get_first_and_free(make_op_helper(name, {a, b}, {}, 1, ""));
 }
 
 Output *make_op_unary(const char *name, Output *a) {
-	LOG(name, a);
+	FFILOG(name, a);
 	return get_first_and_free(make_op_helper(name, {a}, {}, 1, ""));
 }
 
 Output *make_op_partial_derivative(Output *a, Output *b) {
-	LOG(a, b);
+	FFILOG(a, b);
 	std::shared_ptr<Output> a_cpp = LifetimeManager::instance().accessOwned(a);
 	std::shared_ptr<Output> b_cpp = LifetimeManager::instance().accessOwned(b);
 	auto out = Gradient::add_gradients({a_cpp}, {b_cpp}, {})[0];
@@ -158,31 +158,31 @@ Output *make_op_partial_derivative(Output *a, Output *b) {
 }
 
 Output *make_op_placeholder(const char* name, TF_DataType type) {
-	LOG(name);
+	FFILOG(name);
     return get_first_and_free(make_op_helper("Placeholder", {}, {std::make_shared<AttrType>("dtype", type)}, 1, name));
 }
 
 Output *make_op_const(Tensor *tensor) {
-	LOG(tensor);
+	FFILOG(tensor);
 	auto tensor_owned = LifetimeManager::instance().accessOwned(tensor);
     return get_first_and_free(make_op_helper("Const", {}, {std::make_shared<AttrTensor>("value", *tensor_owned),
                                         std::make_shared<AttrType>("dtype", tensor_owned->getType())}, 1, ""));
 }
 
 size_t operation_hashcode(Output *op) {
-	LOG(op);
+	FFILOG(op);
 	return op->hashcode();
 }
 
 Tensor *eval_op(Output *op) {
-	LOG(op);
+	FFILOG(op);
 	return LifetimeManager::instance().addOwnership(op->eval());
 }
 
 Tensor** batch_eval_op(Output** outs, size_t count)
 {
-    LOG(outs, count);
-	char suppress_tf_log[] = "TF_CPP_MIN_LOG_LEVEL=3";
+    FFILOG(outs, count);
+	char suppress_tf_log[] = "TF_CPP_MIN_FFILOG_LEVEL=3";
 	putenv(suppress_tf_log);
 
 	GraphSession graph;
@@ -196,7 +196,7 @@ Tensor** batch_eval_op(Output** outs, size_t count)
 Tensor** batch_eval_op_placeholders(Output** outs, size_t op_count,
 		const char* ph_names[], Tensor** ph_values, size_t ph_count)
 {
-    LOG(outs, op_count, ph_names, ph_values, ph_count);
+    FFILOG(outs, op_count, ph_names, ph_values, ph_count);
 	char suppress_tf_log[] = "TF_CPP_MIN_LOG_LEVEL=3";
 	putenv(suppress_tf_log);
 
@@ -218,7 +218,7 @@ Tensor** batch_eval_op_placeholders(Output** outs, size_t op_count,
 
 GraphSession* make_graph_from_output(Output* out)
 {
-	LOG(out);
+	FFILOG(out);
 	auto graphPtr = std::make_shared<GraphSession>();
 	graphPtr->add_fetched_output(graphPtr->add_output(out));
 
@@ -227,7 +227,7 @@ GraphSession* make_graph_from_output(Output* out)
 
 GraphSession* make_graph_from_outputs(Output** out, size_t output_count)
 {
-	LOG(out, output_count);
+	FFILOG(out, output_count);
 	auto graphPtr = std::make_shared<GraphSession>();
 	for(size_t i=0; i<output_count; ++i)
 		graphPtr->add_fetched_output(graphPtr->add_output(out[i]));
@@ -237,7 +237,7 @@ GraphSession* make_graph_from_outputs(Output** out, size_t output_count)
 
 void** eval_graph(GraphSession *graph, State* state)
 {
-	LOG(graph, state);
+	FFILOG(graph, state);
 	auto statptr = LifetimeManager::instance().accessOwned(state);
 	auto result = graph->eval(statptr);
 
@@ -255,7 +255,7 @@ void** eval_graph(GraphSession *graph, State* state)
 void** eval_graph_with_placeholders(GraphSession *graph,
 		const char **ph_names, Tensor **ph_values, size_t ph_count, State* state)
 {
-	LOG(graph, ph_names, ph_values, ph_count, state);
+	FFILOG(graph, ph_names, ph_values, ph_count, state);
 	auto statptr = LifetimeManager::instance().accessOwned(state);
 
 	std::map<std::string, std::shared_ptr<Tensor>> substitutions;

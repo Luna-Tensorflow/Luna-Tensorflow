@@ -12,32 +12,32 @@
 #include <random>
 
 TFL_API Tensor *make_tensor(void const *array, TF_DataType type, const int64_t *dims, size_t num_dims) {
-    LOG(array, type, dims, num_dims);
+    FFILOG(array, type, dims, num_dims);
 	auto tensor_ptr = std::make_shared<Tensor>(array, dims, num_dims, type);
 	auto t = LifetimeManager::instance().addOwnership(std::move(tensor_ptr));
-	LOGANDRETURN(t, array, type, dims, num_dims);
+	FFILOGANDRETURN(t, array, type, dims, num_dims);
 }
 
 TFL_API int get_tensor_num_dims(Tensor *tensor) {
     auto r = LifetimeManager::instance().accessOwned(tensor)->shape().size();
-    LOGANDRETURN(r, tensor);
+    FFILOGANDRETURN(r, tensor);
 }
 
 TFL_API int64_t get_tensor_dim(Tensor *tensor, int32_t dim_index) {
     auto r = LifetimeManager::instance().accessOwned(tensor)->shape()[dim_index];
-    LOGANDRETURN(r, tensor, dim_index);
+    FFILOGANDRETURN(r, tensor, dim_index);
 }
 
 #define GET_TENSOR_VALUE_AT(typelabel) \
 TFL_API Type<typelabel>::lunatype get_tensor_value_at_##typelabel(Tensor *tensor, int64_t *idxs, size_t len) { \
     auto r = LifetimeManager::instance().accessOwned(tensor)->at<typelabel>(idxs, len); \
-    LOGANDRETURN(r, tensor, idxs, len); \
+    FFILOGANDRETURN(r, tensor, idxs, len); \
 }
 
 #define GET_TENSOR_VALUE_AT_INDEX(typelabel) \
 TFL_API Type<typelabel>::lunatype get_tensor_value_at_index_##typelabel(Tensor *tensor, int64_t index) { \
     auto r = LifetimeManager::instance().accessOwned(tensor)->at<typelabel>(index); \
-    LOGANDRETURN(r, tensor, index); \
+    FFILOGANDRETURN(r, tensor, index); \
 }
 
 #define MAKE_RANDOM_TENSOR(typelabel, type) \

@@ -10,7 +10,7 @@
 #include "../ops/Gradient.h"
 
 Output** add_gradients(Output** ys, std::int64_t nys,  Output** xs, std::int64_t nxs, Output** dxs) {
-    LOG(ys, nys, xs, nxs, dxs);
+    FFILOG(ys, nys, xs, nxs, dxs);
     std::vector<std::shared_ptr<Output>> ys_v;
     std::vector<std::shared_ptr<Output>> xs_v;
     std::vector<std::shared_ptr<Output>> dxs_v;

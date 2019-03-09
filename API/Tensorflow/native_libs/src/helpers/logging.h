@@ -26,35 +26,53 @@ void print_args(std::ostream& stream, std::string delimiter, T head, Args... tai
 }
 
 template<typename ...Args>
-void log_function_call(const char* name, Args... args) {
-    std::cerr << "C++ " << name << "(";
+void log_function_call(const char* prefix, const char* name, Args... args) {
+    std::cerr << prefix << " " << name << "(";
     print_args(std::cerr, ", ", args...);
     std::cerr << ")\n";
 }
 
 template<typename R, typename ...Args>
-void log_function_call_with_return(const char* name, R ret, Args... args) {
-    std::cerr << "C++ " << name << "(";
+void log_function_call_with_return(const char* prefix, const char* name, R ret, Args... args) {
+    std::cerr << prefix << " " << name << "(";
     print_args(std::cerr, ", ", args...);
     std::cerr << ") = " << ret << "\n";
 }
 
 #ifdef VERBOSE
-    #define LOG(...) do { log_function_call(__FUNCTION__, __VA_ARGS__); } while(0)
+    #define LOG(...) do { log_function_call("C++", __FUNCTION__, __VA_ARGS__); } while(0)
 #else
     #define LOG(...) do {} while(0)
 #endif
 
 #ifdef VERBOSE
-    #define LOG_PARAMLESS do { log_function_call(__FUNCTION__); } while(0)
+    #define LOG_PARAMLESS do { log_function_call("C++", __FUNCTION__); } while(0)
 #else
     #define LOG_PARAMLESS do {} while(0)
 #endif
 
 #ifdef VERBOSE
-    #define LOGANDRETURN(ret, ...) do { log_function_call_with_return(__FUNCTION__, ret, __VA_ARGS__); return ret; } while(0)
+    #define LOGANDRETURN(ret, ...) do { log_function_call_with_return("C++", __FUNCTION__, ret, __VA_ARGS__); return ret; } while(0)
 #else
     #define LOGANDRETURN(ret, ...) do { return ret; } while(0)
+#endif
+
+#ifdef VERBOSE
+#define FFILOG(...) do { log_function_call("FFI", __FUNCTION__, __VA_ARGS__); } while(0)
+#else
+#define LOG(...) do {} while(0)
+#endif
+
+#ifdef VERBOSE
+#define FFILOG_PARAMLESS do { log_function_call("FFI", __FUNCTION__); } while(0)
+#else
+#define LOG_PARAMLESS do {} while(0)
+#endif
+
+#ifdef VERBOSE
+#define FFILOGANDRETURN(ret, ...) do { log_function_call_with_return("FFI", __FUNCTION__, ret, __VA_ARGS__); return ret; } while(0)
+#else
+#define LOGANDRETURN(ret, ...) do { return ret; } while(0)
 #endif
 
 #endif //TFL_LOGGING_H
