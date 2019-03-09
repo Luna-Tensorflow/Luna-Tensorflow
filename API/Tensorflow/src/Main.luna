@@ -1,21 +1,10 @@
-import Tensorflow.Operations
-import Tensorflow.Tensor
-import Tensorflow.Types
-import Tensorflow.Graph
-import Tensorflow.Variables
+import Tensorflow.Tests.Variables
 
 import Tensorflow.Examples.LowlevelNet
 import Tensorflow.Examples.Highlevel
 
-def vartest:
-    defaultValue = tensorFromList1d FloatType [1.0]
-    x = variable "x" defaultValue
-    c = constFromScalar FloatType 1.0
-    u1 = assign unitOp x c
-
-    g = makeGraphFromOutput u1
 
 def main:
     vartest
     0 #lowlevelNetExample
-    exampleNet
+    0 #exampleNet

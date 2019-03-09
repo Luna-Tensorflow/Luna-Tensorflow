@@ -7,17 +7,18 @@ import Tensorflow.Tensor
 class State:
     wrapper :: StateWrapper
 
-    def values names:
+    def values typetag names:
         wrappers = self.wrapper.values names
-        wrappers . each(x: Tensor x)
+        wrappers . each(x: Tensor (x typetag))
 
-    def value name:
+    def value typetag name:
         wrapper = self.wrapper.value name
-        Tensor wrapper
+        Tensor (wrapper typetag)
 
     def updateOne name value:
+        0 # TODO
         wrapper = self.wrapper.updateOne name value
-        Tensor wrapper
+        State wrapper
 
     def update values:
         wrapper = self.wrappers.update values

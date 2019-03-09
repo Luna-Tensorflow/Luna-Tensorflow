@@ -73,7 +73,9 @@ Tensor* get_value_from_state(State* ptr, const char* name)
 {
     FFILOG(ptr, name);
     auto stateptr = LifetimeManager::instance().accessOwned(ptr);
-    return ptr->get(std::string(name)).get();
+    auto tensor = ptr->get(std::string(name));
+    if (tensor == nullptr) return nullptr;
+    return LifetimeManager::instance().addOwnership(tensor);
 }
 
 Tensor** get_values_from_state(State* ptr, const char** names, size_t count)
@@ -87,12 +89,7 @@ Tensor** get_values_from_state(State* ptr, const char** names, size_t count)
 
 	auto returned = stateptr->get(names_v);
 
-	auto returned_ptrs = static_cast<Tensor**>(malloc(count * sizeof(Tensor*)));
-	std::transform(returned.begin(), returned.end(), returned_ptrs, [](auto ptr) {
-	    return ptr.get();
-	});
-
-	return returned_ptrs;
+	return LifetimeManager::instance().addOwnershipOfArray(returned);
 }
 
 State* update_value_state(State* ptr, const char* name, const Tensor* newvalue)

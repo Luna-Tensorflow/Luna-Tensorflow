@@ -13,7 +13,7 @@ public:
     // TODO not sure if return by val or ptr or ?
     std::shared_ptr<State> updated(const std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> &new_values) {
         // TODO
-        auto s = std::make_shared<State>(*this);
+        auto s = std::make_shared<State>(*this); // make a by-value copy of itself
         for (auto & p : new_values) {
             s->valuation[p.first] = p.second;
         }
