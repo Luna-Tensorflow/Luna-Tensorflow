@@ -8,7 +8,8 @@ def vartest:
     defaultValue = tensorFromList1d FloatType [1.0]
     x = variable "x" defaultValue
     c = constFromScalar FloatType 23.0
-    u1 = assign unitOp x c
+    u = unitOp
+    u1 = assign u x c
 
     g = makeGraphFromOutput u1
     st1 = makeEmptyState

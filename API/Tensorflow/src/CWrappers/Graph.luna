@@ -42,9 +42,10 @@ class GraphWrapper:
 
         returnedArr = Array (Pointer None) . make (1+count) returnedPtr
 
-        statewrapper = StateWrapper (ManagedPointer None . fromPointer releaseMethod (returnedArr . readAt 0))
+        lst = returnedArr . toList
+        statewrapper = StateWrapper (ManagedPointer None . fromPointer releaseMethod (lst . at 0 . get))
 
-        managed = (returnedArr . toList . drop 1) . each (x: ManagedPointer None . fromPointer releaseMethod x)
+        managed = (lst . drop 1) . each (x: ManagedPointer None . fromPointer releaseMethod x)
         retwrappers = managed . each (ptr: TensorWrapper ptr)
 
         freePointer = lookupSymbol "TFL" "free_pointer"
