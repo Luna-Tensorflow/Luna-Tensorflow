@@ -40,7 +40,9 @@ void log_function_call_with_return(const char* prefix, const char* name, R ret, 
 }
 
 #ifdef VERBOSE
-    #define LOG(...) do { print_args(std::cerr, " ", "c++", __VA_ARGS__, "\n"); } while(0)
+    #define LOG(...) do { print_args(std::cerr, " ", "C++", __VA_ARGS__, "\n"); } while(0)
+#else
+    #define LOG(...) do {} while (0)
 #endif
 
 #ifdef VERBOSE
@@ -64,19 +66,19 @@ void log_function_call_with_return(const char* prefix, const char* name, R ret, 
 #ifdef VERBOSE
 #define FFILOG(...) do { log_function_call("FFI", __FUNCTION__, __VA_ARGS__); } while(0)
 #else
-#define LOG_CALL(...) do {} while(0)
+#define FFILOG(...) do {} while(0)
 #endif
 
 #ifdef VERBOSE
 #define FFILOG_PARAMLESS do { log_function_call("FFI", __FUNCTION__); } while(0)
 #else
-#define LOG_PARAMLESS do {} while(0)
+#define FFILOG_PARAMLESS do {} while(0)
 #endif
 
 #ifdef VERBOSE
 #define FFILOGANDRETURN(ret, ...) do { log_function_call_with_return("FFI", __FUNCTION__, ret, __VA_ARGS__); return ret; } while(0)
 #else
-#define LOGANDRETURN(ret, ...) do { return ret; } while(0)
+#define FFILOGANDRETURN(ret, ...) do { return ret; } while(0)
 #endif
 
 #endif //TFL_LOGGING_H
