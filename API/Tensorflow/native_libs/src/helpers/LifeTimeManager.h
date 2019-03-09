@@ -31,7 +31,7 @@ class LifetimeManager
     template<typename Function>
     auto access(const void *ptr, Function &&f) const
     {
-    	LOG(ptr);
+    	LOG_CALL(ptr);
         std::unique_lock<std::mutex> lock{ mx };
         if(auto itr = storage.find(ptr); itr != storage.end())
         {
@@ -50,7 +50,7 @@ public:
     template<typename T>
     T *addOwnership(std::shared_ptr<T> ptr)
     {
-        LOG(ptr, typeid(T).name());
+        LOG_CALL(ptr, typeid(T).name());
         // we don't bother tracking nullptr - there is no object with a lifetime to manage
         if(!ptr)
             return nullptr;
@@ -62,7 +62,7 @@ public:
     }
     void releaseOwnership(const void *ptr)
     {
-        LOG(ptr);
+        LOG_CALL(ptr);
         access(ptr, [this] (auto itr)
         {
             // TODO should separate retrieving any from storage and deleting it

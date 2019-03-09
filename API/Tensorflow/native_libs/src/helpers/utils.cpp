@@ -24,6 +24,7 @@ void run_with_status(std::function<void(TF_Status*)> f) {
     TF_Status *status = TF_NewStatus();
     f(status);
     if (TF_GetCode(status) != TF_OK) {
+        LOG("TF runtime error:", TF_Message(status));
         throw TFException(status);
     }
     TF_DeleteStatus(status);

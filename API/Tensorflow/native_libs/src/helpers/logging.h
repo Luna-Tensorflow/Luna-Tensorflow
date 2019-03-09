@@ -40,9 +40,13 @@ void log_function_call_with_return(const char* prefix, const char* name, R ret, 
 }
 
 #ifdef VERBOSE
-    #define LOG(...) do { log_function_call("C++", __FUNCTION__, __VA_ARGS__); } while(0)
+    #define LOG(...) do { print_args(std::cerr, " ", "c++", __VA_ARGS__, "\n"); } while(0)
+#endif
+
+#ifdef VERBOSE
+    #define LOG_CALL(...) do { log_function_call("C++", __FUNCTION__, __VA_ARGS__); } while(0)
 #else
-    #define LOG(...) do {} while(0)
+    #define LOG_CALL(...) do {} while(0)
 #endif
 
 #ifdef VERBOSE
@@ -60,7 +64,7 @@ void log_function_call_with_return(const char* prefix, const char* name, R ret, 
 #ifdef VERBOSE
 #define FFILOG(...) do { log_function_call("FFI", __FUNCTION__, __VA_ARGS__); } while(0)
 #else
-#define LOG(...) do {} while(0)
+#define LOG_CALL(...) do {} while(0)
 #endif
 
 #ifdef VERBOSE
