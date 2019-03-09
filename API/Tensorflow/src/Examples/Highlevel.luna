@@ -31,4 +31,5 @@ def exampleNet:
 
     print "Evaluation"
     pred = model.evaluate (x.getAt 0)
+    print pred.toJSON
 

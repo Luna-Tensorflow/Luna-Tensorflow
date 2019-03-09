@@ -87,10 +87,6 @@ std::shared_ptr<EvaluationResult> GraphSession::eval(
 	    for (auto & p : assignments) {
 	        computed_outs.push_back(p.second);
 	    }
-	    for(auto & p : variables)
-	    {
-	    	computed_outs.push_back(p.second);
-	    }
 
 	    std::vector<TF_Tensor *> output_values(computed_outs.size());
 
