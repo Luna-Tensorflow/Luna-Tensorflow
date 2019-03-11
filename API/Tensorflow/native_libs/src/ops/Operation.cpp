@@ -48,7 +48,7 @@ void Operation::add_to_graph(GraphSession &graph) {
         inputs_hashes += input->get_binder()->hash_log() + " ";
     }
 
-    LOG_GRAPH(hash_log(), "[inputs] " + inputs_hashes);
+    LOG_GRAPH(hash_log(), "[chosen_name] "+chosen_name, "[inputs] " + inputs_hashes);
 
     TF_OperationDescription *desc = TF_NewOperation(graph.get_underlying(),
                                                     name.c_str(), (name + std::to_string(hash)).c_str());
