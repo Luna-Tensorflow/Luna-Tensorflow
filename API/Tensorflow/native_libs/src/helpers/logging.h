@@ -7,6 +7,18 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
+
+template<class T>
+std::string vec_to_string(const std::vector<T>& vec)
+{
+    std::string ret = "[";
+    for(auto& elem : vec)
+        ret += std::to_string(elem) + ",";
+    if(!vec.empty()) ret.pop_back();
+    ret += "]";
+    return ret;
+}
 
 inline void print_args(std::ostream& stream, std::string delimiter) {
     (void)stream;

@@ -64,7 +64,7 @@ std::shared_ptr<EvaluationResult> GraphSession::eval(
 	    std::vector<TF_Tensor *> tensor_v;
 
 	    for (auto &elem : substitutions) {
-	    	LOG("subs", elem.first);
+	    	LOG("subs", elem.first, vec_to_string(elem.second->shape()));
 	        if (placeholders.find(elem.first) == placeholders.end()) //bypass obsolete substs
 	            continue;
 	        placeholders_vars_v.push_back(placeholders.at(elem.first));
@@ -72,7 +72,7 @@ std::shared_ptr<EvaluationResult> GraphSession::eval(
 	    }
 
 	    for (auto &elem : variable_default_values) {
-	    	LOG("vars", elem.first);
+	    	LOG("vars", elem.first, vec_to_string(elem.second->shape()));
 	        placeholders_vars_v.push_back(variables.at(elem.first)); // FIXME add exists check, will variables use placeholders data structure or a separate map for outputs?
 	        auto tensor = state->get(elem.first);
 	        if (tensor == nullptr) {
