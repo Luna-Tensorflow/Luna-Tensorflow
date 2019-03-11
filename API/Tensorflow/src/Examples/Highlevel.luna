@@ -10,8 +10,8 @@ import Tensorflow.Model
 
 def exampleNet:
     print "Loading data"
-    xl = tensorFromList1d FloatType [1.0,1.0]
-    x = [xl] # TODO
+    xl = randomTensor FloatType [10, 1] 1.0 1.0
+    x = [xl]
     yl = tensorFromList1d FloatType [1.0]
     y = [yl]
 
@@ -32,4 +32,7 @@ def exampleNet:
     print "Evaluation"
     pred = model.evaluate (x.getAt 0)
     print pred.toJSON
+
+
+
 
