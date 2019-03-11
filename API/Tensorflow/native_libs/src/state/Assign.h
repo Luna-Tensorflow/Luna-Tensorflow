@@ -14,6 +14,7 @@ public:
 
     void add_to_graph(GraphSession &graph) override;
     size_t hashcode() const override;
+    std::string hash_log() const override;
 
 private:
     Assign(std::shared_ptr<Output> unit, std::shared_ptr<Variable> variable, std::shared_ptr<Output> value);

@@ -81,4 +81,10 @@ void log_function_call_with_return(const char* prefix, const char* name, R ret, 
 #define FFILOGANDRETURN(ret, ...) do { return ret; } while(0)
 #endif
 
+#ifdef LOG_GRAPH_STRUCTURE
+#define LOG_GRAPH(...) do { log_function_call("C++", __FUNCTION__, __VA_ARGS__); } while(0)
+#else
+#define LOG_GRAPH(...) do {} while(0)
+#endif
+
 #endif //TFL_LOGGING_H

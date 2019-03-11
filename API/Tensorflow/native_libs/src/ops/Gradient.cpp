@@ -45,17 +45,24 @@ std::vector<std::shared_ptr<Output>> Gradient::add_gradients(std::vector<std::sh
 
 void Gradient::add_to_graph(GraphSession &graph) {
     std::vector<TF_Output> y_outputs;
+    std::string ys_hashes, xs_hashes, dxs_hashes;
+
     for (auto &y : ys) {
         y_outputs.push_back(graph.add_output(y.get()));
+        ys_hashes += y->get_binder()->hash_log() + " ";
     }
     std::vector<TF_Output> x_outputs;
     for (auto &x : xs) {
         x_outputs.push_back(graph.add_output(x.get()));
+        xs_hashes += x->get_binder()->hash_log() + " ";
     }
     std::vector<TF_Output> dx_outputs;
     for (auto &dx : dxs) {
         dx_outputs.push_back(graph.add_output(dx.get()));
+        dxs_hashes += dx->get_binder()->hash_log() + " ";
     }
+
+    LOG_GRAPH(hash_log(), "[ys] " + ys_hashes, "[xs] " + xs_hashes, "[dxs] " + dxs_hashes);
 
     std::vector<TF_Output> results(xs.size());
     run_with_status<void>(std::bind(TF_AddGradients, graph.get_underlying(), y_outputs.data(), y_outputs.size(),
@@ -71,4 +78,8 @@ void Gradient::add_to_graph(GraphSession &graph) {
 
 size_t Gradient::hashcode() const {
     return hash;
+}
+
+std::string Gradient::hash_log() const {
+    return "Gradient: " + std::to_string(hash);
 }

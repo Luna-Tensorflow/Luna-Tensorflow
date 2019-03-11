@@ -29,6 +29,7 @@ public:
 
     void add_to_graph(GraphSession &graph) override;
     size_t hashcode() const override;
+    std::string hash_log() const override;
 
 private:
     std::string name;

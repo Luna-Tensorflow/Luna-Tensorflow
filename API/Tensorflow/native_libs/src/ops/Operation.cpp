@@ -41,9 +41,14 @@ std::vector<std::shared_ptr<Output>> Operation::make_operation(std::string name,
 
 void Operation::add_to_graph(GraphSession &graph) {
     std::vector<TF_Output> tf_inputs;
+    std::string inputs_hashes;
+
     for (auto &input : inputs) {
         tf_inputs.push_back(graph.add_output(input.get()));
+        inputs_hashes += input->get_binder()->hash_log() + " ";
     }
+
+    LOG_GRAPH(hash_log(), "[inputs] " + inputs_hashes);
 
     TF_OperationDescription *desc = TF_NewOperation(graph.get_underlying(),
                                                     name.c_str(), (name + std::to_string(hash)).c_str());
@@ -80,4 +85,8 @@ void Operation::add_to_graph(GraphSession &graph) {
 
 size_t Operation::hashcode() const {
     return hash;
+}
+
+std::string Operation::hash_log() const {
+    return name + ": " + std::to_string(hash);
 }

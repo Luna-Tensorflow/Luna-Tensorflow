@@ -16,6 +16,7 @@ void Variable::add_to_graph(GraphSession &graph)
     auto ptr = my_output.lock();
     if(ptr)
     {
+        LOG_GRAPH(hash_log(), "[default_value] " + std::to_string(default_value->hashcode()));
         TF_OperationDescription *desc = TF_NewOperation(graph.get_underlying(),
             "Placeholder", ("var_"+name+"_"+std::to_string(ptr->hashcode())).c_str());
         AttrType("dtype", default_value->getType()).set(desc);
@@ -51,4 +52,8 @@ std::pair<std::shared_ptr<Variable>, std::shared_ptr<Output>> Variable::make_var
 
 size_t Variable::hashcode() const {
     return hash;
+}
+
+std::string Variable::hash_log() const {
+    return "Variable: " + std::to_string(hash);
 }

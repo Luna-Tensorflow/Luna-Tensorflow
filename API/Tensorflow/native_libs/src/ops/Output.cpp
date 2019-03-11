@@ -32,3 +32,7 @@ std::shared_ptr<Tensor> Output::eval() const {
 
     return LifetimeManager::instance().accessOwned(ptr);
 }
+
+std::shared_ptr<Binder> Output::get_binder() {
+    return binder;
+}

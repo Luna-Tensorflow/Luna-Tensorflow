@@ -12,6 +12,7 @@ class GraphSession;
 class Hashable {
 public:
 	virtual size_t hashcode() const = 0;
+	virtual std::string hash_log() const = 0;
 };
 
 // TODO rename to Node or something like that

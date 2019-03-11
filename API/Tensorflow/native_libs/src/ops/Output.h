@@ -32,6 +32,7 @@ public:
     size_t hashcode() const;
 
     std::shared_ptr<Tensor> eval() const;
+    std::shared_ptr<Binder> get_binder();
 private:
     size_t hash;
     std::shared_ptr<Binder> binder;

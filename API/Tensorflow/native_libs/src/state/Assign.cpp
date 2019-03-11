@@ -26,6 +26,8 @@ void Assign::add_to_graph(GraphSession &graph) {
     TF_Output val = value->add_to_graph(graph);
     graph.register_assignment(variable->get_name(), val);
 
+    LOG_GRAPH(hash_log(), "[unit] " + unit->get_binder()->hash_log(), "[variable] " + variable->hash_log(), "[value] " + value->get_binder()->hash_log());
+
     auto out = output.lock();
     if (out) {
         // add input unit to graph
@@ -42,3 +44,7 @@ void Assign::add_to_graph(GraphSession &graph) {
 size_t Assign::hashcode() const {
     return hash;
 } 
+
+std::string Assign::hash_log() const {
+    return "Assign: " + std::to_string(hash);
+}
