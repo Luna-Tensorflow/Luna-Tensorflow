@@ -5,8 +5,8 @@ os:
   - windows
 dist: xenial
 before_script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; ./scripts/before_linux.sh; fi
-  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; ./scripts/before_windows.sh; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./scripts/before_linux.sh; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./scripts/before_windows.sh; fi
 jobs:
   include:
   - stage: Github Release
