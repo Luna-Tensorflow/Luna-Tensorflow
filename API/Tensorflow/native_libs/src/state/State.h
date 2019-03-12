@@ -5,6 +5,7 @@
 #include <string>
 #include <memory>
 #include <map>
+#include <algorithm>
 #include "../tensor/Tensor.h"
 
 class State {

@@ -2,6 +2,7 @@
 // Created by wojtek on 13.02.19.
 //
 
+#include <algorithm>
 #include "Operation.h"
 
 Operation::Operation(std::string name, std::vector<std::shared_ptr<Output>> inputs,
