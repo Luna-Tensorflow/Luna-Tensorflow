@@ -15,7 +15,7 @@ cache:
 
 build_script:
 - cd %APPVEYOR_BUILD_FORLDER%
-- call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+# - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 - mkdir tensorflow
 - cd tensorflow
 - curl -sS -o libtf.zip https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.12.0.zip
