@@ -33,7 +33,7 @@ build_script:
 - mv Main2.hs Main.hs
 - cd ..
 - cd build
-- cmake -G "%GENERATOR%" -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" ..\API\Tensorflow\native_libs\src\
+- cmake -G "%GENERATOR%" -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" -DCMAKE_SH=CMAKE_SH-NOTFOUND ..\API\Tensorflow\native_libs\src\
 - cmake --build .
 - cd ..
 - curl -sS -o stack.zip -L --insecure https://get.haskellstack.org/stable/windows-x86_64.zip
