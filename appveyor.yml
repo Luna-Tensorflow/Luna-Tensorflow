@@ -4,6 +4,10 @@ environment:
   PATH: C:\Python37-x64;C:\stack;%PATH%
   LTF_REPO_PATH: $(APPVEYOR_BUILD_FOLDER)
   TF_USE_LOCAL_LIBRARY: 1
+  COMPILER: mingw-w64
+  GENERATOR: MinGW Makefiles
+  PLATFORM: x64
+  BUILD_TYPE: Release
 
 cache:
 - C:\Users\appveyor\AppData\Roaming\stack\
