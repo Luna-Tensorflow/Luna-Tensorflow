@@ -16,8 +16,8 @@ Operation::Operation(std::string name, std::vector<std::shared_ptr<Output>> inpu
         hash = hash_combine(hash, attr->hashcode());
     }
 
-    if (chosen_name.empty()) {
-        chosen_name = name + std::to_string(hash);
+    if (this->chosen_name.empty()) {
+        this->chosen_name = this->name + std::to_string(hash);
     }
 }
 
@@ -51,7 +51,7 @@ void Operation::add_to_graph(GraphSession &graph) {
     LOG_GRAPH(hash_log(), "[chosen_name] "+chosen_name, "[inputs] " + inputs_hashes);
 
     TF_OperationDescription *desc = TF_NewOperation(graph.get_underlying(),
-                                                    name.c_str(), (name + std::to_string(hash)).c_str());
+                                                    name.c_str(), chosen_name.c_str());
 
     for (auto &tf_input : tf_inputs) {
         TF_AddInput(desc, tf_input);

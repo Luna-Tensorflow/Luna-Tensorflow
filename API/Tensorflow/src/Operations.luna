@@ -116,5 +116,5 @@ def outputFromPtr typetag ptr:
     TFOutput wrapper
 
 def qr a:
-    wrappers = makeOutputWrappers "Qr" [a] 2 nullPtr ""
+    wrappers = makeOutputWrappers "Qr" [a] [a.wrapper.typetag, a.wrapper.typetag] nullPtr ""
     wrappers.each (wrapper: TFOutput wrapper)

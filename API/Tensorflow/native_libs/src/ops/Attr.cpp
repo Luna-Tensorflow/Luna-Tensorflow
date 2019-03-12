@@ -56,11 +56,11 @@ AttrShapeList::AttrShapeList(const std::string &name, std::vector<std::vector<in
 }
 
 void AttrShapeList::set(TF_OperationDescription *desc) const {
-    std::vector<const int64_t*> dims_pointers;
+    std::vector<const int64_t*> dims_pointers(dims.size());
     std::transform(dims.begin(), dims.end(), dims_pointers.begin(),
             [](const std::vector<int64_t> &v){ return v.data(); });
 
-    std::vector<int> dims_sizes;
+    std::vector<int> dims_sizes(dims.size());
     std::transform(dims.begin(), dims.end(), dims_sizes.begin(),
             [](const std::vector<int64_t> &v){ return v.size(); });
 
@@ -86,7 +86,7 @@ AttrTensorList::AttrTensorList(const std::string &name, const std::vector<Tensor
 }
 
 void AttrTensorList::set(TF_OperationDescription *desc) const {
-    std::vector<TF_Tensor*> tensor_pointers;
+    std::vector<TF_Tensor*> tensor_pointers(tensors.size());
     std::transform(tensors.begin(), tensors.end(), tensor_pointers.begin(),
             [](const Tensor &tensor){ return tensor.get_underlying(); });
 
@@ -155,7 +155,7 @@ AttrBoolList::AttrBoolList(const std::string &name, const std::vector<bool> &val
 }
 
 void AttrBoolList::set(TF_OperationDescription *desc) const {
-    std::vector<unsigned char> uchar_values;
+    std::vector<unsigned char> uchar_values(values.size());
     std::transform(values.begin(), values.end(), uchar_values.begin(), [](bool v){ if (v) return 1; return 0; });
     TF_SetAttrBoolList(desc, name.c_str(), uchar_values.data(), uchar_values.size());
 }
@@ -177,10 +177,10 @@ AttrStringList::AttrStringList(const std::string &name, const std::vector<std::s
 }
 
 void AttrStringList::set(TF_OperationDescription *desc) const {
-    std::vector<const void*> values_pointers;
+    std::vector<const void*> values_pointers(values.size());
     std::transform(values.begin(), values.end(), values_pointers.begin(), [](const std::string& str){ return str.c_str(); });
 
-    std::vector<size_t> values_sizes;
+    std::vector<size_t> values_sizes(values.size());
     std::transform(values.begin(), values.end(), values_sizes.begin(), [](const std::string& str){ return str.size(); });
 
     TF_SetAttrStringList(desc, name.c_str(), values_pointers.data(), values_sizes.data(), values.size());
