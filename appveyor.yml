@@ -18,16 +18,16 @@ build_script:
 - cd ..
 - mkdir build
 - mkdir release
-- mkdir release/native_libs
-- mkdir release/native_libs/windows
-- cd scripts/ # download and patch the patcher
+- mkdir release\native_libs
+- mkdir release\native_libs\windows
+- cd scripts # download and patch the patcher
 - mv Main.hs Main2.gs
 - git clone https://github.com/luna/dataframes
-- mv dataframes/scripts/* .
+- mv dataframes\scripts\* .
 - mv Main2.hs Main.hs
 - cd ..
 - cd build
-- cmake ../API/Tensorflow/native_libs/src/
+- cmake ..\API\Tensorflow\native_libs\src\
 - make
 - cd ..
 - curl -sS -o stack.zip -L --insecure https://get.haskellstack.org/stable/windows-x86_64.zip
