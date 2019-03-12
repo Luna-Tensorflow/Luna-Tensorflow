@@ -1,7 +1,7 @@
 echo "Running Windows build"
 mkdir tensorflow # download TF dependency, TODO downloading protobufs
 cd tensorflow
-curl -sS -o libtf.zip https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.12.0.zip
+curl -sS -o libtf.zip --insecure https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.12.0.zip
 7z x libtf.zip -y
 chmod u+w lib/*
 cd ..

@@ -13,13 +13,19 @@ cache:
 - C:\Users\appveyor\AppData\Roaming\stack\
 - C:\Users\appveyor\AppData\Local\Programs\stack
 
+install:
+# Download MinGW-w64 toolchain
+- call bin\appveyor-download.cmd "https://raw.githubusercontent.com/symengine/dependencies/57834d6007065cdd71964c96b397505b2b4ce78a/x86_64-4.8.5-release-win32-seh-rt_v4-rev0.7z" -FileName mw64.7z
+- 7z x -oC:\ mw64.7z > NUL
+- set PATH=C:\mingw64\bin;%PATH%
+
 build_script:
 - cd %APPVEYOR_BUILD_FORLDER%
 # - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 - set PATH=C:\MinGW\bin;%PATH%
 - mkdir tensorflow
 - cd tensorflow
-- curl -sS -o libtf.zip https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.12.0.zip
+- curl -sS -o libtf.zip -L --insecure https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.12.0.zip
 - 7z x libtf.zip -y
 - cd ..
 - mkdir build
@@ -33,7 +39,7 @@ build_script:
 - mv Main2.hs Main.hs
 - cd ..
 - cd build
-- cmake -G "%GENERATOR%" -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" -DCMAKE_SH=CMAKE_SH-NOTFOUND ..\API\Tensorflow\native_libs\src\
+- cmake -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH=C:\mingw64 -DCMAKE_SH=CMAKE_SH-NOTFOUND ..\API\Tensorflow\native_libs\src\
 - cmake --build .
 - cd ..
 - curl -sS -o stack.zip -L --insecure https://get.haskellstack.org/stable/windows-x86_64.zip

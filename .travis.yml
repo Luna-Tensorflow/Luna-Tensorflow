@@ -7,6 +7,9 @@ dist: xenial
 before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./scripts/before_linux.sh; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./scripts/before_windows.sh; fi
+script:
+  - cd build
+  - cmake --build .
 jobs:
   include:
   - stage: Github Release
