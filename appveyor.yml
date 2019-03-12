@@ -23,7 +23,7 @@ build_script:
 - cd scripts # download and patch the patcher
 - mv Main.hs Main2.gs
 - git clone https://github.com/luna/dataframes
-- xcopy \E \H \Y "dataframes\scripts\*" .
+- xcopy /E /H /Y "dataframes\scripts\*" .
 - mv Main2.hs Main.hs
 - cd ..
 - cd build
