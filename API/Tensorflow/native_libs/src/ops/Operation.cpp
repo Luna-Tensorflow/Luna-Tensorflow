@@ -3,12 +3,17 @@
 //
 
 #include "Operation.h"
+#include "../helpers/salter.h"
 
 Operation::Operation(std::string name, std::vector<std::shared_ptr<Output>> inputs,
         std::vector<std::shared_ptr<Attr>> attrs, std::string chosen_name)
         : name(name), inputs(inputs), attrs(attrs), chosen_name(chosen_name) {
 
     hash = std::hash<std::string>()(name);
+    if (name == "Const") {
+        hash = hash_combine(hash, const_salter.next_salt());
+    }
+    hash = hash_combine(hash, std::hash<std::string>()(chosen_name));
     for(auto &input : inputs) {
         hash = hash_combine(hash, input->hashcode());
     }

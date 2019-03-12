@@ -20,7 +20,7 @@ def gradients ys xs dxs:
 
     dysRet = dysArr . toList . each (outputFromPtr typetag)
 
-    dysArr.free
+    lookupSymbol "TFL" "free_pointer" . call None [dysPtr.toCArg]
     ysArr.free
     xsArr.free
     dxsPtr.free

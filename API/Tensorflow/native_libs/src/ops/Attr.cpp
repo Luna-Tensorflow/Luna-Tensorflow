@@ -48,7 +48,7 @@ void AttrShape::set(TF_OperationDescription *desc) const {
 
 AttrShapeList::AttrShapeList(const std::string &name, std::vector<std::vector<int64_t>> dims) : Attr(name), dims(std::move(dims)) {
     hash = std::hash<std::string>()(name);
-    for (auto &dim : dims) {
+    for (auto &dim : this->dims) {
         for (auto d : dim) {
             hash = hash_combine(hash, std::hash<int64_t>()(d));
         }

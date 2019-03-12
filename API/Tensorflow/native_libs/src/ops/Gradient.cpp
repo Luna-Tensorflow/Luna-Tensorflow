@@ -61,12 +61,16 @@ void Gradient::add_to_graph(GraphSession &graph) {
         dx_outputs.push_back(graph.add_output(dx.get()));
         dxs_hashes += dx->get_binder()->hash_log() + " ";
     }
+    TF_Output* dx_outputs_data = nullptr;
+    if (!dx_outputs.empty()) {
+        dx_outputs_data = dx_outputs.data();
+    }
 
     LOG_GRAPH(hash_log(), "[ys] " + ys_hashes, "[xs] " + xs_hashes, "[dxs] " + dxs_hashes);
 
     std::vector<TF_Output> results(xs.size());
     run_with_status<void>(std::bind(TF_AddGradients, graph.get_underlying(), y_outputs.data(), y_outputs.size(),
-                                    x_outputs.data(), x_outputs.size(), dx_outputs.data(), std::placeholders::_1, results.data()));
+                                    x_outputs.data(), x_outputs.size(), dx_outputs_data, std::placeholders::_1, results.data()));
 
     for (size_t i = 0; i < results.size(); ++i) {
         auto out = outputs[i].lock(); // promote to shared_ptr, will return null if pointer is already disposed of
