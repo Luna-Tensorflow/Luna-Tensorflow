@@ -21,7 +21,7 @@ build_script:
 - mkdir release\native_libs
 - mkdir release\native_libs\windows
 - cd scripts # download and patch the patcher
-- mv Main.hs Main2.gs
+- mv Main.hs Main2.hs
 - git clone https://github.com/luna/dataframes
 - xcopy /E /H /Y "dataframes\scripts\*" .
 - mv Main2.hs Main.hs
