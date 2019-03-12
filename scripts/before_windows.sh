@@ -16,5 +16,6 @@ mv dataframes/scripts/* .
 mv Main2.hs Main.hs
 cd ..
 cd build
-cmake -G "MinGW Makefiles" ../API/Tensorflow/native_libs/src/
+echo "Will generate makefiles"
+cmake -G "MinGW Makefiles" -DCMAKE_SH=CMAKE_SH-NOTFOUND  ../API/Tensorflow/native_libs/src/
 cd ..
