@@ -4,11 +4,6 @@ os:
   - linux
   - windows
 dist: xenial
-before_install:
-- sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-- sudo apt-get update -y
-- sudo apt-get install -y patchelf gcc-7 g++-7
-- curl -sSL https://get.haskellstack.org/ | sudo sh
 before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; ./scripts/before_linux.sh; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; ./scripts/before_windows.sh; fi
