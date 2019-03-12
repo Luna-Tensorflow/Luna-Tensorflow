@@ -11,6 +11,7 @@ cache:
 
 build_script:
 - cd %APPVEYOR_BUILD_FORLDER%
+- call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 - mkdir tensorflow
 - cd tensorflow
 - curl -sS -o libtf.zip https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.12.0.zip
@@ -28,7 +29,7 @@ build_script:
 - cd ..
 - cd build
 - cmake ..\API\Tensorflow\native_libs\src\
-- make
+- cmake --build .
 - cd ..
 - curl -sS -o stack.zip -L --insecure https://get.haskellstack.org/stable/windows-x86_64.zip
 - 7z x stack.zip -y -oC:\stack stack.exe
