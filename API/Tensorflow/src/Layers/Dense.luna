@@ -15,7 +15,7 @@ class DenseLayer varT layerT:
 
       # shape :: List Int
       def shape:
-          [self.nOutputs]
+          [self.nOutputs, 1]
 
       # forward :: Operation a -> Operation a
       def forward inp:
@@ -34,11 +34,9 @@ class DenseLayer varT layerT:
 # dense :: Int -> Layer -> Layer
 def dense nOutputs parent:
     nInputs = case parent.shape of
-        [x]: x
-        [x, y]: if y == 1 then x else throw $ "Dense layer requires its input to be a flat tensor"
-        _: throw $ "Dense layer requires its input to be a flat tensor"
+        [x, 1]: x
+        _: throw $ "Dense layer requires its input to be a flat tensor n x 1"
 
-    nInputs = parent.shape.head.get
     vartype = parent.outputType
 
     name = getNextName "Dense"

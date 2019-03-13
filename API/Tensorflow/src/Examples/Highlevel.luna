@@ -24,7 +24,7 @@ def generateTest n:
     (tx, ty)
 
 def exampleNet:
-    n = 1000
+    n = 10000
     print "Loading data"
 
     (x,y) = generateTest n
