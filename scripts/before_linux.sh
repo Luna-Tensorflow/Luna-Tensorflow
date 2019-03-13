@@ -1,5 +1,5 @@
 echo "Running Linux build"
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+sudo add-apt-repository -y "ppa:ubuntu-toolchain-r/test"
 sudo apt-get update -y
 sudo apt-get install -y patchelf gcc-7 g++-7
 curl -sSL https://get.haskellstack.org/ | sudo sh
