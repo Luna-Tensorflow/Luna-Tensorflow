@@ -8,30 +8,52 @@ import Tensorflow.Optimizers.GradientDescent
 import Tensorflow.Losses.MSE
 import Tensorflow.Model
 
+def generateTest n:
+    tx = (1 . upto n) . each (i:
+        t = randomTensor FloatType [2, 1] 2.0.negate 2.0
+        t)
+
+    ty = tx . each(t:
+        x = t . at [0, 0]
+        y = t . at [1, 0] # z = t . at [2, 0]
+        w = x*x + y*y # + z*z
+        incircle = if w <= 1.0 then 1.0 else 0.0
+        y = tensorFromList1d FloatType [incircle]
+        y)
+
+    (tx, ty)
+
 def exampleNet:
+    n = 1000
     print "Loading data"
-    xl = randomTensor FloatType [10, 1] 1.0 1.0
-    x = [xl]
-    yl = tensorFromList1d FloatType [1.0]
-    y = [yl]
+
+    (x,y) = generateTest n
+    (testX, testY) = generateTest n
 
     print "Building net"
-    i = input FloatType [10]
-    d1 = denseWithActivation 20 tanh i
+    i = input FloatType [2, 1]
+    d1 = denseWithActivation 5 tanh i
     d2 = denseWithActivation 3 tanh d1
+    d3 = denseWithActivation 3 tanh d2
+    d4 = denseWithActivation 1 tanh d3
 
     print "Compiling model"
     opt = gradientDescentOptimizer 0.1
     loss = meanSquareError
 
-    model = makeModel i d2 opt loss
+    model = makeModel i d4 opt loss
 
     print "Training"
     fitted = model.train x y
 
     print "Evaluation"
-    pred = model.evaluate (x.getAt 0)
-    print pred.toJSON
+    predY = testX . each (tx: fitted.evaluate tx . head . get)
+
+    result = (predY . zip testY) . fold 0.0 ((pY, tY): acc: acc + (pY.atIndex 0 - tY.atIndex 0) . abs . round 0) # 0 is ok, 1 is fail
+
+    maxn = n . toReal
+    effic = 100.0 * (maxn - result) / maxn
+    print ("Efficiency: " + (effic.toText) + "%")
 
 
 
