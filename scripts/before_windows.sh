@@ -10,12 +10,12 @@ mkdir build # prepare folders
 mkdir release
 mkdir release/native_libs
 mkdir release/native_libs/linux/
-cd scripts/ # download and patch the patching script
-mv Main.hs Main2.hs
-git clone https://github.com/luna/dataframes
-mv dataframes/scripts/* .
-mv Main2.hs Main.hs
-cd ..
+#cd scripts/ # download and patch the patching script
+#mv Main.hs Main2.hs
+#git clone https://github.com/luna/dataframes
+#mv dataframes/scripts/* .
+#mv Main2.hs Main.hs
+#cd ..
 cd build
 echo "Will generate makefiles"
 cmake -G "MinGW Makefiles" -DCMAKE_SH=CMAKE_SH-NOTFOUND  ../API/Tensorflow/native_libs/src/
