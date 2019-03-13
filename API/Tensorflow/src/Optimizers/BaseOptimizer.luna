@@ -1,0 +1,6 @@
+
+# TODO this interface doesn't take into consideration things like batching
+# interface Optimizer:
+#           # makeOptimizingGraph takes: yTrue, yPred, loss, variables and returns computed loss value enriched with the side effect of updating all variables according to its optimization strategy
+#           makeOptimizingGraph :: Operation a -> Operation a -> (Operation a -> Operation a -> Operation b) -> List Variable -> TFGraph
+

@@ -1,0 +1,17 @@
+import Tensorflow.Operations
+import Tensorflow.Tensor
+import Tensorflow.Types
+import Tensorflow.Graph
+import Tensorflow.Variables
+
+def vartest:
+    defaultValue = tensorFromList1d FloatType [1.0]
+    x = variable "x" defaultValue
+    c = constFromScalar FloatType 23.0
+    u = unitOp
+    u1 = assign u x c
+
+    g = makeGraphFromOutput u1
+    st1 = makeEmptyState
+    (u2, st2) = g.eval st1
+    print (st2.value FloatType "x").toJSON

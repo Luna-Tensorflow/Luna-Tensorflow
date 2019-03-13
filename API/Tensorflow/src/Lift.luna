@@ -7,17 +7,18 @@ import Tensorflow.Types
 
 # TODO FIXME add lift support to types other than Float
 # This may require further language support or at least features that are not yet available
-# lift1 :: (TFOperation a1 -> (List TFOperation b)) -> Tensor a1 -> (List Tensor b)
+# lift1 :: (TFOutput a1 -> (List TFOutput b)) -> Tensor a1 -> (List Tensor b)
 def lift1 fun:
     p1 = makePlaceholder FloatType "1"
     result = fun p1
     graph = makeGraphFromOutputList result
 
     def liftedf a:
-        graph . evalSubsts [("1", a)]
+        state = makeEmptyState
+        (graph . evalSubsts state [("1", a)]).first
     liftedf
 
-# lift2 :: (TFOperation a1 -> TFOperation a2 -> (List TFOperation b)) -> Tensor a1 -> Tensor a2 -> (List Tensor b)
+# lift2 :: (TFOutput a1 -> TFOutput a2 -> (List TFOutput b)) -> Tensor a1 -> Tensor a2 -> (List Tensor b)
 def lift2 fun:
     p1 = makePlaceholder FloatType "1"
     p2 = makePlaceholder FloatType "2"
@@ -25,10 +26,11 @@ def lift2 fun:
     graph = makeGraphFromOutputList result
 
     def liftedf a b:
-        graph . evalSubsts [("1", a), ("2", b)]
+        state = makeEmptyState
+        (graph . evalSubsts state [("1", a), ("2", b)]).first
     liftedf
 
-# lift3 :: (TFOperation a1 -> TFOperation a2 -> TFOperation a3 -> (List TFOperation b)) -> Tensor a1 -> Tensor a2 -> Tensor a3 -> (List Tensor b)
+# lift3 :: (TFOutput a1 -> TFOutput a2 -> TFOutput a3 -> (List TFOutput b)) -> Tensor a1 -> Tensor a2 -> Tensor a3 -> (List Tensor b)
 def lift3 fun:
     p1 = makePlaceholder FloatType "1"
     p2 = makePlaceholder FloatType "2"
@@ -37,10 +39,11 @@ def lift3 fun:
     graph = makeGraphFromOutputList result
 
     def liftedf a b c:
-        graph . evalSubsts [("1", a), ("2", b), ("3", c)]
+        state = makeEmptyState
+        (graph . evalSubsts state [("1", a), ("2", b), ("3", c)]).first
     liftedf
 
-# lift4 :: (TFOperation a1 -> TFOperation a2 -> TFOperation a3 -> TFOperation a4 -> (List TFOperation b)) -> Tensor a1 -> Tensor a2 -> Tensor a3 -> Tensor a4 -> (List Tensor b)
+# lift4 :: (TFOutput a1 -> TFOutput a2 -> TFOutput a3 -> TFOutput a4 -> (List TFOutput b)) -> Tensor a1 -> Tensor a2 -> Tensor a3 -> Tensor a4 -> (List Tensor b)
 def lift4 fun:
     p1 = makePlaceholder FloatType "1"
     p2 = makePlaceholder FloatType "2"
@@ -50,10 +53,11 @@ def lift4 fun:
     graph = makeGraphFromOutputList result
 
     def liftedf a b c d:
-        graph . evalSubsts [("1", a), ("2", b), ("3", c), ("4", d)]
+        state = makeEmptyState
+        (graph . evalSubsts state [("1", a), ("2", b), ("3", c), ("4", d)]).first
     liftedf
 
-# lift5 :: (TFOperation a1 -> TFOperation a2 -> TFOperation a3 -> TFOperation a4 -> TFOperation a5 -> (List TFOperation b)) -> Tensor a1 -> Tensor a2 -> Tensor a3 -> Tensor a4 -> Tensor a5 -> (List Tensor b)
+# lift5 :: (TFOutput a1 -> TFOutput a2 -> TFOutput a3 -> TFOutput a4 -> TFOutput a5 -> (List TFOutput b)) -> Tensor a1 -> Tensor a2 -> Tensor a3 -> Tensor a4 -> Tensor a5 -> (List Tensor b)
 def lift5 fun:
     p1 = makePlaceholder FloatType "1"
     p2 = makePlaceholder FloatType "2"
@@ -64,6 +68,7 @@ def lift5 fun:
     graph = makeGraphFromOutputList result
 
     def liftedf a b c d e:
-        graph . evalSubsts [("1", a), ("2", b), ("3", c), ("4", d), ("5", e)]
+        state = makeEmptyState
+        (graph . evalSubsts state [("1", a), ("2", b), ("3", c), ("4", d), ("5", e)]).first
     liftedf
 

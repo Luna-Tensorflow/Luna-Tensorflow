@@ -1,0 +1,36 @@
+import Tensorflow.Graph
+import Tensorflow.Operations
+
+# TODO add state type once it's implemented
+class Model stateT:
+      evalgraph :: TFGraph
+      traingraph :: TFGraph
+      state :: stateT # TODO
+
+      # evaluate :: Tensor a -> Tensor b
+      def evaluate x:
+          (res, state') = self.evalgraph.evalSubsts self.state [("x", x)]
+          res
+
+      # train :: List Tensor a -> List Tensor b -> Model # TODO also consider real time visualization of loss in GUI
+      def train xs ys:
+          0 # TODO we'd prefer to use batched fold that runs in C++ directly
+          state' = (xs.zip ys).foldLeft self.state ((x,y): state: (self.traingraph.evalSubsts state [("x", x), ("y", y)]).second)
+          Model self.evalgraph self.traingraph state'
+
+
+def makeModel input output optimizer loss:
+    inputPlaceholder = makePlaceholder input.typetag "x"
+    yPred = output.forward inputPlaceholder
+    outType = yPred.typetag
+
+    yTruePlaceholder = makePlaceholder outType "y"
+
+    evalgraph = makeGraphFromOutput yPred
+
+    variables = output.trainableVariables
+    traingraph = optimizer.makeOptimizingGraph yTruePlaceholder yPred loss variables
+
+    initialState = makeEmptyState # TODO state initialization by layers
+
+    Model evalgraph traingraph initialState

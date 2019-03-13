@@ -31,7 +31,7 @@ class LifetimeManager
     template<typename Function>
     auto access(const void *ptr, Function &&f) const
     {
-    	LOG(ptr);
+    	LOG_CALL(ptr);
         std::unique_lock<std::mutex> lock{ mx };
         if(auto itr = storage.find(ptr); itr != storage.end())
         {
@@ -50,7 +50,7 @@ public:
     template<typename T>
     T *addOwnership(std::shared_ptr<T> ptr)
     {
-        LOG(ptr);
+        LOG_CALL(ptr, typeid(T).name());
         // we don't bother tracking nullptr - there is no object with a lifetime to manage
         if(!ptr)
             return nullptr;
@@ -62,11 +62,12 @@ public:
     }
     void releaseOwnership(const void *ptr)
     {
-        LOG(ptr);
+        LOG_CALL(ptr);
         access(ptr, [this] (auto itr)
         {
             // TODO should separate retrieving any from storage and deleting it
             // deleting can take time and lock is not needed then
+            LOG("removing type ", itr->second.type().name());
             storage.erase(itr);
         });
     }
@@ -77,7 +78,7 @@ public:
     {
         return access(ptr, [&] (auto itr)
         {
-        	LOG("Accessing member of type ", itr->second.type().name());
+        	LOG("Accessing member of type ", itr->second.type().name(), "at", ptr, "as", typeid(T).name());
             return std::any_cast<std::shared_ptr<T>>(itr->second);
         });
     }
@@ -101,6 +102,16 @@ public:
         return ret;
     }
 
+    // NOTE: the array that is allocated here for transfer HAS to be freed by the caller
+    template<typename T>
+    T **addOwnershipOfArray(std::vector<std::shared_ptr<T>> arr) {
+        auto return_values = (T**) std::malloc(arr.size() * sizeof(T*));
+        for(size_t i=0; i<arr.size(); ++i)
+        {
+            return_values[i] = addOwnership(arr[i]);
+        }
+        return return_values;
+    }
 
     // TODO reconsider at some stage more explicit global state
     static auto &instance()

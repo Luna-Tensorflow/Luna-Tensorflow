@@ -1,14 +1,12 @@
 import Std.Foreign
 import Std.Foreign.C.Value
 
-import Tensorflow.Operations
-import Tensorflow.Tensor
-import Tensorflow.Types
+import Tensorflow.CWrappers.Tensor
+import Tensorflow.CWrappers.State
 
-def unzip listpair: case listpair of
-    Empty: (Empty, Empty)
-    Prepend (x,y) tail: case unzip tail of
-        (tailx, taily): ((Prepend x tailx), (Prepend y taily))
+import Tensorflow.Operations
+import Tensorflow.Types
+import Tensorflow.Graph
 
 class GraphWrapper:
     ptr :: ManagedPointer None
@@ -16,49 +14,60 @@ class GraphWrapper:
     def toCArg:
         self.ptr.toCArg
 
-    def eval outputCount:
-        evalSubsts outputCount []
+    def eval outputCount state:
+        evalSubsts outputCount [] state
 
-    def evalSubsts outputCount substitutions:
+    def evalSubsts outputCount substitutions state:
         count = outputCount
         phCount = substitutions . length
 
-        evalGraphOp = lookupSymbol "TFL" "eval_graph_with_placeholders_float"
+        evalGraphOp = lookupSymbol "TFL" "eval_graph_with_placeholders"
         releaseMethod = lookupSymbol "TFL" "release"
 
         (names, substs) = unzip substitutions
 
         subsNameArr = ManagedPointer CString . mallocElems phCount
-        indexed = 0 . upto phCount . zip names
+        indexed = 0 . upto (phCount - 1) . zip names
         indexed . each (idx, elem):
             subsNameArr . moveElems idx . write (CString . fromText elem)
 
 
         substsArr = ManagedPointer (Pointer None) . mallocElems phCount
-        indexed = 0 . upto phCount . zip substs
+        indexed = 0 . upto (phCount - 1) . zip substs
         indexed . each (idx, elem):
             substsArr . moveElems idx . write (elem.ptr.ptr)
 
         returnedPtr = evalGraphOp.call (Pointer (Pointer None)) [self.toCArg,
-                subsNameArr.toCArg, substsArr.toCArg, (CInt64.fromInt phCount).toCArg]
+                subsNameArr.toCArg, substsArr.toCArg, (CInt64.fromInt phCount).toCArg, state.wrapper.toCArg]
 
-        returnedArr = Array (Pointer None) . make count returnedPtr
+        returnedArr = Array (Pointer None) . make (1+count) returnedPtr
 
-        retval = returnedArr . toList . each (tensorFromPtr FloatType)
-        returnedArr . free
-        retval
+        lst = returnedArr . toList
+        managed = ManagedPointer None . fromPointer releaseMethod (lst . at 0 . get)
+        statewrapper = StateWrapper managed
+
+        managed1 = (lst . drop 1) . each (x: ManagedPointer None . fromPointer releaseMethod x)
+        retwrappers = managed1 . each (ptr: TensorWrapper ptr)
+
+        freePointer = lookupSymbol "TFL" "free_pointer"
+        freePointer.call None [returnedPtr.toCArg]
+
+        0.upto (phCount - 1) . each (idx: subsNameArr . moveElems idx . read . free)
+
+        (statewrapper, retwrappers)
 
 def makeGraphWrapperFromOutputList outputList:
     count = outputList . length
 
-    makeGraphFnc = lookupSymbol "TFL" "make_graph_from_outputs_float"
+    makeGraphFnc = lookupSymbol "TFL" "make_graph_from_outputs"
     releaseMethod = lookupSymbol "TFL" "release"
 
     carr = ManagedPointer (Pointer None) . mallocElems count
-    indexed = 0 . upto count . zip outputList
+    indexed = 0 . upto (count - 1) . zip outputList
     indexed . each (idx, elem):
         carr . moveElems idx . write (elem.ptr.ptr)
 
     returnedPtr = makeGraphFnc.call (Pointer None) [carr.toCArg, (CInt64.fromInt count).toCArg]
     managedGraph = ManagedPointer None . fromPointer releaseMethod returnedPtr
+
     GraphWrapper managedGraph

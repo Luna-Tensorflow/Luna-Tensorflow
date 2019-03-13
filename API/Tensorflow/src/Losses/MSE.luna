@@ -1,0 +1,6 @@
+import Tensorflow.Operations
+
+def meanSquareError yTrue yPred:
+    diff = yTrue - yPred
+    sq = diff * diff
+    summed = sq # TODO sum along axis

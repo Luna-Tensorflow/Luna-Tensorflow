@@ -1,31 +1,75 @@
 import Tensorflow.CWrappers.Graph
+import Tensorflow.CWrappers.State
+
 import Tensorflow.Operations
+import Tensorflow.Tensor
+
+class State:
+    wrapper :: StateWrapper
+
+    def values typetag names:
+        wrappers = self.wrapper.values names
+        wrappers . each(x: Tensor (x typetag))
+
+    def value typetag name:
+        wrapper = self.wrapper.value name
+        Tensor (wrapper typetag)
+
+    def updateOne name value:
+        0 # TODO
+        wrapper = self.wrapper.updateOne name value
+        State wrapper
+
+    def update values:
+        wrapper = self.wrappers.update values
+        State wrapper
+
+
+# makeEmptyState :: State
+def makeEmptyState:
+    wrapper = emptyState
+    State wrapper
+
+# alterState :: State -> List Tuple2 Text Tensor -> State
+def alterState state values:
+    newstate = state . update values
+    newstate
+
+# setVarInState :: State -> Text -> Tensor -> State
+def setVarInState state varname value:
+    newstate = state . updateOne varname value
+    newstate
 
 class TFGraph:
     wrapper :: GraphWrapper
-    outputs :: List (Operation)
+    outputs :: List (TFOutput)
 
     # ptr :: ManagedPointer None
     def ptr:
         self.wrapper.ptr
 
-    # eval :: List Tensor a
-    def eval:
-        self.evalSubsts []
+    # eval :: State -> (List Tensor a, State)
+    def eval state:
+        self.evalSubsts state []
 
-    # evalSubsts :: List Tuple2 String (Tensor a) -> List Tensor a
-    def evalSubsts substs:
-        self.wrapper.evalSubsts self.outputs.length substs
+    # evalSubsts :: State -> List Tuple2 Text (Tensor a) -> (List Tensor a, State)
+    def evalSubsts state substs:
+        (statewrapper, tensorwrappers) = self.wrapper.evalSubsts (self.outputs.length) substs state
+
+        tensors = (tensorwrappers . zip ((self . outputs) . map (x: x.typetag))) . each ((wrp, tag): Tensor (wrp tag))
+        newstate = State statewrapper
+
+        (tensors, newstate)
 
     # toJSON :: JSON
     def toJSON:
         self.eval.toJSON
 
-# makeGraphFromOutputList :: List TFOperation -> TFGraph
+# makeGraphFromOutputList :: List TFOutput -> TFGraph
 def makeGraphFromOutputList outputList:
     wrapper = makeGraphWrapperFromOutputList outputList
     TFGraph wrapper outputList
 
-# makeGraphFromOutput :: TFOperation-> TFGraph
+# makeGraphFromOutput :: TFOutput-> TFGraph
 def makeGraphFromOutput output:
     makeGraphFromOutputList [output]

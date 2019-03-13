@@ -14,6 +14,8 @@ class FloatType:
         None
     def cleanupC val:
         None
+    def num:
+        1
 
 class DoubleType:
     def typename:
@@ -28,6 +30,8 @@ class DoubleType:
         None
     def cleanupC val:
         None
+    def num:
+        2
 
 class Int8Type:
     def typename:
@@ -42,6 +46,8 @@ class Int8Type:
         None
     def cleanupC val:
         None
+    def num:
+        6
 
 class Int16Type:
     def typename:
@@ -56,6 +62,8 @@ class Int16Type:
         None
     def cleanupC val:
         None
+    def num:
+        5
 
 class Int32Type:
     def typename:
@@ -70,6 +78,8 @@ class Int32Type:
         None
     def cleanupC val:
         None
+    def num:
+        3
 
 class Int64Type:
     def typename:
@@ -84,10 +94,12 @@ class Int64Type:
         None
     def cleanupC val:
         None
+    def num:
+        9
 
 class UInt8Type:
     def typename:
-        "TF_INT8"
+        "TF_UINT8"
     def ctype:
         CUInt8
     def fromC val:
@@ -98,10 +110,12 @@ class UInt8Type:
         None
     def cleanupC val:
         None
+    def num:
+        4
 
 class UInt16Type:
     def typename:
-        "TF_INT16"
+        "TF_UINT16"
     def ctype:
         CUInt16
     def fromC val:
@@ -112,10 +126,12 @@ class UInt16Type:
         None
     def cleanupC val:
         None
+    def num:
+        17
 
 class UInt32Type:
     def typename:
-        "TF_INT32"
+        "TF_UINT32"
     def ctype:
         CUInt32
     def fromC val:
@@ -126,6 +142,8 @@ class UInt32Type:
         None
     def cleanupC val:
         None
+    def num:
+        22
 
 class UInt64Type:
     def typename:
@@ -140,6 +158,8 @@ class UInt64Type:
         None
     def cleanupC val:
         None
+    def num:
+        23
 
 class BoolType:
     def typename:
@@ -156,6 +176,8 @@ class BoolType:
         None
     def cleanupC val:
         None
+    def num:
+        10
 
 class StringType:
     def typename:
@@ -171,3 +193,5 @@ class StringType:
     def cleanupC val:
         freePointer = lookupSymbol "TFL" "free_pointer"
         freePointer.call None [val.toCArg]
+    def num:
+        7

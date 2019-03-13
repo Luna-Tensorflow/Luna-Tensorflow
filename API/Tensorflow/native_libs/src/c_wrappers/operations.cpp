@@ -5,296 +5,272 @@
 #include <string>
 #include <memory>
 #include <cstdio>
+#include <vector>
+#include <algorithm>
+
 #include "../helpers/utils.h"
-#include "../ops/Operation.h"
-#include "../ops/Const.h"
-#include "../ops/BinaryOperation.h"
-#include "../ops/UnaryOperation.h"
-#include "../ops/Partial.h"
-#include "../ops/Placeholder.h"
 #include "../helpers/LifeTimeManager.h"
-#include "../gradient/Gradient.h"
+
+#include "../ops/Operation.h"
+#include "../ops/Gradient.h"
+#include "../ops/Attr.h"
+
+#include "../state/Variable.h"
+#include "../state/Assign.h"
+#include "../state/State.h"
 
 namespace {
-    template<TF_DataType DataTypeLabel>
-    Operation<DataTypeLabel> *make_op_binary(const char *name, Operation<DataTypeLabel> *a, Operation<DataTypeLabel> *b) {
-        std::string name_cpp(name);
-        std::shared_ptr<Operation<DataTypeLabel>> a_cpp = LifetimeManager::instance().accessOwned(a);
-        std::shared_ptr<Operation<DataTypeLabel>> b_cpp = LifetimeManager::instance().accessOwned(b);
-        auto op = std::make_shared<BinaryOperation<DataTypeLabel>>(name_cpp, a_cpp, b_cpp);
-        auto opBase = std::dynamic_pointer_cast<Operation<DataTypeLabel>>(op);
-        return LifetimeManager::instance().addOwnership(std::move(opBase));
-    }
-}
+	Output **make_op_helper(const char *name, std::vector<Output *> inputs, std::vector<std::shared_ptr<Attr>> attrs,
+                            int noutputs, const char *chosen_name) {
+		std::vector<std::shared_ptr<Output>> inputs_v(inputs.size());
 
-Operation<TF_FLOAT>* make_op_binary_float(const char* name, Operation<TF_FLOAT>* a, Operation<TF_FLOAT>* b) {
-	 LOG(name, a, b);
-    return make_op_binary(name, a, b);
-}
+		std::transform(inputs.begin(), inputs.end(), inputs_v.begin(), [](Output* input){ return LifetimeManager::instance().accessOwned(input); });
 
-Operation<TF_INT32>* make_op_binary_int(const char* name, Operation<TF_INT32>* a, Operation<TF_INT32>* b) {
-	 LOG(name, a, b);
-    return make_op_binary(name, a, b);
-}
+		std::vector<std::shared_ptr<Output>> outputs = Operation::make_operation(name, inputs_v, noutputs, attrs,
+																				 chosen_name);
 
-namespace {
-    template<TF_DataType DataTypeLabel>
-    Operation<DataTypeLabel> *make_op_unary(const char *name, Operation<DataTypeLabel> *a) {
-        std::string name_cpp(name);
-        std::shared_ptr<Operation<DataTypeLabel>> a_cpp = LifetimeManager::instance().accessOwned(a);
-        auto op = std::make_shared<UnaryOperation<DataTypeLabel>>(name_cpp, a_cpp);
-        auto opBase = std::dynamic_pointer_cast<Operation<DataTypeLabel>>(op);
-        return LifetimeManager::instance().addOwnership(std::move(opBase));
-    }
-}
+		auto **output_ptrs = static_cast<Output **>(std::malloc(sizeof(Output *) * outputs.size()));
 
-Operation<TF_FLOAT>* make_op_unary_float(const char* name, Operation<TF_FLOAT>* a) {
-     LOG(name, a);
-    return make_op_unary(name, a);
-}
-
-
-namespace {
-	template<TF_DataType DT>
-	Operation<DT> *make_op_derivative(Operation<DT> *a, Operation<DT> *b) {
-		std::shared_ptr<Operation<DT>> a_cpp = LifetimeManager::instance().accessOwned(a);
-		std::shared_ptr<Operation<DT>> b_cpp = LifetimeManager::instance().accessOwned(b);
-		auto op = Gradient<DT>::add_gradients({a_cpp}, {b_cpp}, {})[0];
-		auto opBase = std::dynamic_pointer_cast<Operation<DT>>(op);
-		return LifetimeManager::instance().addOwnership(std::move(opBase));
-	}
-}
-
-Operation<TF_FLOAT>* make_op_partial_derivative_float(Operation<TF_FLOAT>* a, Operation<TF_FLOAT> *b) {
-	LOG(a, b);
-	return make_op_derivative(a, b);
-}
-
-namespace {
-	template<TF_DataType DT>
-	Operation<DT> *make_op_placeholder(const char* name) {
-		auto placeholder = std::make_shared<Placeholder<DT>>(std::string(name));
-		auto placeholderBase = std::dynamic_pointer_cast<Operation<DT>>(placeholder);
-		return LifetimeManager::instance().addOwnership(std::move(placeholderBase));
-	}
-}
-
-Operation<TF_FLOAT>* make_op_placeholder_float(const char* name) {
-	LOG(name);
-	return make_op_placeholder<TF_FLOAT>(name);
-}
-
-namespace {
-    template<TF_DataType DT>
-    Operation<DT> *make_op_const(Tensor<DT> *tensor) {
-        std::shared_ptr<Tensor<DT>> tensor_cpp = LifetimeManager::instance().accessOwned(tensor);
-        auto constant = std::make_shared<Const<DT>>(tensor_cpp);
-        auto constantBase = std::dynamic_pointer_cast<Operation<DT>>(constant);
-        return LifetimeManager::instance().addOwnership(std::move(constantBase));
-    }
-}
-
-Operation<TF_FLOAT>* make_op_const_float(Tensor<TF_FLOAT>* tensor) {
-	 LOG(tensor);
-    return make_op_const(tensor);
-}
-
-Operation<TF_INT32>* make_op_const_int(Tensor<TF_INT32>* tensor) {
-	 LOG(tensor);
-    return make_op_const(tensor);
-}
-
-namespace {
-    template<TF_DataType DataTypeLabel>
-    size_t operation_hashcode(Operation<DataTypeLabel> *op) {
-        return op->hashcode();
-    }
-}
-
-size_t operation_hashcode_float(Operation<TF_FLOAT>* op) {
-	 LOG(op);
-    return operation_hashcode(op);
-}
-
-size_t operation_hashcode_int(Operation<TF_INT32>* op) {
-	 LOG(op);
-    return operation_hashcode(op);
-}
-
-namespace {
-    template<TF_DataType DataTypeLabel>
-    Tensor<DataTypeLabel> *eval_op(Operation<DataTypeLabel> *op) {
-        return LifetimeManager::instance().addOwnership(op->eval());
-    }
-}
-
-Tensor<TF_FLOAT> *eval_op_float(Operation<TF_FLOAT> *op) {
-	 LOG(op);
-    return eval_op(op);
-}
-
-Tensor<TF_INT32> *eval_op_int(Operation<TF_INT32> *op) {
-	 LOG(op);
-    return eval_op(op);
-}
-
-namespace {
-	template<TF_DataType DT>
-	Tensor<DT>** batch_eval_op(Operation<DT>** ops, size_t count)
-	{
-		char suppress_tf_log[] = "TF_CPP_MIN_LOG_LEVEL=3";
-		putenv(suppress_tf_log);
-
-		GraphSession graph;
-
-		for(size_t i=0; i<count; ++i)
-			graph.add_output(graph.add_operation(ops[i]));
-
-		return graph.eval<DT>();
-	}
-
-	template<TF_DataType DT>
-	Tensor<DT>** batch_eval_op_placeholders(Operation<DT>** ops, size_t op_count,
-		const char* ph_names[], Tensor<DT>** ph_values, size_t ph_count)
-	{
-		char suppress_tf_log[] = "TF_CPP_MIN_LOG_LEVEL=3";
-		putenv(suppress_tf_log);
-
-		GraphSession graph;
-
-		for(size_t i=0; i<op_count; ++i)
-			graph.add_output(graph.add_operation(ops[i]));
-
-		std::map<std::string, std::shared_ptr<Tensor<DT>>> substitutions;
-		for(size_t i=0; i<ph_count; ++i)
-		{
-			substitutions.emplace(std::string(ph_names[i]),
-				LifetimeManager::instance().accessOwned(ph_values[i]));
+		for (unsigned i = 0; i < outputs.size(); ++i) {
+			output_ptrs[i] = LifetimeManager::instance().addOwnership(
+					std::dynamic_pointer_cast<Output>(outputs[i]));
 		}
 
-		return graph.eval<DT>(substitutions);
+		return output_ptrs;
+	}
+
+	template<typename T>
+	T get_first_and_free(T* arr) {
+		T ret = arr[0];
+		free(arr);
+		return ret;
 	}
 }
 
-Tensor<TF_FLOAT>** batch_eval_op_placeholders_float(Operation<TF_FLOAT>** ops, size_t count,
-	const char* ph_names[], Tensor<TF_FLOAT>** ph_values, size_t ph_count)
+void** make_variable(const char* name, Tensor* val)
 {
-	LOG(ops, count, ph_names, ph_values, ph_count);
-	return batch_eval_op_placeholders(ops, count, ph_names, ph_values, ph_count);
+	FFILOG(name, val);
+	auto tensor_ptr = LifetimeManager::instance().accessOwned(val);
+	std::string sname(name);
+
+	auto arr = static_cast<void**> (malloc(2 * sizeof(void*)));
+	auto out_var = Variable::make_variable(sname, tensor_ptr);
+
+	arr[0] = static_cast<void*>(LifetimeManager::instance().addOwnership(out_var.first));
+	arr[1] = static_cast<void*>(LifetimeManager::instance().addOwnership(out_var.second));
+
+	return arr;
 }
 
-Tensor<TF_FLOAT>** batch_eval_op_float(Operation<TF_FLOAT>** ops, size_t count)
+State* make_empty_state(void)
 {
-	LOG(ops, count);
-	return batch_eval_op(ops, count);
+	FFILOG("empty_state");
+	auto state = State::make_empty();
+	return LifetimeManager::instance().addOwnership(state);
 }
 
-namespace {
-	template<TF_DataType DataTypeLabel>
-	GraphSession* make_graph_from_output(Operation<DataTypeLabel>* op)
+Tensor* get_value_from_state(State* ptr, const char* name)
+{
+    FFILOG(ptr, name);
+    auto stateptr = LifetimeManager::instance().accessOwned(ptr);
+    auto tensor = ptr->get(std::string(name));
+    if (tensor == nullptr) return nullptr;
+    return LifetimeManager::instance().addOwnership(tensor);
+}
+
+Tensor** get_values_from_state(State* ptr, const char** names, size_t count)
+{
+    FFILOG(ptr, names, count);
+    auto stateptr = LifetimeManager::instance().accessOwned(ptr);
+	std::vector<std::string> names_v(count);
+	std::transform(names, names+count, names_v.begin(), [](auto name) {
+	    return std::string(name);
+	});
+
+	auto returned = stateptr->get(names_v);
+
+	return LifetimeManager::instance().addOwnershipOfArray(returned);
+}
+
+State* update_value_state(State* ptr, const char* name, const Tensor* newvalue)
+{
+    FFILOG(ptr, name, newvalue);
+    std::string sname(name);
+    auto tensorptr = LifetimeManager::instance().accessOwned(newvalue);
+    auto stateptr = LifetimeManager::instance().accessOwned(ptr);
+
+    return LifetimeManager::instance().addOwnership(stateptr->updated(sname, tensorptr));
+}
+
+State* update_state(State* ptr, const char** names, const Tensor** newvalues, size_t count)
+{
+    FFILOG(ptr, names, newvalues, count);
+    std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> valuation;
+    valuation.reserve(count);
+
+    for(size_t i=0; i<count; ++i)
+        valuation.emplace_back(std::string(names[i]),
+            LifetimeManager::instance().accessOwned(newvalues[i]));
+
+    auto newvals = LifetimeManager::instance().accessOwned(ptr)->updated(valuation);
+    return LifetimeManager::instance().addOwnership(newvals);
+}
+
+Output* make_assign(Output* unit, Variable* var, Output* value)
+{
+	FFILOG(unit, var, value);
+	auto unitPtr = LifetimeManager::instance().accessOwned(unit);
+	auto varPtr = LifetimeManager::instance().accessOwned(var);
+	auto valPtr = LifetimeManager::instance().accessOwned(value);
+
+	auto newUnitPtr = Assign::make_assign(unitPtr, varPtr, valPtr);
+
+	return LifetimeManager::instance().addOwnership(newUnitPtr);
+}
+
+Output **make_op(const char *name, Output **inputs, int ninputs, int noutputs, std::vector<std::shared_ptr<Attr>>* attr_list, const char *chosen_name) {
+	if (attr_list == nullptr) {
+		return make_op_helper(name, std::vector<Output*>(inputs, inputs + ninputs), {}, noutputs, chosen_name);
+	}
+	return make_op_helper(name, std::vector<Output*>(inputs, inputs + ninputs), *LifetimeManager::instance().accessOwned(attr_list), noutputs, chosen_name);
+}
+
+Output *make_op_binary(const char *name, Output *a, Output *b) {
+	FFILOG(name, a, b);
+	return get_first_and_free(make_op_helper(name, {a, b}, {}, 1, ""));
+}
+
+Output *make_op_unary(const char *name, Output *a) {
+	FFILOG(name, a);
+	return get_first_and_free(make_op_helper(name, {a}, {}, 1, ""));
+}
+
+Output *make_op_partial_derivative(Output *a, Output *b) {
+	FFILOG(a, b);
+	std::shared_ptr<Output> a_cpp = LifetimeManager::instance().accessOwned(a);
+	std::shared_ptr<Output> b_cpp = LifetimeManager::instance().accessOwned(b);
+	auto out = Gradient::add_gradients({a_cpp}, {b_cpp}, {})[0];
+	auto outBase = std::dynamic_pointer_cast<Output>(out);
+	return LifetimeManager::instance().addOwnership(std::move(outBase));
+}
+
+Output *make_op_placeholder(const char* name, TF_DataType type) {
+	FFILOG(name);
+    return get_first_and_free(make_op_helper("Placeholder", {}, {std::make_shared<AttrType>("dtype", type)}, 1, name));
+}
+
+Output *make_op_const(Tensor *tensor) {
+	FFILOG(tensor);
+	auto tensor_owned = LifetimeManager::instance().accessOwned(tensor);
+    return get_first_and_free(make_op_helper("Const", {}, {std::make_shared<AttrTensor>("value", *tensor_owned),
+                                        std::make_shared<AttrType>("dtype", tensor_owned->getType())}, 1, ""));
+}
+
+size_t operation_hashcode(Output *op) {
+	FFILOG(op);
+	return op->hashcode();
+}
+
+Tensor *eval_op(Output *op) {
+	FFILOG(op);
+	return LifetimeManager::instance().addOwnership(op->eval());
+}
+
+Tensor** batch_eval_op(Output** outs, size_t count)
+{
+    FFILOG(outs, count);
+	char suppress_tf_log[] = "TF_CPP_MIN_FFILOG_LEVEL=3";
+	putenv(suppress_tf_log);
+
+	GraphSession graph;
+
+	for(size_t i=0; i<count; ++i)
+		graph.add_fetched_output(graph.add_output(outs[i]));
+
+	return LifetimeManager::instance().addOwnershipOfArray(graph.eval()->outputs);
+}
+
+Tensor** batch_eval_op_placeholders(Output** outs, size_t op_count,
+		const char* ph_names[], Tensor** ph_values, size_t ph_count)
+{
+    FFILOG(outs, op_count, ph_names, ph_values, ph_count);
+	char suppress_tf_log[] = "TF_CPP_MIN_LOG_LEVEL=3";
+	putenv(suppress_tf_log);
+
+	GraphSession graph;
+
+	for(size_t i=0; i<op_count; ++i)
+		graph.add_fetched_output(graph.add_output(outs[i]));
+
+	std::map<std::string, std::shared_ptr<Tensor>> substitutions;
+	for(size_t i=0; i<ph_count; ++i)
 	{
-		LOG(op);
-		auto graphPtr = std::make_shared<GraphSession>();
-		graphPtr->add_output(graphPtr->add_operation(op));
-
-		return LifetimeManager::instance().addOwnership(graphPtr);
+		substitutions.emplace(std::string(ph_names[i]),
+			LifetimeManager::instance().accessOwned(ph_values[i]));
 	}
 
-	template<TF_DataType DataTypeLabel>
-	GraphSession* make_graph_from_outputs(Operation<DataTypeLabel>** op, size_t output_count)
+	auto r = graph.eval(substitutions, State::make_empty()); // TODO support for state
+	return LifetimeManager::instance().addOwnershipOfArray(r->outputs);
+}
+
+GraphSession* make_graph_from_output(Output* out)
+{
+	FFILOG(out);
+	auto graphPtr = std::make_shared<GraphSession>();
+	graphPtr->add_fetched_output(graphPtr->add_output(out));
+
+	return LifetimeManager::instance().addOwnership(graphPtr);
+}
+
+GraphSession* make_graph_from_outputs(Output** out, size_t output_count)
+{
+	FFILOG(out, output_count);
+	auto graphPtr = std::make_shared<GraphSession>();
+	for(size_t i=0; i<output_count; ++i)
+		graphPtr->add_fetched_output(graphPtr->add_output(out[i]));
+
+	return LifetimeManager::instance().addOwnership(graphPtr);
+}
+
+void** eval_graph(GraphSession *graph, State* state)
+{
+	FFILOG(graph, state);
+	auto statptr = LifetimeManager::instance().accessOwned(state);
+	auto result = graph->eval(statptr);
+
+	auto retv = static_cast<void**>(malloc((1 + result->outputs.size()) * sizeof(void*)));
+
+	retv[0] = static_cast<void*>(LifetimeManager::instance().addOwnership(result->result_state));
+	std::transform(result->outputs.begin(), result->outputs.end(), retv + 1, [](auto tensorptr)
 	{
-		LOG(op, output_count);
-		auto graphPtr = std::make_shared<GraphSession>();
-		for(size_t i=0; i<output_count; ++i)
-			graphPtr->add_output(graphPtr->add_operation(op[i]));
+		return static_cast<void*>(LifetimeManager::instance().addOwnership(tensorptr));
+	});
 
-		return LifetimeManager::instance().addOwnership(graphPtr);
-	}
+	return retv;
+}
 
-	template<TF_DataType DataTypeLabel>
-	Tensor<DataTypeLabel>** eval_graph(GraphSession *graph)
+void** eval_graph_with_placeholders(GraphSession *graph,
+		const char **ph_names, Tensor **ph_values, size_t ph_count, State* state)
+{
+	FFILOG(graph, ph_names, ph_values, ph_count, state);
+	auto statptr = LifetimeManager::instance().accessOwned(state);
+
+	std::map<std::string, std::shared_ptr<Tensor>> substitutions;
+	for(size_t i=0; i<ph_count; ++i)
 	{
-		LOG(graph);
-		return graph->eval<DataTypeLabel>();
+		substitutions.emplace(std::string(ph_names[i]),
+							  LifetimeManager::instance().accessOwned(ph_values[i]));
 	}
 
-	template<TF_DataType DataTypeLabel>
-	Tensor<DataTypeLabel>** eval_graph_with_placeholders(GraphSession *graph,
-		const char **ph_names, Tensor<DataTypeLabel> **ph_values, size_t ph_count)
+	auto result = graph->eval(substitutions, statptr);
+
+	auto retv = static_cast<void**>(malloc((1 + result->outputs.size()) * sizeof(void*)));
+
+	retv[0] = static_cast<void*>(LifetimeManager::instance().addOwnership(result->result_state));
+	std::transform(result->outputs.begin(), result->outputs.end(), retv + 1, [](auto tensorptr)
 	{
-		LOG(graph, ph_names, ph_values, ph_count);
-		std::map<std::string, std::shared_ptr<Tensor<DataTypeLabel>>> substitutions;
-		for(size_t i=0; i<ph_count; ++i)
-		{
-			substitutions.emplace(std::string(ph_names[i]),
-			                      LifetimeManager::instance().accessOwned(ph_values[i]));
-		}
+		return static_cast<void*>(LifetimeManager::instance().addOwnership(tensorptr));
+	});
 
-		return graph->eval<DataTypeLabel>(substitutions);
-	}
+	return retv;
 }
-
-GraphSession *make_graph_from_output_float(Operation<TF_FLOAT> *output)
-{
-	return make_graph_from_output<TF_FLOAT>(output);
-}
-
-GraphSession *make_graph_from_outputs_float(Operation<TF_FLOAT> **outputs, size_t output_count)
-{
-	return make_graph_from_outputs<TF_FLOAT>(outputs, output_count);
-}
-
-Tensor<TF_FLOAT>** eval_graph_float(GraphSession *graph)
-{
-	return eval_graph<TF_FLOAT>(graph);
-}
-
-Tensor<TF_FLOAT>** eval_graph_with_placeholders_float(GraphSession *graph, const char **ph_names, Tensor<TF_FLOAT> **ph_values,
-                                   size_t ph_count)
-{
-	return eval_graph_with_placeholders<TF_FLOAT>(graph, ph_names, ph_values, ph_count);
-}
-
-#define DECLARE_OPS(typelabel) \
-TFL_API Operation<typelabel>* make_op_const_##typelabel(Tensor<typelabel>* tensor) { \
-	LOG(tensor); \
-	return make_op_const(tensor); \
-} \
-TFL_API Operation<typelabel>* make_op_placeholder_##typelabel(const char* name) { \
-	LOG(name); \
-	return make_op_placeholder<typelabel>(name); \
-} \
-TFL_API Operation<typelabel>* make_op_binary_##typelabel(const char* name, Operation<typelabel>* a, Operation<typelabel>* b) { \
-	LOG(name, a, b); \
-	return make_op_binary(name, a, b); \
-} \
-TFL_API Operation<typelabel>* make_op_unary_##typelabel(const char* name, Operation<typelabel>* a) { \
-	LOG(name, a); \
-	return make_op_unary(name, a); \
-} \
-TFL_API Operation<typelabel>* make_op_partial_derivative_##typelabel(Operation<typelabel>* a, Operation<typelabel>* b) { \
-	LOG(a, b); \
-	return make_op_derivative(a, b); \
-} \
-TFL_API size_t operation_hashcode_##typelabel(Operation<typelabel>* op) { \
-	LOG(op); \
-	return operation_hashcode(op); \
-} \
-TFL_API Tensor<typelabel>* eval_op_##typelabel(Operation<typelabel>* op) { \
-	LOG(op); \
-	return eval_op(op); \
-}
-
-DECLARE_OPS(TF_FLOAT);
-DECLARE_OPS(TF_DOUBLE);
-DECLARE_OPS(TF_INT8);
-DECLARE_OPS(TF_INT16);
-DECLARE_OPS(TF_INT32);
-DECLARE_OPS(TF_INT64);
-DECLARE_OPS(TF_UINT8);
-DECLARE_OPS(TF_UINT16);
-DECLARE_OPS(TF_UINT32);
-DECLARE_OPS(TF_UINT64);
-DECLARE_OPS(TF_BOOL);
-DECLARE_OPS(TF_STRING);
-//DECLARE_OPS(TF_HALF);
