@@ -11,12 +11,16 @@ import Tensorflow.Model
 def generateTest n:
     tx = (1 . upto n) . each (i:
         t = randomTensor FloatType [2, 1] 2.0.negate 2.0
-        t)
+        l = t . toList
+        x = l . at 0 . get
+        y = l . at 1 . get
+        nt = tensorFromList FloatType [4,1] [x, x*x, y, y*y]
+        nt)
 
     ty = tx . each(t:
-        x = t . at [0, 0]
-        y = t . at [1, 0] # z = t . at [2, 0]
-        w = x*x + y*y # + z*z
+        xx = t . at [1, 0]
+        yy = t . at [3, 0] # z = t . at [2, 0]
+        w = xx + yy # + z*z
         incircle = if w <= 1.0 then 1.0 else 0.0
         y = tensorFromList1d FloatType [incircle]
         y)
@@ -31,17 +35,15 @@ def exampleNet:
     (testX, testY) = generateTest n
 
     print "Building net"
-    i = input FloatType [2, 1]
-    d1 = denseWithActivation 5 tanh i
-    d2 = denseWithActivation 3 tanh d1
-    d3 = denseWithActivation 3 tanh d2
-    d4 = denseWithActivation 1 tanh d3
+    i = input FloatType [4, 1]
+    d1 = denseWithActivation 2 tanh i
+    d2 = denseWithActivation 1 sigmoid d1
 
     print "Compiling model"
     opt = gradientDescentOptimizer 0.1
     loss = meanSquareError
 
-    model = makeModel i d4 opt loss
+    model = makeModel i d2 opt loss
 
     print "Training"
     fitted = model.train x y
