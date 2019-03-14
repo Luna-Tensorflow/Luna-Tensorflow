@@ -27,6 +27,9 @@ def generateTest n:
 
     (tx, ty)
 
+def absPatch x:
+    if x < 0.0 then x.negate else x # TODO remove after new Luna version is released
+
 def exampleNet:
     n = 10000
     print "Loading data"
@@ -51,7 +54,7 @@ def exampleNet:
     print "Evaluation"
     predY = testX . each (tx: fitted.evaluate tx . head . get)
 
-    result = (predY . zip testY) . fold 0.0 ((pY, tY): acc: acc + (pY.atIndex 0 - tY.atIndex 0) . abs . round 0) # 0 is ok, 1 is fail
+    result = (predY . zip testY) . fold 0.0 ((pY, tY): acc: acc + (absPatch (pY.atIndex 0 - tY.atIndex 0)) . round 0) # 0 is ok, 1 is fail
 
     maxn = n . toReal
     effic = 100.0 * (maxn - result) / maxn

@@ -1,5 +1,5 @@
 echo "Deploying (Windows)"
-set -x
+set -xe
 cd build
 cmake --build .
 cd ../release/

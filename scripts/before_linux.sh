@@ -1,3 +1,4 @@
+set -xe
 echo "Running Linux build"
 sudo add-apt-repository -y "ppa:ubuntu-toolchain-r/test"
 sudo apt-get update -y
@@ -21,6 +22,9 @@ mkdir release/native_libs/linux/
 cd scripts/ # download and patch the patching script
 mv Main.hs Main2.hs
 git clone https://github.com/luna/dataframes
+cd dataframes
+git checkout 5f9e34ab27a3a0eafbcd33182b40bda3e50ccb14 # TODO upgrade to new version of patcher
+cd ..
 mv dataframes/scripts/* .
 mv Main2.hs Main.hs
 cd ..

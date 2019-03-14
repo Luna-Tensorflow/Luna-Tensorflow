@@ -1,3 +1,4 @@
+set -xe
 echo "Running Windows build"
 export TF_USE_LOCAL_LIBRARY=1
 mkdir tensorflow # download TF dependency, TODO downloading protobufs

@@ -1,5 +1,5 @@
 echo "Deploying (Linux)"
-set -x
+set -xe
 cd build
 cmake --build .
 cd ..
