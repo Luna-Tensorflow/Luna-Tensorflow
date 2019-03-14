@@ -8,7 +8,6 @@ export COMPILER=g++-7 # prepare compiler
 export CXX=${COMPILER}
 export CC=gcc-7
 export TF_USE_LOCAL_LIBRARY=1
-"${CXX} --version"
 mkdir tensorflow # download TF dependency, TODO downloading protobufs
 cd tensorflow
 wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.12.0.tar.gz -O libtensorflow.tar.gz
