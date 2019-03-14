@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.9)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -28,10 +28,13 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 project(TFL)
 
-if(WIN32)
+if(WIN32 OR DEFINED ENV{TF_USE_LOCAL_LIBRARY})
     include_directories(${CMAKE_SOURCE_DIR}/../../../../tensorflow/include/)
     link_directories(${CMAKE_SOURCE_DIR}/../../../../tensorflow/lib)
-    file(COPY ${CMAKE_SOURCE_DIR}/../../../../tensorflow/lib/tensorflow.dll DESTINATION ${OUT_DIR})
+    file(GLOB LIBRARIES_TO_COPY
+      "${CMAKE_SOURCE_DIR}/../../../../tensorflow/lib/*"
+    )
+    file(COPY ${LIBRARIES_TO_COPY} DESTINATION ${OUT_DIR})
 endif()
 
 # Glob for the project files

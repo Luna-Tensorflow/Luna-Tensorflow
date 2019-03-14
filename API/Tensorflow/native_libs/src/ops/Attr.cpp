@@ -3,6 +3,7 @@
 //
 
 #include <functional>
+#include <algorithm>
 #include "Attr.h"
 #include "../helpers/utils.h"
 

@@ -2,6 +2,7 @@
 // Created by wojtek on 13.02.19.
 //
 
+#include <algorithm>
 #include "Operation.h"
 #include "../helpers/salter.h"
 
