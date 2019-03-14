@@ -1,0 +1,22 @@
+language: cpp
+compiler: gcc
+os:
+  - linux
+  - windows
+dist: xenial
+before_script:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./scripts/before_linux.sh; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./scripts/before_windows.sh; fi
+script:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./scripts/deploy_linux.sh; fi
+  - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./scripts/deploy_windows.sh; fi
+deploy:
+  provider: releases
+  api_key:
+    secure: SaSxqPy/G6iw9LtcfPqy08A6T6Pr7y2dahYefr+tSJ6tpro7UDUv8RaNSbaeHQIMT9uaYrkfl9I4TPXzOTvvDv+sgi5dUSE8XFUeDm5ZHJQMMD5bIcR2ITorqOoivOFgysVc92vRTr4ghMUA3t8AZ9YKIQuRF67mR7gE1b6Xh2N4AMULFNVQ20kUFU8Js2vSPjggd7PLy0BuQiNnkCUmuQZUzkIJhNymIqK9gQXeCSdCn9pqLp3Frb1P6goSvrggBYLtB9s3u/CuoSAIDvXy79F1ymmUJKOSESr1HHoFcP/p9EED+79/B0p3GfWdXqbmVPGDV5gNb56JYiRjGy8SMLotg8BTM+EzOcl6M/SRJlYKr6TQF5WZv+2EK2SOYu7r/vtywo7rImhq0mGxjxND4nU5yBJzlnV7BxGbFuoNp3BAAqCip5yezx5zGYxyWzYyqQkF9vOSyR7L5AomkaZSRA39NmhS47dtk8FZuFVTePjKTUwLP9qneUkzCUrk2NkP9wXH9vZSBn4BF9SIeOBMw2j1fYF6wlj9TSeY2773x5a3xzGLcPckpIngREUHZncB8HSxqXsKU/y6Css3w3aotrIOCzl6Z3YdfTkLrpCVsuu4cZ21LbI/Im1XHLcCetTxNbkkRGDyBiJ//wxiH64deacurNqCY+dVm3iI0/FJbBI=
+  skip_cleanup: true
+  draft: true
+  file_glob: true
+  file: artifacts/*
+  on:
+    tags: true

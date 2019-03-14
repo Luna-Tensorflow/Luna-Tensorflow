@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <functional>
 #include <tensorflow/c/c_api.h>
+#include "logging.h"
 
 /*
  * A placeholder type used to mark places where other classes are not yet available.
@@ -36,6 +37,9 @@ T run_with_status(std::function<T(TF_Status*)> f) {
     TF_Status *status = TF_NewStatus();
     T ret = f(status);
     if (TF_GetCode(status) != TF_OK) {
+#ifdef VERBOSE
+
+#endif
         throw TFException(status);
     }
     TF_DeleteStatus(status);

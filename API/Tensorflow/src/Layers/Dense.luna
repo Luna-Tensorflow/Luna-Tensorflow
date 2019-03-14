@@ -1,0 +1,57 @@
+import Tensorflow.Tensor
+import Tensorflow.Types
+import Tensorflow.Operations
+import Tensorflow.Variables
+import Tensorflow.Layers.Activation
+import Tensorflow.CWrappers.Helpers
+
+# TODO these type parameters are temporary
+class DenseLayer varT layerT:
+      name :: Text
+      nOutputs :: Int
+      weights :: varT # :: Variable a
+      biases :: varT # :: Variable a
+      parentLayer :: layerT # :: Layer # TODO no interfaces
+
+      # shape :: List Int
+      def shape:
+          [self.nOutputs, 1]
+
+      # forward :: Operation a -> Operation a
+      def forward inp:
+          myin = self.parentLayer.forward inp
+          prod = matMul self.weights myin
+          out = add prod self.biases
+          out
+
+      # trainableVariables :: List Variable a
+      def trainableVariables:
+          [self.weights, self.biases] + self.parentLayer.trainableVariables
+
+      def outputType:
+          self.parentLayer.outputType
+
+# dense :: Int -> Layer -> Layer
+def dense nOutputs parent:
+    nInputs = case parent.shape of
+        [x, 1]: x
+        _: throw $ "Dense layer requires its input to be a flat tensor n x 1"
+
+    vartype = parent.outputType
+
+    name = getNextName "Dense"
+
+    winit = randomTensor vartype [nOutputs, nInputs] 0.0 1.0
+    binit = randomTensor vartype [nOutputs, 1] 0.0 1.0
+    w = variable (name + "w") winit  # TODO defaultValue, TODO name scope to layer - need a mechanism for prefixes
+    b = variable (name + "b") binit # TODO j.w.
+
+    d = DenseLayer name nOutputs w b parent
+    d
+
+# denseWithActivation :: Int -> (Operation a -> Operation a) -> Layer -> Layer
+def denseWithActivation nOutputs activationFunction parent:
+    d = dense nOutputs parent
+    name = getNextName "Activation"
+    a = ActivationLayer name activationFunction d
+    a

@@ -1,0 +1,3 @@
+Fetch the .proto files from TensorFlow repository automatically.
+Compile .proto files automatically.
+Only use the necessary .proto files.

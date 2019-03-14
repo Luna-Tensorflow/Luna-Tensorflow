@@ -5,7 +5,7 @@ import Tensorflow.Operations
 def gradients ys xs dxs:
     None # TODO check if argument types match
     typetag = ys.head.get.wrapper.typetag
-    addGradients = lookupSymbol "TFL" ("add_gradients_" + typetag.typename)
+    addGradients = lookupSymbol "TFL" "add_gradients"
     releaseMethod = lookupSymbol "TFL" "release"
 
     ysArr = Array (Pointer None) . fromList (ys.map y: y.ptr.ptr)
@@ -18,9 +18,9 @@ def gradients ys xs dxs:
 
     dysArr = Array (Pointer None) . make xs.length dysPtr
 
-    dysRet = dysArr . toList . each (ptr: operationFromPtr ptr typetag)
+    dysRet = dysArr . toList . each (outputFromPtr typetag)
 
-    dysArr.free
+    lookupSymbol "TFL" "free_pointer" . call None [dysPtr.toCArg]
     ysArr.free
     xsArr.free
     dxsPtr.free

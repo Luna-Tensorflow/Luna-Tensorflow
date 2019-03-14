@@ -1,0 +1,38 @@
+import Std.Foreign
+import Std.Foreign.C.Value
+
+import Tensorflow.CWrappers.Operations
+
+class VariableRefWrapper a:
+      ptr :: ManagedPointer
+      typetag :: a
+
+      def toCArg:
+        self.ptr.toCArg
+
+      # TODO
+
+def makeAssign unit variable value:
+    releaseMethod = lookupSymbol "TFL" "release"
+    makeAssignOp = lookupSymbol "TFL" "make_assign"
+
+    ptr = makeAssignOp . call (Pointer None) [unit.wrapper.toCArg, variable.varrefwrapper.toCArg,
+        value.wrapper.toCArg]
+    newUnitPtr = ManagedPointer None . fromPointer releaseMethod ptr
+
+    wrapper = OutputWrapper newUnitPtr unit.wrapper.typetag
+    wrapper
+
+def makeVariableWrappers name defaultValue:
+    releaseMethod = lookupSymbol "TFL" "release"
+    makeVariableOp = lookupSymbol "TFL" "make_variable"
+
+    ptr = makeVariableOp.call (Pointer (Pointer None)) [CString.fromText name . toCArg, defaultValue.ptr.toCArg]
+    array = Array (Pointer None) . make 2 ptr
+
+    managed = array . toList . each(x: ManagedPointer None . fromPointer releaseMethod x)
+    refWrapper = VariableRefWrapper (managed . at 0 . get) (defaultValue.wrapper.typetag)
+    outWrapper = OutputWrapper (managed . at 1 . get) (defaultValue.wrapper.typetag)
+
+    (lookupSymbol "TFL" "free_pointer") . call None [ptr.toCArg]
+    (refWrapper, outWrapper)

@@ -1,5 +1,6 @@
 #include "../helpers/LifeTimeManager.h"
 #include "memory.h"
+#include "../helpers/logging.h"
 
 void release(void *handle) noexcept
 {
@@ -8,5 +9,6 @@ void release(void *handle) noexcept
 }
 
 void free_pointer(void *pointer) {
+    FFILOG(pointer);
     free(pointer);
 }

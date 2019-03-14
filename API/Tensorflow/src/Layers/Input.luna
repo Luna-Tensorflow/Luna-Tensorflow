@@ -1,0 +1,24 @@
+import Tensorflow.Tensor
+import Tensorflow.Types
+import Tensorflow.Operations
+import Tensorflow.CWrappers.Helpers
+
+class InputLayer a:
+      name :: Text
+      typetag :: a
+      shape :: List Int
+
+      # forward :: Operation a -> Operation a
+      def forward inp:
+          inp
+
+      # trainableVariables :: List Variable a
+      def trainableVariables:
+          []
+
+      def outputType:
+          self.typetag
+
+def input typetag shape:
+    name = getNextName "Input"
+    InputLayer name typetag shape

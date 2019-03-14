@@ -1,34 +1,43 @@
+//
+// Created by wojtek on 13.02.19.
+//
+
 #ifndef TFL_OPERATION_H
 #define TFL_OPERATION_H
 
-#include <cstddef>
+#include <vector>
 #include <memory>
 #include <tensorflow/c/c_api.h>
 
 #include "../graph/GraphSession.h"
 #include "../helpers/utils.h"
-#include "../tensor/Tensor.h"
+#include "Output.h"
+#include "Attr.h"
+#include "Binder.h"
 
-template<TF_DataType DataTypeLabel>
-class Operation {
+class Operation : public Binder {
+private:
+    Operation(std::string name, std::vector<std::shared_ptr<Output>> inputs,
+            std::vector<std::shared_ptr<Attr>> attrs, std::string chosen_name);
+
 public:
-    virtual size_t hashcode() const = 0;
-    virtual ~Operation() = default;
+    static std::vector<std::shared_ptr<Output>> make_operation(std::string name,
+                                                               std::vector<std::shared_ptr<Output>> inputs,
+                                                               int num_outputs,
+                                                               std::vector<std::shared_ptr<Attr>> attrs = {},
+                                                               std::string chosen_name = "");
 
-    std::shared_ptr<Tensor<DataTypeLabel>> eval() const {
-        GraphSession graph;
-        graph.add_output(graph.add_operation(this));
+    void add_to_graph(GraphSession &graph) override;
+    size_t hashcode() const override;
+    std::string hash_log() const override;
 
-        Tensor<DataTypeLabel>** values = graph.eval<DataTypeLabel>();
-
-        auto ptr = values[0];
-        free(values);
-
-        return LifetimeManager::instance().accessOwned(ptr);
-    }
-
-    virtual TF_Output add_to_graph(GraphSession& graph) const = 0;
+private:
+    std::string name;
+    std::vector<std::shared_ptr<Output>> inputs;
+    std::vector<std::shared_ptr<Attr>> attrs;
+    std::string chosen_name;
+    std::vector<std::weak_ptr<Output>> outputs;
+    size_t hash;
 };
-
 
 #endif //TFL_OPERATION_H

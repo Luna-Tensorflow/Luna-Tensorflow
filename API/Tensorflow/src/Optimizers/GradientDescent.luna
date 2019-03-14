@@ -1,0 +1,24 @@
+import Tensorflow.Variables
+import Tensorflow.Operations
+import Tensorflow.Types
+import Tensorflow.Gradient
+import Tensorflow.Graph
+
+class GradientDescent:
+      lr :: Real
+
+      # makeOptimizingGraph :: Operation a -> Operation a -> (Operation a -> Operation a -> Operation b) -> List Variable -> TFGraph
+      def makeOptimizingGraph yTrue yPred loss variables:
+          lr = constFromScalar FloatType self.lr
+          err = loss yTrue yPred
+          grads = gradients [err] variables []
+          scaledGrads = grads.each g: g * lr
+          varsAndGrads = variables.zip scaledGrads
+          varsAndNewValues = varsAndGrads.each ((v, g): (v, v - g))
+
+          errWithSideEffect = varsAndNewValues.foldLeft err ((var, val): se: assign se var val)
+
+          makeGraphFromOutput errWithSideEffect
+
+def gradientDescentOptimizer lr:
+    GradientDescent lr

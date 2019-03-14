@@ -3,6 +3,7 @@ import Std.Foreign.C.Value
 import Tensorflow.Tensor
 import Tensorflow.Operations
 import Tensorflow.CWrappers.Tensor
+import Tensorflow.Types
 
 def unzip listpair: case listpair of
     Empty: (Empty, Empty)
@@ -10,7 +11,7 @@ def unzip listpair: case listpair of
         (tailx, taily): ((Prepend x tailx), (Prepend y taily))
 
 
-class OperationWrapper a:
+class OutputWrapper a:
     ptr :: ManagedPointer None
     typetag :: a
 
@@ -18,7 +19,7 @@ class OperationWrapper a:
         self.ptr.toCArg
 
     def eval:
-        evalOp = lookupSymbol "TFL" ("eval_op_" + self.typetag.typename)
+        evalOp = lookupSymbol "TFL" "eval_op"
         releaseMethod = lookupSymbol "TFL" "release"
         tensorPtr = evalOp.call (Pointer None) [self.toCArg]
         tensorFromPtr self.typetag tensorPtr
@@ -30,24 +31,24 @@ def batchEvalSubstitutions list substitutions:
     count = list . length
     phCount = substitutions . length
 
-    batchEvalOp = lookupSymbol "TFL" "batch_eval_op_placeholders_float"
+    batchEvalOp = lookupSymbol "TFL" "batch_eval_op_placeholders"
     releaseMethod = lookupSymbol "TFL" "release"
 
     carr = ManagedPointer (Pointer None) . mallocElems count
-    indexed = 0 . upto count . zip list
+    indexed = 0 . upto (count - 1) . zip list
     indexed . each (idx, elem):
         carr . moveElems idx . write (elem.ptr.ptr)
 
     (names, substs) = unzip substitutions
 
     subsNameArr = ManagedPointer CString . mallocElems phCount
-    indexed = 0 . upto phCount . zip names
+    indexed = 0 . upto (phCount - 1) . zip names
     indexed . each (idx, elem):
         subsNameArr . moveElems idx . write (CString . fromText elem)
 
 
     substsArr = ManagedPointer (Pointer None) . mallocElems phCount
-    indexed = 0 . upto phCount . zip substs
+    indexed = 0 . upto (phCount - 1) . zip substs
     indexed . each (idx, elem):
         substsArr . moveElems idx . write (elem.ptr.ptr)
 
@@ -56,47 +57,100 @@ def batchEvalSubstitutions list substitutions:
 
     returnedArr = Array (Pointer None) . make count returnedPtr
 
-    retval = returnedArr . toList . each (tensorFromPtr releaseMethod)
-    returnedArr . free
+    retval = returnedArr . toList . each (tensorFromPtr FloatType) # TODO: different types support
+
+    freePointer = lookupSymbol "TFL" "free_pointer"
+    freePointer.call None [returnedPtr.toCArg]
+
+    0.upto (phCount - 1) . each (idx: subsNameArr . moveElems idx . read . free)
+
     retval
 
 def makeConstWrapper tensor:
-    makeOp = lookupSymbol "TFL" ("make_op_const_" + tensor.wrapper.typetag.typename)
+    makeOp = lookupSymbol "TFL" "make_op_const"
     releaseMethod = lookupSymbol "TFL" "release"
-    op = makeOp.call (Pointer None) [tensor.ptr.toCArg]
-    managedOp = ManagedPointer None . fromPointer releaseMethod op
-    OperationWrapper managedOp tensor.wrapper.typetag
+    out = makeOp.call (Pointer None) [tensor.ptr.toCArg]
+    managedOut = ManagedPointer None . fromPointer releaseMethod out
+    OutputWrapper managedOut tensor.wrapper.typetag
 
 def makePlaceholderWrapper typetag name:
-    makeOp = lookupSymbol "TFL" ("make_op_placeholder_" + typetag.typename)
+    makeOp = lookupSymbol "TFL" "make_op_placeholder"
     releaseMethod = lookupSymbol "TFL" "release"
-    op = makeOp.call (Pointer None) [(CString.fromText name).toCArg]
-    managedOp = ManagedPointer None . fromPointer releaseMethod op
-    OperationWrapper managedOp typetag
+
+    nameCStr = CString.fromText name
+
+    out = makeOp.call (Pointer None) [nameCStr.toCArg, CInt32.fromInt typetag.num . toCArg]
+    managedOut = ManagedPointer None . fromPointer releaseMethod out
+
+    nameCStr.free
+
+    OutputWrapper managedOut typetag
 
 def makeBinaryOpWrapper name a b:
     None # TODO: add assert a.typetag == b.typetag
-    makeOp = lookupSymbol "TFL" ("make_op_binary_" + a.typetag.typename)
+    makeOp = lookupSymbol "TFL" "make_op_binary"
     releaseMethod = lookupSymbol "TFL" "release"
-    op = makeOp.call (Pointer None) [(CString.fromText name).toCArg, a.ptr.toCArg, b.ptr.toCArg]
-    managedOp = ManagedPointer None . fromPointer releaseMethod op
-    OperationWrapper managedOp a.typetag
+
+    nameCStr = CString.fromText name
+
+    out = makeOp.call (Pointer None) [nameCStr.toCArg, a.ptr.toCArg, b.ptr.toCArg]
+    managedOut = ManagedPointer None . fromPointer releaseMethod out
+
+    nameCStr.free
+
+    OutputWrapper managedOut a.typetag
 
 def makeUnaryOpWrapper name a:
-    makeOp = lookupSymbol "TFL" ("make_op_unary_" + a.typetag.typename)
+    makeOp = lookupSymbol "TFL" "make_op_unary"
     releaseMethod = lookupSymbol "TFL" "release"
-    op = makeOp.call (Pointer None) [(CString.fromText name).toCArg, a.ptr.toCArg]
-    managedOp = ManagedPointer None . fromPointer releaseMethod op
-    OperationWrapper managedOp a.typetag
+
+    nameCStr = CString.fromText name
+
+    out = makeOp.call (Pointer None) [nameCStr.toCArg, a.ptr.toCArg]
+    managedOut = ManagedPointer None . fromPointer releaseMethod out
+
+    nameCStr.free
+
+    OutputWrapper managedOut a.typetag
 
 def makePartialDerivativeWrapper a b:
-    makeOp = lookupSymbol "TFL" ("make_op_partial_derivative_" + a.typetag.typename)
+    makeOp = lookupSymbol "TFL" "make_op_partial_derivative"
     releaseMethod = lookupSymbol "TFL" "release"
-    op = makeOp.call (Pointer None) [a.ptr.toCArg, b.ptr.toCArg]
-    managedOp = ManagedPointer None . fromPointer releaseMethod op
-    OperationWrapper managedOp a.typetag
+    out = makeOp.call (Pointer None) [a.ptr.toCArg, b.ptr.toCArg]
+    managedOut = ManagedPointer None . fromPointer releaseMethod out
+    OutputWrapper managedOut a.typetag
 
-def operationWrapperFromPtr ptr typetag:
+def outputWrapperFromPtr typetag ptr:
     releaseMethod = lookupSymbol "TFL" "release"
-    managedOperationPtr = ManagedPointer None . fromPointer releaseMethod ptr
-    OperationWrapper managedOperationPtr typetag
+    managedOutputPtr = ManagedPointer None . fromPointer releaseMethod ptr
+    OutputWrapper managedOutputPtr typetag
+
+
+def makeOutputWrappers name inputs outputTypetags attrList chosenName:
+    noutputs = outputTypetags.length
+
+    makeOp = lookupSymbol "TFL" "make_op"
+    releaseMethod = lookupSymbol "TFL" "release"
+
+    count = inputs.length
+    inputsCArr = ManagedPointer (Pointer None) . mallocElems count
+    indexed = 0 . upto (count - 1) . zip inputs
+    indexed . each (idx, input):
+        inputsCArr . moveElems idx . write input.ptr.ptr
+
+    nameCStr = CString.fromText name
+    chosenNameCStr = CString.fromText chosenName
+
+    outsPtr = makeOp.call (Pointer (Pointer None)) [nameCStr.toCArg, inputsCArr.toCArg, CInt32.fromInt inputs.length . toCArg, CInt32.fromInt noutputs . toCArg, attrList.toCArg, chosenNameCStr.toCArg]
+
+    outsArr = Array (Pointer None) . make noutputs outsPtr
+    typedOuts = outputTypetags.zip outsArr.toList
+    outs = typedOuts.each (typetag, output): outputWrapperFromPtr typetag output
+
+    nameCStr.free
+    chosenNameCStr.free
+
+    freePointer = lookupSymbol "TFL" "free_pointer"
+    freePointer.call None [outsPtr.toCArg]
+
+    outs

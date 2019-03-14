@@ -1,0 +1,25 @@
+import Tensorflow.Operations
+import Tensorflow.Tensor
+import Tensorflow.Types
+import Tensorflow.Graph
+import Tensorflow.Variables
+
+def vartest:
+    defaultValue = tensorFromList1d FloatType [1.0]
+    x = variable "x" defaultValue
+    c = constFromScalar FloatType 23.0
+    u = unitOp
+    u1 = assign u x c
+
+    g = makeGraphFromOutput u1
+    st1 = makeEmptyState
+    (u2, st2) = g.eval st1
+    print (st2.value FloatType "x").toJSON # should print 23
+
+    y = x + c
+
+    print y.toJSON # evals in default context, so should return 24
+
+    g2 = makeGraphFromOutput y
+    (xout, st3) = g2.eval st2
+    print xout.toJSON # should print 23+23 = 46, as it evals after the assignment (st2)
