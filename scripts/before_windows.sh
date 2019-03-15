@@ -1,5 +1,7 @@
 set -xe
 echo "Running Windows build"
+dir C:\ProgramData\chocolatey\bin\
+dir C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin
 export TF_USE_LOCAL_LIBRARY=1
 mkdir tensorflow # download TF dependency, TODO downloading protobufs
 cd tensorflow
@@ -10,7 +12,7 @@ cd ..
 mkdir build # prepare folders
 mkdir release
 mkdir release/native_libs
-mkdir release/native_libs/linux/
+mkdir release/native_libs/windows/
 #cd scripts/ # download and patch the patching script
 #mv Main.hs Main2.hs
 #git clone https://github.com/luna/dataframes

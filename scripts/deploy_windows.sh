@@ -5,8 +5,11 @@ cmake --build .
 cd ../release/
 cp -rv ../API/Tensorflow/src/ . # copy Luna srcs and metadata
 cp -rv ../API/Tensorflow/.luna-package/ .
-cp -rv ../API/Tensorflow/native_libs/windows native_libs/
-cp ../tensorflow/lib/*.dll native_libs/windows/ -v
+cp -v ../API/Tensorflow/native_libs/windows/libTFL.dll native_libs/windows/
+cp -v ../tensorflow/lib/tensorflow.dll native_libs/windows/libtensorflow.so # weird naming but that's what libTFL.dll requires
+cp -v C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/libgcc_s_seh-1.dll native_libs/windows/
+cp -v C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/libwinpthread-1.dll native_libs/windows/
+cp -v C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/libstdc++-6.dll native_libs/windows/
 7z a -t7z tensorflow_luna_windows.7z * .luna-package
 cd ..
 mkdir artifacts
