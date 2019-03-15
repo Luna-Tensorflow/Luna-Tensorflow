@@ -1,5 +1,7 @@
 import Tensorflow.CWrappers.Operations
+import Tensorflow.CWrappers.Helpers
 import Tensorflow.Tensor
+import Tensorflow.GeneratedOps
 import Tensorflow.Types
 import Std.Foreign.C.Value
 
@@ -152,3 +154,41 @@ def outputFromPtr typetag ptr:
 def qr a:
     wrappers = makeOutputWrappers "Qr" [a] [a.wrapper.typetag, a.wrapper.typetag] nullPtr ""
     wrappers.each (wrapper: TFOutput wrapper)
+
+# expandDims :: TFOutput a -> Int -> TFOutput a
+def expandDims a dim:
+    dimT = tensorFromList1d Int32Type [dim]
+    dimOp = makeConst dimT
+    name = getNextName "ExpandDims"
+    out = expandDimsGen name a dimOp a.typetag Int32Type
+    out
+
+# squeeze :: TFOutput a -> List Int -> TFOutput a
+def squeeze a dims:
+    dimT = tensorFromList1d Int32Type dims
+    dimOp = makeConst dimT
+    name = getNextName "Squeeze"
+    out = squeezeGen name a a.typetag dimOp
+    out
+
+# conv2D :: TFOutput a -> TFOutput a -> Tuple2 Int Int -> Text
+def conv2D input kernel (strideY, strideX) padding:
+    stridesT = tensorFromList1d Int32Type [strideY, strideX]
+    stridesOp = makeConst stridesT
+
+    usegpuT = tensorFromList1d BoolType [True]
+    usegpuOp = makeConst usegpuT
+
+    paddingT = tensorFromList1d StringType [padding]
+    paddingOp = makeConst paddingT
+
+    dataFormatT = tensorFromList1d StringType ["NHWC"]
+    dataFormatOp = makeConst dataFormatT
+
+    dilationsT = tensorFromList1d Int32Type [1,1,1,1]
+    dilationsOp = makeConst dilationsT
+
+    name = getNextName "Conv2D"
+
+    out = conv2DGen name input kernel input.typetag stridesOp usegpuOp paddingOp dataFormatOp dilationsOp
+    out

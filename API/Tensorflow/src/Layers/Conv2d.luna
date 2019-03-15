@@ -1,0 +1,63 @@
+import Tensorflow.Tensor
+import Tensorflow.Types
+import Tensorflow.Operations
+import Tensorflow.Variables
+import Tensorflow.Layers.Activation
+import Tensorflow.CWrappers.Helpers
+
+
+class Conv2dLayer varT layerT:
+    name :: Text
+    kernelWeights :: varT
+    outHeight :: Int
+    outWidth :: Int
+    outChannels :: Int
+    kernelHeight :: Int
+    kernelWidth :: Int
+    padding :: Text
+    parentLayer :: layerT
+
+    def shape:
+        [outHeight, outWidth, outChannels]
+
+    def forward inp:
+        myin = self.parent.forward inp
+        expanded = expandDims myin 0 # add 1 dimension as 1 batch
+        convo = conv2D expanded kernelWeights padding
+        squeezed = squeeze convo [0] # squeeze back
+        squeezed
+
+    # trainableVariables :: List Variable a
+    def trainableVariables:
+        Prepend self.kernelWeights self.parentLayer.trainableVariables
+
+    def outputType:
+        self.parentLayer.outputType
+
+def fitkern size ksize:
+    ((size - ksize + 1).toReal / (ksize.toReal)).ceiling
+
+#conv2D :: List Int -> Int -> Tuple2 Int -> Text -> Layer -> Layer
+def conv2d [kernelHeight, kernelWidth] outChannels (strideY, strideX) padding parent:
+    if (padding == "valid").not.or (padding == "same") then throw $ "conv2d padding should be `same` or `valid`"
+    [outHeight, outWidth, inChannels] = case parent.shape of
+        [h, w] ->  if padding == "same" then [h, w, 1] else [fitkern h kernelHeight, fitkern w kernelWidth, 1]
+        [h, w, c] -> if padding == "same" then [h, w, c] else [fitkern h kernelHeight, fitkern w kernelWidth, c]
+        _ -> throw $ "conv2d requires parent layer of shape h x w or h x w x c"
+
+    name = getNextName "Conv2D"
+    vartype = parent.outputType
+
+    winit = randomTensor vartype [kernelHeight, kernelWidth, inChannels, outChannels] 0.0 1.0
+    w = variable (name + "w") winit
+
+    c = Conv2dLayer name w outHeight outWidth outChannels kernelHeight kernelWidth padding parent
+    c
+
+# conv2dWithActivation :: List Int -> Int -> Tuple2 Int -> Text -> (Operation a -> Operation a) -> Layer -> Layer
+def conv2dWithActivation kernelHW outChannels strideXY padding activationFunction parent:
+    c = conv2d kernelHW outChannels strideXY padding parent
+    name = getNextName "Activation"
+    a = ActivationLayer name activationFunction c
+    a
+
