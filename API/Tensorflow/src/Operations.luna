@@ -111,6 +111,40 @@ def sign a:
     wrapper = makeUnaryOpWrapper "Sign" a.wrapper
     TFOutput wrapper
 
+# exp :: TFOutput a -> TFOutput a
+def exp a:
+    wrapper = makeUnaryOpWrapper "Exp" a.wrapper
+    TFOutput wrapper
+
+# log :: TFOutput a -> TFOutput a
+def log a:
+    wrapper = makeUnaryOpWrapper "Log" a.wrapper
+    TFOutput wrapper
+
+# abs :: TFOutput a -> TFOutput a
+def abs a:
+    wrapper = makeUnaryOpWrapper "Abs" a.wrapper
+    TFOutput wrapper
+
+# neg :: TFOutput a -> TFOutput a
+def neg a:
+    wrapper = makeUnaryOpWrapper "Neg" a.wrapper
+    TFOutput wrapper
+
+# sum :: TFOutput a -> TFOutput a
+def sum a:
+    tensor = tensorFromList1d Int32Type [0, 1]
+    b = makeConstWrapper tensor
+    wrapper = makeBinaryOpWrapper "Sum" a.wrapper b
+    TFOutput wrapper
+
+# mean :: TFOutput a -> TFOutput a
+def mean a:
+    tensor = tensorFromList1d Int32Type [0, 1]
+    b = makeConstWrapper tensor
+    wrapper = makeBinaryOpWrapper "Mean" a.wrapper b
+    TFOutput wrapper
+
 def outputFromPtr typetag ptr:
     wrapper = outputWrapperFromPtr typetag ptr
     TFOutput wrapper

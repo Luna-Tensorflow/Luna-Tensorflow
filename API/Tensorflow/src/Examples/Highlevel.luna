@@ -5,7 +5,8 @@ import Tensorflow.Operations
 import Tensorflow.Layers.Input
 import Tensorflow.Layers.Dense
 import Tensorflow.Optimizers.GradientDescent
-import Tensorflow.Losses.MSE
+import Tensorflow.Losses.MeanError
+import Tensorflow.Losses.Crossentropy
 import Tensorflow.Model
 
 def generateTest n:

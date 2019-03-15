@@ -1,0 +1,23 @@
+import Tensorflow.Types
+import Tensorflow.Tensor
+import Tensorflow.Operations
+
+def categoricalCrossentropy yTrue yPred:
+    l = log yPred
+    prod = yTrue * l
+    summed = sum prod
+    n = neg summed
+
+def binaryCrossentropy yTrue yPred:
+    t = tensorFromList1d FloatType [1.0]
+    ones = makeConst t
+
+    diff1 = ones - yTrue
+    diff2 = ones - yPred
+    ln1 = log yPred
+    ln2 = log diff2
+    prod1 = yTrue * ln1
+    prod2 = diff1 * ln2
+    added = prod1 + prod2
+    m = mean added
+    n = neg m
