@@ -9,27 +9,30 @@ import Tensorflow.Losses.MeanError
 import Tensorflow.Losses.Crossentropy
 import Tensorflow.Model
 
+def unzip listpair: case listpair of
+    Empty: (Empty, Empty)
+    Prepend (x,y) tail: case unzip tail of
+        (tailx, taily): ((Prepend x tailx), (Prepend y taily))
+
 def generateTest n:
-    tx = (1 . upto n) . each (i:
-        t = randomTensor FloatType [2, 1] 2.0.negate 2.0
-        l = t . toFlatList
-        x = l . at 0 . get
-        y = l . at 1 . get
-        nt = tensorFromList FloatType [4,1] [x, x*x, y, y*y]
-        nt)
+    xsT = randomTensor FloatType [1, n] 2.0.negate 2.0
+    ysT = randomTensor FloatType [1, n] 2.0.negate 2.0
+    xsL = xsT . toFlatList
+    ysL = ysT . toFlatList
 
-    ty = tx . each(t:
-        xx = t . at [1, 0]
-        yy = t . at [3, 0] # z = t . at [2, 0]
-        w = xx + yy # + z*z
-        incircle = if w <= 1.0 then 1.0 else 0.0
-        y = tensorFromList1d FloatType [incircle]
-        y)
+    xys = xsL . zip ysL
 
+    testp = xys . each ((x,y):
+        incircle = if x*x + y*y <= 1.0 then 1.0 else 0.0
+        t1 = tensorFromList FloatType [4,1] [x, x*x, y, y*y]
+        t2 = tensorFromList1d FloatType [incircle]
+        (t1, t2))
+
+    (tx, ty) = unzip testp
     (tx, ty)
 
 def absPatch x:
-    if x < 0.0 then x.negate else x # TODO remove after new Luna version is released
+    if x < 0.0 then x.negate else x
 
 def exampleNet:
     n = 10000
