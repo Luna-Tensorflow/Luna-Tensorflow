@@ -17,12 +17,15 @@ extern "C"
 TFL_API Tensor *make_tensor(void const *array, TF_DataType type, const int64_t *dims, size_t num_dims);
 TFL_API int get_tensor_num_dims(Tensor *tensor);
 TFL_API int64_t get_tensor_dim(Tensor *tensor, int32_t dim_index);
+TFL_API int64_t* get_tensor_dims(Tensor *tensor);
+TFL_API int64_t get_tensor_flatlist_length(Tensor* tensor);
 
 #define DEFINE_TENSOR(typelabel) \
 TFL_API Type<typelabel>::lunatype get_tensor_value_at_##typelabel(Tensor *tensor, int64_t *idxs, size_t idxs_len); \
 TFL_API Type<typelabel>::lunatype get_tensor_value_at_index_##typelabel(Tensor *tensor, int64_t index); \
 TFL_API Tensor *make_random_tensor_##typelabel(const int64_t *dims, size_t num_dims, \
-	Type<typelabel>::lunatype const min, Type<typelabel>::lunatype const max);
+	Type<typelabel>::lunatype const min, Type<typelabel>::lunatype const max); \
+TFL_API Type<typelabel>::lunatype* tensor_to_flatlist_##typelabel(Tensor*);
 
 
 DEFINE_TENSOR(TF_FLOAT);

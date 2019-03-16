@@ -12,7 +12,7 @@ import Tensorflow.Model
 def generateTest n:
     tx = (1 . upto n) . each (i:
         t = randomTensor FloatType [2, 1] 2.0.negate 2.0
-        l = t . toList
+        l = t . toFlatList
         x = l . at 0 . get
         y = l . at 1 . get
         nt = tensorFromList FloatType [4,1] [x, x*x, y, y*y]

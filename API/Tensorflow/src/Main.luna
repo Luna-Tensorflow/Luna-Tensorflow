@@ -1,10 +1,13 @@
-import Tensorflow.Tests.Variables
+import Tensorflow.Tests.TensorTest
+# import Tensorflow.Tests.Variables
 
-import Tensorflow.Examples.LowlevelNet
-import Tensorflow.Examples.Highlevel
-
+# import Tensorflow.Examples.LowlevelNet
+# import Tensorflow.Examples.Highlevel
 
 def main:
-    vartest
+    print "hello"
+    0 # vartest
     0 #lowlevelNetExample
-    exampleNet
+    0 # exampleNet
+    tensorTest
+    print "done"

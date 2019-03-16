@@ -11,6 +11,12 @@
 #include <memory>
 #include <random>
 
+template<typename T> T* vector_as_array(const std::vector<T>& vec) {
+    T* r = static_cast<T*>(malloc(sizeof(T) * vec.size()));
+    memcpy(r, vec.data(), sizeof(T) * vec.size());
+    return r;
+}
+
 TFL_API Tensor *make_tensor(void const *array, TF_DataType type, const int64_t *dims, size_t num_dims) {
     FFILOG(array, type, dims, num_dims);
 	auto tensor_ptr = std::make_shared<Tensor>(array, dims, num_dims, type);
@@ -28,6 +34,17 @@ TFL_API int64_t get_tensor_dim(Tensor *tensor, int32_t dim_index) {
     FFILOGANDRETURN(r, tensor, dim_index);
 }
 
+TFL_API int64_t* get_tensor_dims(Tensor *tensor) {
+    auto shape = LifetimeManager::instance().accessOwned(tensor)->shape();
+    auto r = vector_as_array(shape);
+    FFILOGANDRETURN(r, tensor);
+}
+
+TFL_API int64_t get_tensor_flatlist_length(Tensor* tensor) {
+    int64_t l = LifetimeManager::instance().accessOwned(tensor)->flatSize();
+    FFILOGANDRETURN(l, tensor);
+}
+
 #define GET_TENSOR_VALUE_AT(typelabel) \
 TFL_API Type<typelabel>::lunatype get_tensor_value_at_##typelabel(Tensor *tensor, int64_t *idxs, size_t len) { \
     auto r = LifetimeManager::instance().accessOwned(tensor)->at<typelabel>(idxs, len); \
@@ -38,6 +55,17 @@ TFL_API Type<typelabel>::lunatype get_tensor_value_at_##typelabel(Tensor *tensor
 TFL_API Type<typelabel>::lunatype get_tensor_value_at_index_##typelabel(Tensor *tensor, int64_t index) { \
     auto r = LifetimeManager::instance().accessOwned(tensor)->at<typelabel>(index); \
     FFILOGANDRETURN(r, tensor, index); \
+}
+
+#define TENSOR_TO_FLATLIST(typelabel) \
+TFL_API Type<typelabel>::lunatype* tensor_to_flatlist_##typelabel(Tensor* tensor) { \
+    auto t = LifetimeManager::instance().accessOwned(tensor);           \
+    auto len = t->flatSize();                                           \
+    Type<typelabel>::lunatype* r = static_cast<Type<typelabel>::lunatype*> (malloc(sizeof(Type<typelabel>::lunatype) * len)); \
+    for (size_t i = 0; i < len; ++i) {                                  \
+        r[i] = t->at<typelabel>(i);                                     \
+    }                                                                   \
+    FFILOGANDRETURN(r, tensor);                                         \
 }
 
 #define MAKE_RANDOM_TENSOR(typelabel, type) \
@@ -64,10 +92,11 @@ TFL_API Tensor *make_random_tensor_##typelabel(const int64_t *dims, size_t num_d
 #define DECLARE_TENSOR(typelabel) \
 GET_TENSOR_VALUE_AT(typelabel); \
 GET_TENSOR_VALUE_AT_INDEX(typelabel); \
+TENSOR_TO_FLATLIST(typelabel);
 
-#define DECLARE_TENSOR_NUMERIC(typelabel, type) \
+#define DECLARE_TENSOR_NUMERIC(typelabel, randomtype) \
 DECLARE_TENSOR(typelabel); \
-MAKE_RANDOM_TENSOR(typelabel, type);\
+MAKE_RANDOM_TENSOR(typelabel, randomtype);\
 
 
 DECLARE_TENSOR_NUMERIC(TF_FLOAT, real);

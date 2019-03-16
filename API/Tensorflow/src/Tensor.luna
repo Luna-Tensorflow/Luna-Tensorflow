@@ -24,14 +24,17 @@ class Tensor a:
     def atIndex index:
         self.wrapper.atIndex index
 
-    # toList :: List Real
+    # toList :: List T
     def toList:
-        indices = 0.upto (self.dims.foldLeft 1 (x: a: a * x) - 1)
-        indices.each self.atIndex
+        throw "Function toList is deprecated and will be removed" # TODO remove
+
+    # toFlatList :: List T
+    def toFlatList:
+        self.wrapper.toFlatList
 
     # toJSON :: JSON
     def toJSON:
-        self.toList.toJSON
+        self.toFlatList.toJSON
 
     # toText :: Text
     def toText:

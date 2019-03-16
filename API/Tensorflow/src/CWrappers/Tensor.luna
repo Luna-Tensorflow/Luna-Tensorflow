@@ -16,20 +16,19 @@ class TensorWrapper a:
 
         res.toInt
 
-    def dim i:
-        dimFun = lookupSymbol "TFL" "get_tensor_dim"
-
-        res = dimFun.call CInt64 [self.toCArg, CInt32.fromInt i . toCArg]
-
-        res.toInt
-
     def dims:
         n = self.numDims
 
-        def fillDims i list:
-            if i >= 0 then fillDims (i - 1) (Prepend (self.dim i) list) else list
+        dimsFun = lookupSymbol "TFL" "get_tensor_dims"
+        freeFun = lookupSymbol "TFL" "free_pointer"
 
-        fillDims (n - 1) []
+        dimsPtr = dimsFun.call (Pointer CInt64) [self.toCArg]
+        dimsArr = Array CInt64 . make n dimsPtr
+        cdims = dimsArr.toList
+        dims = cdims.each (i: i.toInt)
+        freeFun.call None [dimsPtr.toCArg]
+
+        dims
 
     def at indexes:
         atFun = lookupSymbol "TFL" ("get_tensor_value_at_" + self.typetag.typename)
@@ -51,6 +50,26 @@ class TensorWrapper a:
         ret = self.typetag.fromC res
         self.typetag.cleanupC res
         ret
+
+    def flatLength:
+        lenFun = lookupSymbol "TFL" "get_tensor_flatlist_length"
+        res = lenFun.call CInt64 [self.toCArg]
+        res.toInt
+
+    def toFlatList:
+        len = self.flatLength
+
+        flatListFun = lookupSymbol "TFL" ("tensor_to_flatlist_" + self.typetag.typename)
+        freeFun = lookupSymbol "TFL" "free_pointer"
+
+        ptr = flatListFun.call (Pointer (self.typetag.ctype)) [self.toCArg]
+        arr = Array (self.typetag.ctype) . make len ptr
+        clist = arr.toList
+        list = clist.each (self.typetag.fromC)
+        clist.each (self.typetag.cleanupC)
+        freeFun.call None [ptr.toCArg]
+
+        list
 
 def createTensorWrapper typetag dims values:
     expectedValuesCount = dims.foldLeft 1 (x: a: a * x)
