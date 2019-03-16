@@ -3,6 +3,11 @@ import Tensorflow.CWrappers.Tensor
 import Std.Foreign
 import Std.Foreign.C.Value
 
+
+# Private, splitInPacksOf :: Int -> List a -> List List a
+def splitInPacksOf len list:
+    if list.isEmpty then Empty else Prepend (list.take len) (splitInPacksOf len (list.drop len))
+
 # For now we assume tensors are 1D
 # Tensor T
 class Tensor a:
@@ -38,10 +43,6 @@ class Tensor a:
         flat = self.toFlatList
 
         None # these nones before comments are due to a parser error, TODO remove them later
-        None # splitInPacksOf :: Int -> List a -> List List a
-        def splitInPacksOf len list:
-            if list.isEmpty then Empty else Prepend (list.take len) (splitInPacksOf len (list.drop len))
-
         None # toNested :: List Int -> List a -> JSON
         def toNested dims list:
             case dims of
@@ -99,3 +100,7 @@ def randomTensor typetag dims minVal maxVal:
 def tensorTo2dList tensor:
     dims = tensor.dims
     if (dims.length == 2).not then throw "Only tensors with shape [w,h] can be converted to a 2d list" else None
+    [w,h] = dims
+    flat = tensor.toFlatList
+    res = splitInPacksOf h flat
+    res
