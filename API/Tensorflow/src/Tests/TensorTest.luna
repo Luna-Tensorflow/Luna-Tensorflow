@@ -7,10 +7,14 @@ def tensorTest:
     print t1d.toFlatList
     print t1d.toJSON
 
-    t2d = None # TODO
+    print "2d"
+    t2d = tensorFromList2d StringType [["a","b"],["c","dd"]]
+    print t2d.toFlatList
+    print t2d.toJSON
+    
 
     print "3d"
-    t3d = tensorFromList Int32Type [2,2,2] [1,2,3,4,5,6,7,8]
+    t3d = tensorFromList Int32Type [2,2,3] [1,2,3,4,5,6,7,8,9,10,11,12]
     print t3d.toFlatList
     print t3d.toJSON
 

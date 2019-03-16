@@ -34,7 +34,29 @@ class Tensor a:
 
     # toJSON :: JSON
     def toJSON:
-        self.toFlatList.toJSON
+        dims = self.dims
+        flat = self.toFlatList
+
+        None # these nones before comments are due to a parser error, TODO remove them later
+        None # splitInPacksOf :: Int -> List a -> List List a
+        def splitInPacksOf len list:
+            if list.isEmpty then Empty else Prepend (list.take len) (splitInPacksOf len (list.drop len))
+
+        None # toNested :: List Int -> List a -> JSON
+        def toNested dims list:
+            case dims of
+                Empty:
+                    throw "This shouldn't happen: dims should not be empty"
+                Prepend last Empty:
+                    list.toJSON
+                Prepend h t:
+                    packsize = list.length / h
+                    parts = splitInPacksOf packsize list
+                    jsons = parts.each (toNested t)
+                    JSONArray jsons
+
+        res = toNested dims flat
+        res
 
     # toText :: Text
     def toText:
@@ -42,7 +64,7 @@ class Tensor a:
 
 
 # tensorFromPtr :: TypeTag a -> Pointer None -> Tensor a
-def tensorFromPtr typetag tensorPtr:
+def tensorFromPtr typetag tgagensorPtr:
     releaseMethod = lookupSymbol "TFL" "release"
     managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
 
@@ -54,6 +76,15 @@ def tensorFromList1d typetag list:
     wrapper = createTensorWrapper typetag [list.length] list
     Tensor wrapper
 
+# tensorFromList2d :: TypeTag a -> List (List a) -> Tensor a
+def tensorFromList2d typetag list:
+    lengths = list.each (l: l.length)
+    w = list.length
+    h = lengths.getAt 0
+    if (lengths.all (l: l == h)).not then throw "tensorFromList2d: All lists have to be of equal lengts" else None
+    flat = list.concat
+    tensorFromList typetag [w, h] flat
+
 # tensorFromList :: TypeTag a -> List Int -> List a -> Tensor a
 def tensorFromList typetag dims list:
     wrapper = createTensorWrapper typetag dims list
@@ -63,3 +94,8 @@ def tensorFromList typetag dims list:
 def randomTensor typetag dims minVal maxVal:
     wrapper = createRandomTensorWrapper typetag dims minVal maxVal
     Tensor wrapper
+
+# tensorTo2dList :: Tensor a -> List (List a)
+def tensorTo2dList tensor:
+    dims = tensor.dims
+    if (dims.length == 2).not then throw "Only tensors with shape [w,h] can be converted to a 2d list" else None
