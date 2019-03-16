@@ -31,6 +31,9 @@ class Variable a:
      def * other:
         mul self other
 
+     def typetag:
+        self.outputwrapper.typetag
+
 # variable :: Text -> Tensor a -> Variable a
 def variable name defaultValue:
     (varref, output) = makeVariableWrappers name defaultValue
