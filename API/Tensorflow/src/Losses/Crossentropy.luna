@@ -5,7 +5,7 @@ import Tensorflow.Operations
 def categoricalCrossentropy yTrue yPred:
     l = log yPred
     prod = yTrue * l
-    summed = sum prod
+    summed = sum prod [0]
     n = neg summed
 
 def binaryCrossentropy yTrue yPred:
@@ -19,5 +19,5 @@ def binaryCrossentropy yTrue yPred:
     prod1 = yTrue * ln1
     prod2 = diff1 * ln2
     added = prod1 + prod2
-    m = mean added
+    m = mean added [0]
     n = neg m

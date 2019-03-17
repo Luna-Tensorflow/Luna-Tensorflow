@@ -60,34 +60,130 @@ def constFromList typetag list:
 def constFromScalar typetag x:
     constFromList typetag [x]
 
-# add :: (TFOutput a -> TFOutput a) -> TFOutput a
-def add a b:
-    wrapper = makeBinaryOpWrapper "Add" a.wrapper b.wrapper
+def outputFromPtr typetag ptr:
+    wrapper = outputWrapperFromPtr typetag ptr
     TFOutput wrapper
 
-# mul :: (TFOutput a -> TFOutput a) -> TFOutput a
-def mul a b:
-    wrapper = makeBinaryOpWrapper "Mul" a.wrapper b.wrapper
-    TFOutput wrapper
+# add :: TFOutput a -> TFOutput a -> TFOutput a
+def add x y:
+    chosenName = getNextName "Add"
+    out = addGen chosenName x y x.wrapper.typetag
+    out
 
-# sub :: (TFOutput a -> TFOutput a) -> TFOutput a
-def sub a b:
-    wrapper = makeBinaryOpWrapper "Sub" a.wrapper b.wrapper
-    TFOutput wrapper
+# mul :: TFOutput a -> TFOutput a -> TFOutput a
+def mul x y:
+    chosenName = getNextName "Mul"
+    out = mulGen chosenName x y x.wrapper.typetag
+    out
+
+# sub :: TFOutput a -> TFOutput a -> TFOutput a
+def sub x y:
+    chosenName = getNextName "Sub"
+    out = subGen chosenName x y x.wrapper.typetag
+    out
+
+# matMul :: TFOutput a -> TFOutput a -> TFOutput a
+def matMul x y:
+    chosenName = getNextName "MatMul"
+    out = matMulGen chosenName x y False False x.wrapper.typetag
+    out
+
+# equal :: TFOutput a -> TFOutput a -> TFOutput a
+def equal x y:
+    chosenName = getNextName "Equal"
+    out = equalGen chosenName x y x.wrapper.typetag
+    out
+
+# tanh :: TFOutput a -> TFOutput a
+def tanh x:
+    chosenName = getNextName "Tanh"
+    out = tanhGen chosenName x x.wrapper.typetag
+    out
+
+# sigmoid :: TFOutput a -> TFOutput a
+def sigmoid x:
+    chosenName = getNextName "Sigmoid"
+    out = sigmoidGen chosenName x x.wrapper.typetag
+    out
+
+# sign :: TFOutput a -> TFOutput a
+def sign x:
+    chosenName = getNextName "Sign"
+    out = signGen chosenName x x.wrapper.typetag
+    out
+
+# exp :: TFOutput a -> TFOutput a
+def exp x:
+    chosenName = getNextName "Exp"
+    out = expGen chosenName x x.wrapper.typetag
+    out
+
+# log :: TFOutput a -> TFOutput a
+def log x:
+    chosenName = getNextName "Log"
+    out = logGen chosenName x x.wrapper.typetag
+    out
+
+# abs :: TFOutput a -> TFOutput a
+def abs x:
+    chosenName = getNextName "Abs"
+    out = absGen chosenName x x.wrapper.typetag
+    out
+
+# neg :: TFOutput a -> TFOutput a
+def neg x:
+    chosenName = getNextName "Neg"
+    out = negGen chosenName x x.wrapper.typetag
+    out
+
+# sum :: TFOutput a -> TFOutput a
+def sum x dims:
+    chosenName = getNextName "Sum"
+
+    t = tensorFromList1d Int32Type dims
+    reductionxindices = makeConst t
+
+    out = sumGen chosenName x reductionxindices False x.wrapper.typetag Int32Type
+    out
+
+# mean :: TFOutput a -> TFOutput a
+def mean x dims:
+    chosenName = getNextName "Mean"
+
+    t = tensorFromList1d Int32Type dims
+    reductionxindices = makeConst t
+    
+    out = meanGen chosenName x reductionxindices False x.wrapper.typetag Int32Type
+    out
+
+# expandDims :: TFOutput a -> Int -> TFOutput a
+def expandDims x dim:
+    chosenName = getNextName "ExpandDims"
+    
+    t = tensorFromList1d Int32Type [dim]
+    dim = makeConst t
+
+    out = expandDimsGen chosenName x dim x.wrapper.typetag Int32Type
+    out
+
+# squeeze :: TFOutput a -> List Int -> TFOutput a
+def squeeze x dims:
+    chocenName = getNextName "Squeeze"
+
+    t = tensorFromList1d Int32Type dims
+    squeezeDims = makeConst t
+
+    out = squeezeGen chosenName x x.wrapper.typetag squeezeDims
+    out
+
+# qr :: TFOutput a -> TFOutput a
+def qr a:
+    wrappers = makeOutputWrappers "Qr" [a] [a.wrapper.typetag, a.wrapper.typetag] nullPtr ""
+    wrappers.each (wrapper: TFOutput wrapper)
 
 # partial :: (TFOutput a -> TFOutput a) -> TFOutput a
 def partial a b:
     wrapper = makePartialDerivativeWrapper a.wrapper b.wrapper
-    TFOutput wrapper
-
-# matMul :: (TFOutput a -> TFOutput a) -> TFOutput a
-def matMul a b:
-    wrapper = makeBinaryOpWrapper "MatMul" a.wrapper b.wrapper
-    TFOutput wrapper
-
-# matMul :: (TFOutput a -> TFOutput a) -> TFOutput a
-def equal a b:
-    wrapper = makeBinaryOpWrapper "Equal" a.wrapper b.wrapper
     TFOutput wrapper
 
 # sqnorm :: TFOutput a -> TFOutput a
@@ -97,79 +193,6 @@ def sqnorm a:
 
     wrapper = makeBinaryOpWrapper "Sum" mult.wrapper dim.wrapper
     TFOutput wrapper
-
-# tanh :: TFOutput a -> TFOutput a
-def tanh a:
-    wrapper = makeUnaryOpWrapper "Tanh" a.wrapper
-    TFOutput wrapper
-
-# sigmoid :: TFOutput a -> TFOutput a
-def sigmoid a:
-    wrapper = makeUnaryOpWrapper "Sigmoid" a.wrapper
-    TFOutput wrapper
-
-# sign :: TFOutput a -> TFOutput a
-def sign a:
-    wrapper = makeUnaryOpWrapper "Sign" a.wrapper
-    TFOutput wrapper
-
-# exp :: TFOutput a -> TFOutput a
-def exp a:
-    wrapper = makeUnaryOpWrapper "Exp" a.wrapper
-    TFOutput wrapper
-
-# log :: TFOutput a -> TFOutput a
-def log a:
-    wrapper = makeUnaryOpWrapper "Log" a.wrapper
-    TFOutput wrapper
-
-# abs :: TFOutput a -> TFOutput a
-def abs a:
-    wrapper = makeUnaryOpWrapper "Abs" a.wrapper
-    TFOutput wrapper
-
-# neg :: TFOutput a -> TFOutput a
-def neg a:
-    wrapper = makeUnaryOpWrapper "Neg" a.wrapper
-    TFOutput wrapper
-
-# sum :: TFOutput a -> TFOutput a
-def sum a:
-    tensor = tensorFromList1d Int32Type [0, 1]
-    b = makeConstWrapper tensor
-    wrapper = makeBinaryOpWrapper "Sum" a.wrapper b
-    TFOutput wrapper
-
-# mean :: TFOutput a -> TFOutput a
-def mean a:
-    tensor = tensorFromList1d Int32Type [0, 1]
-    b = makeConstWrapper tensor
-    wrapper = makeBinaryOpWrapper "Mean" a.wrapper b
-    TFOutput wrapper
-
-def outputFromPtr typetag ptr:
-    wrapper = outputWrapperFromPtr typetag ptr
-    TFOutput wrapper
-
-def qr a:
-    wrappers = makeOutputWrappers "Qr" [a] [a.wrapper.typetag, a.wrapper.typetag] nullPtr ""
-    wrappers.each (wrapper: TFOutput wrapper)
-
-# expandDims :: TFOutput a -> Int -> TFOutput a
-def expandDims a dim:
-    dimT = tensorFromList1d Int32Type [dim]
-    dimOp = makeConst dimT
-    name = getNextName "ExpandDims"
-    out = expandDimsGen name a dimOp a.typetag Int32Type
-    out
-
-# squeeze :: TFOutput a -> List Int -> TFOutput a
-def squeeze a dims:
-    dimT = tensorFromList1d Int32Type dims
-    dimOp = makeConst dimT
-    name = getNextName "Squeeze"
-    out = squeezeGen name a a.typetag dimOp
-    out
 
 # conv2D :: TFOutput a -> TFOutput a -> Tuple2 Int Int -> Text
 def conv2D input kernel (strideY, strideX) padding:

@@ -35,7 +35,7 @@ def absPatch x:
     if x < 0.0 then x.negate else x
 
 def exampleNet:
-    n = 10000
+    n = 1000
     print "Loading data"
 
     (x,y) = generateTest n
