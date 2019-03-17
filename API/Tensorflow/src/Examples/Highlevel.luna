@@ -35,7 +35,7 @@ def absPatch x:
     if x < 0.0 then x.negate else x
 
 def exampleNet:
-    n = 1000
+    n = 10000
     print "Loading data"
 
     (x,y) = generateTest n
@@ -43,7 +43,7 @@ def exampleNet:
 
     print "Building net"
     i = input FloatType [4, 1]
-    d1 = denseWithActivation 2 tanh i
+    d1 = denseWithActivation 3 tanh i
     d2 = denseWithActivation 1 sigmoid d1
 
     print "Compiling model"

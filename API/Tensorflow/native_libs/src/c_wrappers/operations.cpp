@@ -274,3 +274,21 @@ void** eval_graph_with_placeholders(GraphSession *graph,
 
 	return retv;
 }
+
+State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
+                         size_t fold_count){
+	FFILOG(graph, ph_names, ph_count, ph_values, initial, fold_count);
+
+	std::map<std::string, std::shared_ptr<Tensor>> substitutions;
+	std::shared_ptr<State> state = LifetimeManager::instance().accessOwned(initial);
+
+	for(size_t epoch=0; epoch < fold_count; ++epoch)
+	{
+		for(size_t ph = 0; ph < ph_count; ++ ph)
+			substitutions.emplace(std::string(ph_names[ph]),
+			                      LifetimeManager::instance().accessOwned(ph_values[epoch * ph_count + ph]));
+		state = graph->eval(substitutions, state)->result_state;
+	}
+
+	return LifetimeManager::instance().addOwnership(state);
+}

@@ -56,6 +56,35 @@ class GraphWrapper:
 
         (statewrapper, retwrappers)
 
+    def foldEval placeholderNames placeholderVals initialState:
+        phCount = placeholderNames . length
+        evalCount = placeholderVals . length
+
+        evalGraphOp = lookupSymbol "TFL" "fold_eval"
+        releaseMethod = lookupSymbol "TFL" "release"
+
+        subsNameArr = ManagedPointer CString . mallocElems phCount
+        indexed = 0 . upto (phCount - 1) . zip placeholderNames
+        indexed . each (idx, elem):
+            subsNameArr . moveElems idx . write (CString . fromText elem)
+
+        substsArr = ManagedPointer (Pointer None) . mallocElems (evalCount * phCount)
+        substs = placeholderVals . fold [] (+)
+        indexed = 0 . upto (phCount * evalCount - 1) . zip substs
+        indexed . each (idx, elem):
+            substsArr . moveElems idx . write (elem.ptr.ptr)
+
+        returnedState = evalGraphOp . call (Pointer None) [self.toCArg, subsNameArr . toCArg, (CInt64.fromInt phCount).toCArg, substsArr.toCArg,  initialState.wrapper.toCArg, (CInt64.fromInt evalCount).toCArg]
+
+        managed = ManagedPointer None . fromPointer releaseMethod returnedState
+        stateWrapper = StateWrapper managed
+
+        0.upto (phCount - 1) . each (idx: subsNameArr . moveElems idx . read . free)
+
+        stateWrapper
+
+
+
 def makeGraphWrapperFromOutputList outputList:
     count = outputList . length
 

@@ -31,6 +31,9 @@ TFL_API void** eval_graph(GraphSession* graph, State* state);
 TFL_API void** eval_graph_with_placeholders(GraphSession* graph, const char** ph_names, Tensor** ph_values,
 		size_t ph_count, State* state);
 
+TFL_API State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
+	size_t foldCount);
+
 TFL_API void** make_variable(const char* name, Tensor* default_value);
 TFL_API Output* make_assign(Output* unit, Variable* var, Output* value);
 
