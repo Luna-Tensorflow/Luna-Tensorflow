@@ -18,8 +18,8 @@ def exampleConvolutional:
 
     print "Building net"
     i = input FloatType [h, w]
-    c1 = conv2dWithActivation [4, 5] 2 (1, 2) Valid tanh i
-    r = flatten c1
+    c1 = conv2dWithActivation [4, 5] 1 (1, 2) Valid tanh i
+    r = reshape [2,-1] c1
 
     print "Compiling model"
     opt = gradientDescentOptimizer 0.1

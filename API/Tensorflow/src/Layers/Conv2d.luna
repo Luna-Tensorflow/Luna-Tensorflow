@@ -13,11 +13,6 @@ class PaddingType:
         Valid: "VALID"
         Same: "SAME"
 
-    def == that: case (self, that) of
-        (Valid, Valid): True
-        (Same, Same): True
-        _: False
-
 class Conv2dLayer varT layerT:
     name :: Text
     kernelWeights :: varT
@@ -31,7 +26,7 @@ class Conv2dLayer varT layerT:
     parentLayer :: layerT
 
     def shape:
-        [outHeight, outWidth, outChannels]
+        [self.outHeight, self.outWidth, self.outChannels]
 
     def forward inp:
         myin = self.parentLayer.forward inp
@@ -48,14 +43,18 @@ class Conv2dLayer varT layerT:
     def outputType:
         self.parentLayer.outputType
 
-def fitkern size ksize:
-    ((size - ksize + 1).toReal / (ksize.toReal)).ceiling
+def fitkern size ksize stride:
+    ((size - ksize + 1).toReal / (stride.toReal)).ceiling
 
 #conv2D :: List Int -> Int -> Tuple2 Int Int -> PaddingType -> Layer -> Layer
-def conv2d [kernelHeight, kernelWidth] outChannels stride paddingType parent:
+def conv2d [kernelHeight, kernelWidth] outChannels (strideY, strideX) paddingType parent:
     [outHeight, outWidth, inChannels] = case parent.shape of
-        [h, w]:  if paddingType == Same then [h, w, 1] else [fitkern h kernelHeight, fitkern w kernelWidth, 1]
-        [h, w, c]: if paddingType == Same then [h, w, c] else [fitkern h kernelHeight, fitkern w kernelWidth, c]
+        [h, w]:  case paddingType of
+            Valid: [fitkern h kernelHeight strideY, fitkern w kernelWidth strideX, 1]
+            Same: [h, w, 1]
+        [h, w, c]: case paddingType of
+            Valid: [fitkern h kernelHeight strideY, fitkern w kernelWidth strideX, c]
+            Same:  [h, w, c]
         _: throw $ "conv2d requires parent layer of shape h x w or h x w x c"
 
     name = getNextName "Conv2D"
@@ -64,7 +63,7 @@ def conv2d [kernelHeight, kernelWidth] outChannels stride paddingType parent:
     winit = randomTensor vartype [kernelHeight, kernelWidth, inChannels, outChannels] 0.0 1.0
     w = variable (name + "w") winit
 
-    c = Conv2dLayer name w outHeight outWidth outChannels kernelHeight kernelWidth stride paddingType parent
+    c = Conv2dLayer name w outHeight outWidth outChannels kernelHeight kernelWidth (strideY, strideX) paddingType parent
     c
 
 # conv2dWithActivation :: List Int -> Int -> Tuple2 Int -> PaddingType -> (Operation a -> Operation a) -> Layer -> Layer

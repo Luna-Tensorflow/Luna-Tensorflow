@@ -30,11 +30,20 @@ class ReshapeLayer layerT:
 
 # reshape :: List Int -> Layer -> Layer
 def reshape newdims parent:
-    name = getNextName "Reshape"
+    nNegOnes = newdims . filter (e: e == -1) . length
+    if nNegOnes > 1 then throw $ "There can be at most one -1 in Reshape!" else
+        name = getNextName "Reshape"
+        if nNegOnes == 0 then (ReshapeLayer name newdims parent) else
+            parentLength = parent.shape.fold 1 (*)
+            remaining = newdims . filter (e: (e == -1).not) . fold 1 (*)
+            if ((parentLength % remaining) == 0).not then throw $ "Illegal reshape shapes!" else
+                unknownDim = parentLength / remaining
+                ndims = newdims . map (e: if e == -1 then unknownDim else e)
+                r = ReshapeLayer name ndims parent
+                r
 
-    r = ReshapeLayer name newdims parent
-    r
 
 # flatten :: Layer -> Layer
 def flatten parent:
-    reshape [-1] parent
+    r = reshape [-1] parent
+    r
