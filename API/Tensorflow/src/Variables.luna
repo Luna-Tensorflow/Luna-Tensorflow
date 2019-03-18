@@ -40,12 +40,20 @@ def variable name defaultValue:
     wrapper = makeVariableWrapper name defaultValue
     TFOutput wrapper
 
-# TODO implement and use sequence
-# returns the same operation as its first argument but enriched with a side effect of assigning val to var when this operation is computed in a graph
-# assign :: Operation a -> Variable b -> Operation b -> Operation a
+# assign :: Operation a -> Operation b -> Operation a
 def assign unit var val:
+    a = newAssign var val # this is done for backwards compatibility, will be changed in a few commits
+    s = sequence a unit
+    s
+
+def newAssign var val:
     assignOp = assignGen "" var val var.wrapper.typetag False False
-    seqWrapper = makeSequence assignOp unit
+    assignOp
+
+# retruns the same output as its second argument, but augmented so that the side-effects of the first argument are executed if the second argument is computed
+# sequence :: Operation a -> Operation b -> Operation b
+def sequence sideeffect value:
+    seqWrapper = makeSequence sideeffect value
     TFOutput seqWrapper
 
 # this is an operation that is meant to have no value, it may be used to build graphs that consist of only side effects

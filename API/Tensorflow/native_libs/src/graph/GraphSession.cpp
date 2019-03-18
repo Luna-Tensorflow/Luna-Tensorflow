@@ -185,12 +185,14 @@ std::vector<std::shared_ptr<Tensor>> GraphSession::eval_one_step(const std::map<
 
 	std::vector<TF_Tensor *> output_values(computed_outs.size());
 
+	std::vector<TF_Operation*> targets(side_effects.begin(), side_effects.end());
+
 	run_with_status<void>(std::bind(TF_SessionRun,
 											  session,
 											  nullptr,
 											  placeholders_vars_v.data(), tensor_v.data(), tensor_v.size(),
 											  computed_outs.data(), output_values.data(), output_values.size(),
-											  nullptr, 0,
+											  targets.data(), targets.size(),
 											  nullptr,
 											  std::placeholders::_1));
 
