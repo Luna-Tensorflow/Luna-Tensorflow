@@ -200,3 +200,13 @@ def conv2D input kernel (strideY, strideX) padding:
 
     out = conv2DGen name input kernel input.typetag strides usegpu padding.toText dataFormat dilations
     out
+
+# reshape :: TFOutput a -> List Int -> TFOutput a
+def reshapeOp input newdims:
+    name = ""
+
+    shapeT = tensorFromList1d Int32Type newdims
+    shape = makeConst shapeT
+
+    out = reshapeGen name input shape input.typetag Int32Type
+    out

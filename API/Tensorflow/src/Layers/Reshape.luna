@@ -1,0 +1,40 @@
+import Tensorflow.Tensor
+import Tensorflow.Types
+import Tensorflow.Operations
+import Tensorflow.Variables
+import Tensorflow.Layers.Activation
+import Tensorflow.CWrappers.Helpers
+
+class ReshapeLayer layerT:
+      name :: Text
+      resultDims :: List Int
+      parentLayer :: layerT # :: Layer
+
+      # shape :: List Int
+      def shape:
+          resultDims
+
+      # forward :: Operation a -> Operation a
+      def forward inp:
+          myin = self.parentLayer.forward inp
+          reshaped = reshapeOp myin self.resultDims
+          reshaped
+
+
+      # trainableVariables :: List Variable a
+      def trainableVariables:
+          self.parentLayer.trainableVariables
+
+      def outputType:
+          self.parentLayer.outputType
+
+# reshape :: List Int -> Layer -> Layer
+def reshape newdims parent:
+    name = getNextName "Reshape"
+
+    r = ReshapeLayer name newdims parent
+    r
+
+# flatten :: Layer -> Layer
+def flatten parent:
+    reshape [-1] parent
