@@ -34,7 +34,7 @@ def generateTest n:
 def absPatch x:
     if x < 0.0 then x.negate else x
 
-def exampleNet:
+def exampleClassification:
     n = 10000
     print "Loading data"
 

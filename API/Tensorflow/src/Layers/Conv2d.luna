@@ -5,6 +5,18 @@ import Tensorflow.Variables
 import Tensorflow.Layers.Activation
 import Tensorflow.CWrappers.Helpers
 
+class PaddingType:
+    Valid
+    Same
+
+    def toText: case (self) of
+        Valid: "VALID"
+        Same: "SAME"
+
+    def == that: case (self, that) of
+        (Valid, Valid): True
+        (Same, Same): True
+        _: False
 
 class Conv2dLayer varT layerT:
     name :: Text
@@ -14,16 +26,18 @@ class Conv2dLayer varT layerT:
     outChannels :: Int
     kernelHeight :: Int
     kernelWidth :: Int
-    padding :: Text
+    stride :: Tuple2 Int Int
+    paddingType :: PaddingType
     parentLayer :: layerT
 
     def shape:
         [outHeight, outWidth, outChannels]
 
     def forward inp:
-        myin = self.parent.forward inp
-        expanded = expandDim myin 0 # add 1 dimension as 1 batch
-        convo = conv2D expanded kernelWeights padding
+        myin = self.parentLayer.forward inp
+        expanded' = expandDim myin 0 # expand batch dim as 1
+        expanded = if self.parentLayer.shape.length == 2 then (expandDim expanded' 1.negate) else expanded' #expand channel dim as 1
+        convo = conv2D expanded self.kernelWeights self.stride self.paddingType
         squeezed = squeeze convo [0] # squeeze back
         squeezed
 
@@ -37,13 +51,12 @@ class Conv2dLayer varT layerT:
 def fitkern size ksize:
     ((size - ksize + 1).toReal / (ksize.toReal)).ceiling
 
-#conv2D :: List Int -> Int -> Tuple2 Int -> Text -> Layer -> Layer
-def conv2d [kernelHeight, kernelWidth] outChannels (strideY, strideX) padding parent:
-    if (padding == "valid").not.or (padding == "same") then throw $ "conv2d padding should be `same` or `valid`"
+#conv2D :: List Int -> Int -> Tuple2 Int Int -> PaddingType -> Layer -> Layer
+def conv2d [kernelHeight, kernelWidth] outChannels stride paddingType parent:
     [outHeight, outWidth, inChannels] = case parent.shape of
-        [h, w] ->  if padding == "same" then [h, w, 1] else [fitkern h kernelHeight, fitkern w kernelWidth, 1]
-        [h, w, c] -> if padding == "same" then [h, w, c] else [fitkern h kernelHeight, fitkern w kernelWidth, c]
-        _ -> throw $ "conv2d requires parent layer of shape h x w or h x w x c"
+        [h, w]:  if paddingType == Same then [h, w, 1] else [fitkern h kernelHeight, fitkern w kernelWidth, 1]
+        [h, w, c]: if paddingType == Same then [h, w, c] else [fitkern h kernelHeight, fitkern w kernelWidth, c]
+        _: throw $ "conv2d requires parent layer of shape h x w or h x w x c"
 
     name = getNextName "Conv2D"
     vartype = parent.outputType
@@ -51,12 +64,12 @@ def conv2d [kernelHeight, kernelWidth] outChannels (strideY, strideX) padding pa
     winit = randomTensor vartype [kernelHeight, kernelWidth, inChannels, outChannels] 0.0 1.0
     w = variable (name + "w") winit
 
-    c = Conv2dLayer name w outHeight outWidth outChannels kernelHeight kernelWidth padding parent
+    c = Conv2dLayer name w outHeight outWidth outChannels kernelHeight kernelWidth stride paddingType parent
     c
 
-# conv2dWithActivation :: List Int -> Int -> Tuple2 Int -> Text -> (Operation a -> Operation a) -> Layer -> Layer
-def conv2dWithActivation kernelHW outChannels strideXY padding activationFunction parent:
-    c = conv2d kernelHW outChannels strideXY padding parent
+# conv2dWithActivation :: List Int -> Int -> Tuple2 Int -> PaddingType -> (Operation a -> Operation a) -> Layer -> Layer
+def conv2dWithActivation kernelHW outChannels stride paddingType activationFunction parent:
+    c = conv2d kernelHW outChannels stride paddingType parent
     name = getNextName "Activation"
     a = ActivationLayer name activationFunction c
     a

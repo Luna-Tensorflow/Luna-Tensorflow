@@ -1,0 +1,33 @@
+import Tensorflow.Types
+import Tensorflow.Tensor
+import Tensorflow.Operations
+
+import Tensorflow.Layers.Input
+import Tensorflow.Layers.Conv2d
+import Tensorflow.Optimizers.GradientDescent
+import Tensorflow.Losses.MeanError
+import Tensorflow.Losses.Crossentropy
+import Tensorflow.Model
+
+def exampleConvolutional:
+    h = 10
+    w = 15
+    print "Loading data"
+    picture = randomTensor FloatType [h, w] 1.0.negate 1.0
+
+    print "Building net"
+    i = input FloatType [h, w]
+    c1 = conv2dWithActivation [4, 5] 2 (1, 1) Valid tanh i
+
+    print "Compiling model"
+    opt = gradientDescentOptimizer 0.1
+    loss = meanSquareError
+
+    model = makeModel i c1 opt loss
+
+    print "Evaluation"
+    res = model . evaluate picture
+
+    print (res . toJSON)
+
+

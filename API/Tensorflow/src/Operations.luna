@@ -161,9 +161,9 @@ def expandDim x dim:
     chosenName = ""
 
     t = tensorFromList1d Int32Type [dim]
-    tdim = makeConst t
+    tdims = makeConst t
 
-    out = expandDimsGen chosenName x tdim x.wrapper.typetag Int32Type
+    out = expandDimsGen chosenName x tdims x.wrapper.typetag Int32Type
     out
 
 # squeeze :: TFOutput a -> List Int -> TFOutput a
@@ -193,10 +193,10 @@ def sqnorm a:
 # conv2D :: TFOutput a -> TFOutput a -> Tuple2 Int Int -> Text
 def conv2D input kernel (strideY, strideX) padding:
     name = ""
-    strides = [strideY, strideX]
+    strides = [1, strideY, strideX, 1]
     usegpu = True
     dataFormat = "NHWC"
     dilations = [1,1,1,1]
 
-    out = conv2DGen name input kernel input.typetag strides usegpu padding dataFormatOp dilations
+    out = conv2DGen name input kernel input.typetag strides usegpu padding.toText dataFormat dilations
     out
