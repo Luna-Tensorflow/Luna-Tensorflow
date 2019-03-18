@@ -55,7 +55,8 @@ Output* make_variable(const char* name, Tensor* val)
 
 	auto out_var = Variable::make_variable(sname, tensor_ptr);
 
-	FFILOGANDRETURN(LifetimeManager::instance().addOwnership(out_var), name, val);
+	auto r = LifetimeManager::instance().addOwnership(out_var);
+	FFILOGANDRETURN(r, name, val);
 }
 
 State* make_empty_state(void)

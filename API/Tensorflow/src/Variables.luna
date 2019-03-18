@@ -6,36 +6,7 @@ import Tensorflow.Operations
 import Tensorflow.GeneratedOps
 import Std.Foreign.C.Value
 
-class Variable a:
-     varrefwrapper :: VariableRefWrapper a
-     outputwrapper :: OutputWrapper a
-
-     # :: OutputWrapper a
-     def wrapper:
-         self.outputwrapper
-
-     def eval:
-         self.wrapper.eval
-
-     def toJSON:
-         self.eval.toJSON
-
-     def ptr:
-        self.outputwrapper.ptr
-
-     def + other:
-        add self other
-
-     def - other:
-        sub self other
-
-     def * other:
-        mul self other
-
-     def typetag:
-        self.outputwrapper.typetag
-
-# variable :: Text -> Tensor a -> Variable a
+# variable :: Text -> Tensor a -> Operation a
 def variable name defaultValue:
     wrapper = makeVariableWrapper name defaultValue
     TFOutput wrapper
@@ -43,7 +14,7 @@ def variable name defaultValue:
 # assign :: Operation a -> Operation b -> Operation a
 def assign unit var val:
     a = newAssign var val # this is done for backwards compatibility, will be changed in a few commits
-    s = sequence a unit
+    s = a >> unit
     s
 
 def newAssign var val:
