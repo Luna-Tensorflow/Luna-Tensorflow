@@ -156,24 +156,20 @@ def mean x dims:
     out = meanGen chosenName x reductionxindices False x.wrapper.typetag Int32Type
     out
 
-# expandDims :: TFOutput a -> Int -> TFOutput a
-def expandDims x dim:
+# expandDim :: TFOutput a -> Int -> TFOutput a
+def expandDim x dim:
     chosenName = ""
-    
-    t = tensorFromList1d Int32Type [dim]
-    dim = makeConst t
 
-    out = expandDimsGen chosenName x dim x.wrapper.typetag Int32Type
+    t = tensorFromList1d Int32Type [dim]
+    tdim = makeConst t
+
+    out = expandDimsGen chosenName x tdim x.wrapper.typetag Int32Type
     out
 
 # squeeze :: TFOutput a -> List Int -> TFOutput a
 def squeeze x dims:
     chosenName = ""
-
-    t = tensorFromList1d Int32Type dims
-    squeezeDims = makeConst t
-
-    out = squeezeGen chosenName x x.wrapper.typetag squeezeDims
+    out = squeezeGen chosenName x x.wrapper.typetag dims
     out
 
 # qr :: TFOutput a -> TFOutput a
@@ -196,22 +192,11 @@ def sqnorm a:
 
 # conv2D :: TFOutput a -> TFOutput a -> Tuple2 Int Int -> Text
 def conv2D input kernel (strideY, strideX) padding:
-    stridesT = tensorFromList1d Int32Type [strideY, strideX]
-    stridesOp = makeConst stridesT
-
-    usegpuT = tensorFromList1d BoolType [True]
-    usegpuOp = makeConst usegpuT
-
-    paddingT = tensorFromList1d StringType [padding]
-    paddingOp = makeConst paddingT
-
-    dataFormatT = tensorFromList1d StringType ["NHWC"]
-    dataFormatOp = makeConst dataFormatT
-
-    dilationsT = tensorFromList1d Int32Type [1,1,1,1]
-    dilationsOp = makeConst dilationsT
-
     name = ""
+    strides = [strideY, strideX]
+    usegpu = True
+    dataFormat = "NHWC"
+    dilations = [1,1,1,1]
 
-    out = conv2DGen name input kernel input.typetag stridesOp usegpuOp paddingOp dataFormatOp dilationsOp
+    out = conv2DGen name input kernel input.typetag strides usegpu padding dataFormatOp dilations
     out

@@ -22,7 +22,7 @@ class Conv2dLayer varT layerT:
 
     def forward inp:
         myin = self.parent.forward inp
-        expanded = expandDims myin 0 # add 1 dimension as 1 batch
+        expanded = expandDim myin 0 # add 1 dimension as 1 batch
         convo = conv2D expanded kernelWeights padding
         squeezed = squeeze convo [0] # squeeze back
         squeezed
