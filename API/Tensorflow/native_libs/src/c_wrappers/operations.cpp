@@ -288,6 +288,7 @@ State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Te
 			substitutions.emplace(std::string(ph_names[ph]),
 			                      LifetimeManager::instance().accessOwned(ph_values[epoch * ph_count + ph]));
 		state = graph->eval(substitutions, state)->result_state;
+		substitutions.clear();
 	}
 
 	return LifetimeManager::instance().addOwnership(state);
