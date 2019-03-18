@@ -117,7 +117,7 @@ void GraphSession::initialize_variables(const std::shared_ptr<State> &state) con
 		const VariableDesc& vd = elem.second;
 		const std::string& name = elem.first;
 
-		LOG("vars", elem.first, vec_to_string(elem.second->shape()));
+		LOG("vars", elem.first, vec_to_string(vd.default_value->shape()));
 
 		auto value = state->get(name);
 		if (!value) {

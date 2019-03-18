@@ -16,7 +16,7 @@ void Variable::add_to_graph(GraphSession &graph)
     auto ptr = my_output.lock();
     if(ptr)
     {
-        LOG_GRAPH(hash_log(), "[default_value_hash] " + std::to_string(default_value->hashcode()),
+        LOG_GRAPH(hash_log(), "[name]", name, "[default_value_hash] " + std::to_string(default_value->hashcode()),
             "[default_value_shape] " + vec_to_string(default_value->shape()));
 
         TF_OperationDescription *desc = TF_NewOperation(graph.get_underlying(),

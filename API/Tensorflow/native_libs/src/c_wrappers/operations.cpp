@@ -114,7 +114,7 @@ State* update_state(State* ptr, const char** names, const Tensor** newvalues, si
 
 Output* make_sequence(Output* sideefect, Output* value)
 {
-	FFILOG(unit, value);
+	FFILOG(sideefect, value);
 	auto sideefectPtr = LifetimeManager::instance().accessOwned(sideefect);
 	auto valPtr = LifetimeManager::instance().accessOwned(value);
 

@@ -2,3 +2,4 @@
 cmake-build-debug/
 venv/
 __pycache__
+scripts/
