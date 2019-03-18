@@ -16,7 +16,7 @@
 #include "../ops/Attr.h"
 
 #include "../state/Variable.h"
-#include "../state/Assign.h"
+#include "API/Tensorflow/native_libs/src/state/Sequence.h"
 #include "../state/State.h"
 
 namespace {
@@ -47,19 +47,15 @@ namespace {
 	}
 }
 
-void** make_variable(const char* name, Tensor* val)
+Output* make_variable(const char* name, Tensor* val)
 {
 	FFILOG(name, val);
 	auto tensor_ptr = LifetimeManager::instance().accessOwned(val);
 	std::string sname(name);
 
-	auto arr = static_cast<void**> (malloc(2 * sizeof(void*)));
 	auto out_var = Variable::make_variable(sname, tensor_ptr);
 
-	arr[0] = static_cast<void*>(LifetimeManager::instance().addOwnership(out_var.first));
-	arr[1] = static_cast<void*>(LifetimeManager::instance().addOwnership(out_var.second));
-
-	return arr;
+	FFILOGANDRETURN(LifetimeManager::instance().addOwnership(out_var), name, val);
 }
 
 State* make_empty_state(void)
@@ -116,16 +112,15 @@ State* update_state(State* ptr, const char** names, const Tensor** newvalues, si
     return LifetimeManager::instance().addOwnership(newvals);
 }
 
-Output* make_assign(Output* unit, Variable* var, Output* value)
+Output* make_sequence(Output* sideefect, Output* value)
 {
-	FFILOG(unit, var, value);
-	auto unitPtr = LifetimeManager::instance().accessOwned(unit);
-	auto varPtr = LifetimeManager::instance().accessOwned(var);
+	FFILOG(unit, value);
+	auto sideefectPtr = LifetimeManager::instance().accessOwned(sideefect);
 	auto valPtr = LifetimeManager::instance().accessOwned(value);
 
-	auto newUnitPtr = Assign::make_assign(unitPtr, varPtr, valPtr);
+	auto newValPtr = Sequence::make_sequence(sideefectPtr, valPtr);
 
-	return LifetimeManager::instance().addOwnership(newUnitPtr);
+	return LifetimeManager::instance().addOwnership(newValPtr);
 }
 
 Output **make_op(const char *name, Output **inputs, int ninputs, int noutputs, std::vector<std::shared_ptr<Attr>>* attr_list, const char *chosen_name) {
