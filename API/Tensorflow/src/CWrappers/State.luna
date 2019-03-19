@@ -19,7 +19,7 @@ class StateWrapper:
         releaseMethod = lookupSymbol "TFL" "release"
         getValuesOp = lookupSymbol "TFL" "get_values_from_state"
 
-        varNameArr = ManagedPointer CString . mallocElems phCount
+        varNameArr = Pointer CString . mallocElems phCount
         indexed = 0 . upto phCount . zip names
         indexed . each (idx, elem):
             varNameArr . moveElems idx . write (CString . fromText elem)
@@ -33,6 +33,8 @@ class StateWrapper:
 
         freePointer = lookupSymbol "TFL" "free_pointer"
         freePointer.call None [returnedPtr.toCArg]
+
+        varNameArr.free
 
         retval
 
@@ -51,18 +53,21 @@ class StateWrapper:
 
         (valnames, vals) = unzip values
 
-        varNameArr = ManagedPointer CString . mallocElems count
+        varNameArr = Pointer CString . mallocElems count
         indexed = 0 . upto count . zip names
         indexed . each (idx, elem):
             varNameArr . moveElems idx . write (CString . fromText elem)
 
-        valsArr = ManagedPointer (Pointer None) . mallocElems count
+        valsArr = Pointer (Pointer None) . mallocElems count
         indexed = 0 . upto count . zip substs
         indexed . each (idx, elem):
             valsArr . moveElems idx . write (elem.ptr.ptr)
 
         newstatePtr = updateOp.call (Pointer None) [self.toCArg,
                 varNameArr.toCArg, valsArr.toCArg, (CInt64.fromInt count).toCArg]
+
+        varNameArr.free
+        valsArr.free
 
         managed = ManagedPointer None . fromPointer releaseMethod newstatePtr
         StateWrapper managed

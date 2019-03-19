@@ -26,13 +26,13 @@ class GraphWrapper:
 
         (names, substs) = unzip substitutions
 
-        subsNameArr = ManagedPointer CString . mallocElems phCount
+        subsNameArr = Pointer CString . mallocElems phCount
         indexed = 0 . upto (phCount - 1) . zip names
         indexed . each (idx, elem):
             subsNameArr . moveElems idx . write (CString . fromText elem)
 
 
-        substsArr = ManagedPointer (Pointer None) . mallocElems phCount
+        substsArr = Pointer (Pointer None) . mallocElems phCount
         indexed = 0 . upto (phCount - 1) . zip substs
         indexed . each (idx, elem):
             substsArr . moveElems idx . write (elem.ptr.ptr)
@@ -53,6 +53,8 @@ class GraphWrapper:
         freePointer.call None [returnedPtr.toCArg]
 
         0.upto (phCount - 1) . each (idx: subsNameArr . moveElems idx . read . free)
+        subsNameArr.free
+        substsArr.free
 
         (statewrapper, retwrappers)
 
@@ -63,12 +65,12 @@ class GraphWrapper:
         evalGraphOp = lookupSymbol "TFL" "fold_eval"
         releaseMethod = lookupSymbol "TFL" "release"
 
-        subsNameArr = ManagedPointer CString . mallocElems phCount
+        subsNameArr = Pointer CString . mallocElems phCount
         indexed = 0 . upto (phCount - 1) . zip placeholderNames
         indexed . each (idx, elem):
             subsNameArr . moveElems idx . write (CString . fromText elem)
 
-        substsArr = ManagedPointer (Pointer None) . mallocElems (evalCount * phCount)
+        substsArr = Pointer (Pointer None) . mallocElems (evalCount * phCount)
         substs = placeholderVals . fold [] (+)
         indexed = 0 . upto (phCount * evalCount - 1) . zip substs
         indexed . each (idx, elem):
@@ -80,6 +82,8 @@ class GraphWrapper:
         stateWrapper = StateWrapper managed
 
         0.upto (phCount - 1) . each (idx: subsNameArr . moveElems idx . read . free)
+        subsNameArr.free
+        substsArr.free
 
         stateWrapper
 
@@ -91,12 +95,14 @@ def makeGraphWrapperFromOutputList outputList:
     makeGraphFnc = lookupSymbol "TFL" "make_graph_from_outputs"
     releaseMethod = lookupSymbol "TFL" "release"
 
-    carr = ManagedPointer (Pointer None) . mallocElems count
+    carr = Pointer (Pointer None) . mallocElems count
     indexed = 0 . upto (count - 1) . zip outputList
     indexed . each (idx, elem):
         carr . moveElems idx . write (elem.ptr.ptr)
 
     returnedPtr = makeGraphFnc.call (Pointer None) [carr.toCArg, (CInt64.fromInt count).toCArg]
     managedGraph = ManagedPointer None . fromPointer releaseMethod returnedPtr
+
+    carr.free
 
     GraphWrapper managedGraph
