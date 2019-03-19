@@ -105,8 +105,22 @@ def createRandomTensorWrapper typetag dims minValue maxValue:
 
     tensor = makeRandomTensor.call (Pointer None) [cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg, minCVal . toCArg, maxCVal . toCArg]
 
-    typetag.cleanupLuna minValue
-    typetag.cleanupC maxValue
+    cdimsArray.free
+
+    managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
+    TensorWrapper managedTensor typetag
+
+def createConstTensorWrapper typetag dims value:
+    cVal = typetag.toC value
+
+    cdims = dims.map CInt64.fromInt
+    cdimsArray = (Array CInt64) . fromList cdims
+
+    makeConstTensor = lookupSymbol "TFL" ("make_const_tensor_" + typetag.typename)
+    releaseMethod = lookupSymbol "TFL" "release"
+
+    tensor = makeConstTensor.call (Pointer None) [cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg, cVal . toCArg]
+
     cdimsArray.free
 
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
