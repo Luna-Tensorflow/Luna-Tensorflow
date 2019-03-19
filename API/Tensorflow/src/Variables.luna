@@ -21,7 +21,7 @@ def newAssign var val:
     assignOp = assignGen "" var val var.wrapper.typetag False False
     assignOp
 
-# retruns the same output as its second argument, but augmented so that the side-effects of the first argument are executed if the second argument is computed
+# returns the same output as its second argument, but augmented so that the side-effects of the first argument are executed if the second argument is computed
 # sequence :: Operation a -> Operation b -> Operation b
 def sequence sideeffect value:
     seqWrapper = makeSequence sideeffect value
@@ -31,4 +31,5 @@ def sequence sideeffect value:
 # for now it's implemented as a constant, but it should be rewritten so that no TF operations can be done on it besides providing it as a first argument of apply and output to compute in a graph
 # Operation ()
 def unitOp:
-    constFromScalar FloatType 1.0
+    op = constFromScalar FloatType 1.0
+    op
