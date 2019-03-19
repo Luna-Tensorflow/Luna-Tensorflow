@@ -36,8 +36,6 @@ public:
     /*
      * This method should add the Node to the provided graph
      * AND add all of the Node's Outputs that haven't been freed yet as well.
-     * It returns the operation computing this node (if any, otherwise nullptr),
-     * that's used for side effects.
      */
     virtual void add_to_graph(GraphSession &graph) = 0;
 

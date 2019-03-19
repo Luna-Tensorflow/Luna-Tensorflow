@@ -37,46 +37,45 @@ TF_Output GraphSession::get_output(const Output *out) {
 }
 
 std::shared_ptr<EvaluationResult> GraphSession::eval(
-	const std::map<std::string, std::shared_ptr<Tensor>> &substitutions,
-	const std::shared_ptr<State>& state) const
-	{
-        for (auto &ph : placeholders) {
-            if (substitutions.count(ph.first) > 0) {
-                continue;
-            }
-
-            // TODO maybe only print what's missing
-            std::string err;
-            err += "Not all placeholders are substituted!\n";
-
-            err += "Placeholders: ";
-            for (const auto &kv : placeholders) {
-                err += kv.first + ", ";
-            }
-            err += "\n";
-
-            err += "Substitutions: ";
-            for (const auto &kv : substitutions) {
-                err += kv.first + ", ";
-            }
-            err += "\n";
-
-            throw std::invalid_argument(err);
+        const std::map<std::string, std::shared_ptr<Tensor>> &substitutions,
+        const std::shared_ptr<State> &state) const {
+    for (auto &ph : placeholders) {
+        if (substitutions.count(ph.first) > 0) {
+            continue;
         }
 
-        initialize_variables(state);
+        // TODO maybe only print what's missing
+        std::string err;
+        err += "Not all placeholders are substituted!\n";
 
-        auto r = std::make_shared<EvaluationResult>();
+        err += "Placeholders: ";
+        for (const auto &kv : placeholders) {
+            err += kv.first + ", ";
+        }
+        err += "\n";
 
-        r->outputs = eval_one_step(substitutions);
+        err += "Substitutions: ";
+        for (const auto &kv : substitutions) {
+            err += kv.first + ", ";
+        }
+        err += "\n";
 
-        auto updates = read_variables();
-        r->result_state = state->updated(updates);
+        throw std::invalid_argument(err);
+    }
 
-        return r;
+    initialize_variables(state);
+
+    auto r = std::make_shared<EvaluationResult>();
+
+    r->outputs = eval_one_step(substitutions);
+
+    auto updates = read_variables();
+    r->result_state = state->updated(updates);
+
+    return r;
 }
 
-std::shared_ptr<EvaluationResult> GraphSession::eval(const std::shared_ptr<State>& state) const {
+std::shared_ptr<EvaluationResult> GraphSession::eval(const std::shared_ptr<State> &state) const {
     return eval(std::map<std::string, std::shared_ptr<Tensor>>(), state);
 }
 
@@ -100,7 +99,7 @@ TF_Session *GraphSession::get_underlying_session() {
     return session;
 }
 
-void GraphSession::register_sideefect(TF_Operation* effect) {
+void GraphSession::register_sideefect(TF_Operation *effect) {
     side_effects.insert(effect);
 }
 
@@ -109,25 +108,25 @@ void GraphSession::register_variable(const std::string &name, VariableDesc varia
 }
 
 void GraphSession::initialize_variables(const std::shared_ptr<State> &state) const {
-	std::vector<TF_Output> placeholders;
-	std::vector<TF_Tensor*> tensors;
-	std::vector<TF_Operation*> assignments;
+    std::vector<TF_Output> placeholders;
+    std::vector<TF_Tensor *> tensors;
+    std::vector<TF_Operation *> assignments;
 
-	for (auto& elem : variables) {
-		const VariableDesc& vd = elem.second;
-		const std::string& name = elem.first;
+    for (auto &elem : variables) {
+        const VariableDesc &vd = elem.second;
+        const std::string &name = elem.first;
 
-		LOG("vars", elem.first, vec_to_string(vd.default_value->shape()));
+        LOG("vars", elem.first, vec_to_string(vd.default_value->shape()));
 
-		auto value = state->get(name);
-		if (!value) {
-			value = vd.default_value;
-		}
+        auto value = state->get(name);
+        if (!value) {
+            value = vd.default_value;
+        }
 
-		placeholders.push_back(vd.initializerPlaceholder);
-		assignments.push_back(vd.initializerAssign);
-		tensors.push_back(value->get_underlying());
-	}
+        placeholders.push_back(vd.initializerPlaceholder);
+        assignments.push_back(vd.initializerAssign);
+        tensors.push_back(value->get_underlying());
+    }
 
     run_with_status<void>(std::bind(TF_SessionRun,
                                     session,
@@ -143,10 +142,10 @@ std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> GraphSession::read_
     std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> updates;
 
     std::vector<TF_Output> computed_outs;
-    std::vector<TF_Tensor*> output_values;
+    std::vector<TF_Tensor *> output_values;
 
     for (auto elem : variables) {
-        VariableDesc& vd = elem.second;
+        VariableDesc &vd = elem.second;
         computed_outs.push_back(vd.output);
         updates.emplace_back(elem.first, nullptr);
     }
@@ -166,41 +165,42 @@ std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> GraphSession::read_
         updates[i].second = std::make_shared<Tensor>(output_values[i]);
     }
 
-	 return updates;
+    return updates;
 }
 
-std::vector<std::shared_ptr<Tensor>> GraphSession::eval_one_step(const std::map<std::string, std::shared_ptr<Tensor>> &substitutions) const {
-	std::vector<TF_Output> placeholders_vars_v;
-	std::vector<TF_Tensor *> tensor_v;
+std::vector<std::shared_ptr<Tensor>>
+GraphSession::eval_one_step(const std::map<std::string, std::shared_ptr<Tensor>> &substitutions) const {
+    std::vector<TF_Output> placeholders_vars_v;
+    std::vector<TF_Tensor *> tensor_v;
 
-	for (auto &elem : substitutions) {
-		LOG("subs", elem.first, vec_to_string(elem.second->shape()));
-		if (placeholders.find(elem.first) == placeholders.end()) //bypass obsolete substs
-			continue;
-		placeholders_vars_v.push_back(placeholders.at(elem.first));
-		tensor_v.push_back(elem.second->get_underlying());
-	}
+    for (auto &elem : substitutions) {
+        LOG("subs", elem.first, vec_to_string(elem.second->shape()));
+        if (placeholders.find(elem.first) == placeholders.end()) //bypass obsolete substs
+            continue;
+        placeholders_vars_v.push_back(placeholders.at(elem.first));
+        tensor_v.push_back(elem.second->get_underlying());
+    }
 
-	std::vector<TF_Output> computed_outs = fetched_output_nodes;
+    std::vector<TF_Output> computed_outs = fetched_output_nodes;
 
-	std::vector<TF_Tensor *> output_values(computed_outs.size());
+    std::vector<TF_Tensor *> output_values(computed_outs.size());
 
-	std::vector<TF_Operation*> targets(side_effects.begin(), side_effects.end());
+    std::vector<TF_Operation *> targets(side_effects.begin(), side_effects.end());
 
-	run_with_status<void>(std::bind(TF_SessionRun,
-											  session,
-											  nullptr,
-											  placeholders_vars_v.data(), tensor_v.data(), tensor_v.size(),
-											  computed_outs.data(), output_values.data(), output_values.size(),
-											  targets.data(), targets.size(),
-											  nullptr,
-											  std::placeholders::_1));
+    run_with_status<void>(std::bind(TF_SessionRun,
+                                    session,
+                                    nullptr,
+                                    placeholders_vars_v.data(), tensor_v.data(), tensor_v.size(),
+                                    computed_outs.data(), output_values.data(), output_values.size(),
+                                    targets.data(), targets.size(),
+                                    nullptr,
+                                    std::placeholders::_1));
 
-	std::vector<std::shared_ptr<Tensor>> outputs;
-	// prepare output tensors
-	outputs.resize(fetched_output_nodes.size());
-	for (unsigned i = 0; i < fetched_output_nodes.size(); ++i) {
-		outputs[i] = std::make_shared<Tensor>(output_values[i]);
-	}
-	return outputs;
+    std::vector<std::shared_ptr<Tensor>> outputs;
+    // prepare output tensors
+    outputs.resize(fetched_output_nodes.size());
+    for (unsigned i = 0; i < fetched_output_nodes.size(); ++i) {
+        outputs[i] = std::make_shared<Tensor>(output_values[i]);
+    }
+    return outputs;
 }
