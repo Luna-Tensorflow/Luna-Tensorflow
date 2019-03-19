@@ -8,8 +8,8 @@ import Tensorflow.Examples.Convolutional
 def main:
     print "hello"
     vartest
-    0 #lowlevelNetExample
+    lowlevelNetExample
     exampleClassification
-    0 #exampleConvolutional
-    0 #tensorTest
+    exampleConvolutional
+    tensorTest
     print "done"

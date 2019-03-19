@@ -13,13 +13,9 @@ def variable name defaultValue:
 
 # assign :: Operation a -> Operation b -> Operation a
 def assign unit var val:
-    a = newAssign var val # this is done for backwards compatibility, will be changed in a few commits
-    s = a >> unit
-    s
-
-def newAssign var val:
     assignOp = assignGen "" var val var.wrapper.typetag False False
-    assignOp
+    s = assignOp >> unit
+    s
 
 # returns the same output as its second argument, but augmented so that the side-effects of the first argument are executed if the second argument is computed
 # sequence :: Operation a -> Operation b -> Operation b

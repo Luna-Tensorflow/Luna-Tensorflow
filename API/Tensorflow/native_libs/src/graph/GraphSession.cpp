@@ -108,6 +108,9 @@ void GraphSession::register_variable(const std::string &name, VariableDesc varia
 }
 
 void GraphSession::initialize_variables(const std::shared_ptr<State> &state) const {
+    if(variables.empty()) //do nothing if there are no variables to initialize
+        return;
+
     std::vector<TF_Output> placeholders;
     std::vector<TF_Tensor *> tensors;
     std::vector<TF_Operation *> assignments;
@@ -141,30 +144,32 @@ void GraphSession::initialize_variables(const std::shared_ptr<State> &state) con
 std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> GraphSession::read_variables() const {
     std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> updates;
 
-    std::vector<TF_Output> computed_outs;
-    std::vector<TF_Tensor *> output_values;
+    if(!variables.empty()) //there is something to read
+    {
+        std::vector<TF_Output> computed_outs;
+        std::vector<TF_Tensor *> output_values;
 
-    for (auto elem : variables) {
-        VariableDesc &vd = elem.second;
-        computed_outs.push_back(vd.output);
-        updates.emplace_back(elem.first, nullptr);
+        for (auto elem : variables) {
+            VariableDesc &vd = elem.second;
+            computed_outs.push_back(vd.output);
+            updates.emplace_back(elem.first, nullptr);
+        }
+
+        output_values.resize(computed_outs.size());
+
+        run_with_status<void>(std::bind(TF_SessionRun,
+                                        session,
+                                        nullptr,
+                                        nullptr, nullptr, 0,
+                                        computed_outs.data(), output_values.data(), output_values.size(),
+                                        nullptr, 0,
+                                        nullptr,
+                                        std::placeholders::_1));
+
+        for (size_t i = 0; i < updates.size(); ++i) {
+            updates[i].second = std::make_shared<Tensor>(output_values[i]);
+        }
     }
-
-    output_values.resize(computed_outs.size());
-
-    run_with_status<void>(std::bind(TF_SessionRun,
-                                    session,
-                                    nullptr,
-                                    nullptr, nullptr, 0,
-                                    computed_outs.data(), output_values.data(), output_values.size(),
-                                    nullptr, 0,
-                                    nullptr,
-                                    std::placeholders::_1));
-
-    for (size_t i = 0; i < updates.size(); ++i) {
-        updates[i].second = std::make_shared<Tensor>(output_values[i]);
-    }
-
     return updates;
 }
 
