@@ -96,6 +96,36 @@ def randomTensor typetag dims minVal maxVal:
     wrapper = createRandomTensorWrapper typetag dims minVal maxVal
     Tensor wrapper
 
+# zeros :: Typetag a -> List Int -> Tensor a
+def zeros typetag dims:
+    wrapper = createConstTensorWrapper typetag dims 0
+    Tensor wrapper
+
+# zerosLike :: Typetag a -> Tensor a -> Tensor a
+def zerosLike typetag x:
+    wrapper = createConstTensorWrapper typetag x.dims 0
+    Tensor wrapper
+
+# ones :: Typetag a -> List Int -> Tensor a
+def ones typetag dims:
+    wrapper = createConstTensorWrapper typetag dims 1
+    Tensor wrapper
+
+# onesLike :: Typetag a -> Tensor a -> Tensor a
+def onesLike typetag x:
+    wrapper = createConstTensorWrapper typetag x.dims 1
+    Tensor wrapper
+
+# eye :: Typetag a -> List Int -> Int -> Tensor a
+#def eye typetag dims k:
+#    wrapper = createEyeTensorWrapper typetag dims k
+#    Tensor wrapper
+
+# eyeLike :: Typetag a -> Tensor a -> Int -> Tensor a
+#def eyeLike typetag x k:
+#    wrapper = createEyeTensorWrapper typetag x.dims k
+#    Tensor wrapper
+
 # tensorTo2dList :: Tensor a -> List (List a)
 def tensorTo2dList tensor:
     dims = tensor.dims

@@ -19,4 +19,13 @@ def tensorTest:
     print t3d.toFlatList
     print t3d.toJSON
 
+    t1 = ones Int32Type [5, 5]
+    print t1.toJSON
+    t2 = zeros Int32Type [3, 3]
+    print t2.toJSON
+    t3 = onesLike Int32Type t2
+    print t3.toJSON
+    t4 = zerosLike Int32Type t1
+    print t4.toJSON
+
     

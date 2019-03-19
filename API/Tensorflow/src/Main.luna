@@ -10,6 +10,7 @@ def main:
     0 # vartest
     0 #lowlevelNetExample
     0 #exampleClassification
-    exampleConvolutional
-    0 #tensorTest
+    0 #exampleConvolutional
+    tensorTest
+
     print "done"

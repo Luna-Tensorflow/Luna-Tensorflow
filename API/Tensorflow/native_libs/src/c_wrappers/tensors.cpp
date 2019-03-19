@@ -70,15 +70,31 @@ TFL_API Type<typelabel>::lunatype* tensor_to_flatlist_##typelabel(Tensor* tensor
 
 #define MAKE_RANDOM_TENSOR(typelabel, type) \
 TFL_API Tensor *make_random_tensor_##typelabel(const int64_t *dims, size_t num_dims, \
-	Type<typelabel>::lunatype const min, Type<typelabel>::lunatype const max){ \
+    Type<typelabel>::lunatype const min, Type<typelabel>::lunatype const max){ \
+    int64_t elems = std::accumulate(dims, dims+num_dims, 1, std::multiplies<int64_t>()); \
+    auto* data = (Type<typelabel>::tftype*) malloc(elems * TF_DataTypeSize(typelabel)); \
+    \
+    std::mt19937 engine(std::random_device{}()); \
+    std::uniform_##type##_distribution distribution(min, max); \
+    \
+    std::generate(data, data+elems, [&]() { \
+            return distribution(engine); \
+    }); \
+    \
+    auto tensor = std::make_shared<Tensor>(data, dims, num_dims, typelabel); \
+    free(data); \
+    \
+    return LifetimeManager::instance().addOwnership(std::move(tensor));\
+}\
+
+#define MAKE_CONST_TENSOR(typelabel, type) \
+TFL_API Tensor *make_const_tensor_##typelabel(const int64_t *dims, size_t num_dims, \
+	Type<typelabel>::lunatype const value){ \
 	int64_t elems = std::accumulate(dims, dims+num_dims, 1, std::multiplies<int64_t>()); \
 	auto* data = (Type<typelabel>::tftype*) malloc(elems * TF_DataTypeSize(typelabel)); \
 	\
-	std::mt19937 engine(std::random_device{}()); \
-	std::uniform_##type##_distribution distribution(min, max); \
-	\
 	std::generate(data, data+elems, [&]() { \
-			return distribution(engine); \
+			return value; \
 	}); \
 	\
 	auto tensor = std::make_shared<Tensor>(data, dims, num_dims, typelabel); \
@@ -97,6 +113,7 @@ TENSOR_TO_FLATLIST(typelabel);
 #define DECLARE_TENSOR_NUMERIC(typelabel, randomtype) \
 DECLARE_TENSOR(typelabel); \
 MAKE_RANDOM_TENSOR(typelabel, randomtype);\
+MAKE_CONST_TENSOR(typelabel, randomtype);\
 
 
 DECLARE_TENSOR_NUMERIC(TF_FLOAT, real);
