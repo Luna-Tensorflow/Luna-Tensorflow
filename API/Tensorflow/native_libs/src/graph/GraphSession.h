@@ -16,6 +16,7 @@
 #include "../ops/Output.h"
 
 #include <any>
+#include <unordered_set>
 #include "../state/State.h"
 
 class Output;
@@ -26,6 +27,13 @@ struct EvaluationResult {
 	 std::shared_ptr<State> result_state;
 };
 
+struct VariableDesc {
+	 TF_Output output;
+	 TF_Operation* initializerAssign;
+	 TF_Output initializerPlaceholder;
+	 std::shared_ptr<Tensor> default_value;
+};
+
 class GraphSession
 {
 private:
@@ -34,12 +42,16 @@ private:
 	TF_Session* session;
 	TF_SessionOptions* options;
 
-	std::vector<TF_Output> output_nodes;
+	std::vector<TF_Output> fetched_output_nodes;
 	std::map<std::string, TF_Output> placeholders;
-	std::map<std::string, TF_Output> variables;
-	std::map<std::string, TF_Output> assignments;
 
-	std::map<std::string, std::shared_ptr<Tensor>> variable_default_values;
+	std::map<std::string, VariableDesc> variables;
+	std::unordered_set<TF_Operation*> side_effects;
+
+	void initialize_variables(const std::shared_ptr<State>& state) const; // this function is const as it doesnt modify the graph, despite modifying the mutable state, but it's used inside of eval which itself is rightfully const
+ 	std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> read_variables() const; // TODO mark what's been updated
+
+ 	std::vector<std::shared_ptr<Tensor>> eval_one_step(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions) const;
 
 public:
 	GraphSession();
@@ -61,10 +73,9 @@ public:
 
 	void add_fetched_output(TF_Output out);
 
-	void register_assignment(const std::string& name, TF_Output value);
+	void register_sideefect(TF_Operation* effect);
 
-	void register_variable(const std::string& name, const std::shared_ptr<Tensor>& default_value,
-		TF_Output tf_output);
+	void register_variable(const std::string& name, VariableDesc variableDesc);
 
 	TF_Graph* get_underlying();
 

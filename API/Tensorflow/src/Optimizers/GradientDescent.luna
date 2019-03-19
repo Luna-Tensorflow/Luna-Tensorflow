@@ -14,7 +14,9 @@ class GradientDescent:
           grads = gradients [err] variables []
           scaledGrads = grads.each g: g * lr
           varsAndGrads = variables.zip scaledGrads
-          varsAndNewValues = varsAndGrads.each ((v, g): (v, v - g))
+          varsAndNewValues = varsAndGrads.each ((v, g):
+            ng = v - g
+            (v, ng))
 
           errWithSideEffect = varsAndNewValues.foldLeft err ((var, val): se: assign se var val)
 

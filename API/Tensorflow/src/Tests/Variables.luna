@@ -14,11 +14,13 @@ def vartest:
     g = makeGraphFromOutput u1
     st1 = makeEmptyState
     (u2, st2) = g.eval st1
-    print (st2.value FloatType "x").toJSON # should print 23
+
+    val = st2.value FloatType "x"
+    print val.toJSON # should print 23
 
     y = x + c
 
-    print y.toJSON # evals in default context, so should return 24
+    0 # print y.toJSON # evals in default context, so should return 24 # TODO debug why this doesn't compile
 
     g2 = makeGraphFromOutput y
     (xout, st3) = g2.eval st2

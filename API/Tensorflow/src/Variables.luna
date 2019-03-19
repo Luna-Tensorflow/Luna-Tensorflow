@@ -3,50 +3,33 @@ import Tensorflow.CWrappers.Variables
 import Tensorflow.Tensor
 import Tensorflow.Types
 import Tensorflow.Operations
+import Tensorflow.GeneratedOps
 import Std.Foreign.C.Value
 
-class Variable a:
-     varrefwrapper :: VariableRefWrapper a
-     outputwrapper :: OutputWrapper a
-
-     # :: OutputWrapper a
-     def wrapper:
-         self.outputwrapper
-
-     def eval:
-         self.wrapper.eval
-
-     def toJSON:
-         self.eval.toJSON
-
-     def ptr:
-        self.outputwrapper.ptr
-
-     def + other:
-        add self other
-
-     def - other:
-        sub self other
-
-     def * other:
-        mul self other
-
-     def typetag:
-        self.outputwrapper.typetag
-
-# variable :: Text -> Tensor a -> Variable a
+# variable :: Text -> Tensor a -> Operation a
 def variable name defaultValue:
-    (varref, output) = makeVariableWrappers name defaultValue
-    Variable varref output
-
-# returns the same operation as its first argument but enriched with a side effect of assigning val to var when this operation is computed in a graph
-# assign :: Operation a -> Variable b -> Operation b -> Operation a
-def assign unit var val:
-    wrapper = makeAssign unit var val
+    wrapper = makeVariableWrapper name defaultValue
     TFOutput wrapper
+
+# assign :: Operation a -> Operation b -> Operation a
+def assign unit var val:
+    a = newAssign var val # this is done for backwards compatibility, will be changed in a few commits
+    s = a >> unit
+    s
+
+def newAssign var val:
+    assignOp = assignGen "" var val var.wrapper.typetag False False
+    assignOp
+
+# returns the same output as its second argument, but augmented so that the side-effects of the first argument are executed if the second argument is computed
+# sequence :: Operation a -> Operation b -> Operation b
+def sequence sideeffect value:
+    seqWrapper = makeSequence sideeffect value
+    TFOutput seqWrapper
 
 # this is an operation that is meant to have no value, it may be used to build graphs that consist of only side effects
 # for now it's implemented as a constant, but it should be rewritten so that no TF operations can be done on it besides providing it as a first argument of apply and output to compute in a graph
 # Operation ()
 def unitOp:
-    constFromScalar FloatType 1.0
+    op = constFromScalar FloatType 1.0
+    op

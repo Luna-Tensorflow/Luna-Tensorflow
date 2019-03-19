@@ -36,3 +36,8 @@ std::shared_ptr<Tensor> Output::eval() const {
 std::shared_ptr<Binder> Output::get_binder() {
     return binder;
 }
+
+Output::~Output()
+{
+    LOG("finalizing ~", binder->hash_log());
+}

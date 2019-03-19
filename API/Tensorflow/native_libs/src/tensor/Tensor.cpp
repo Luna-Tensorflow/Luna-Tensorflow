@@ -85,6 +85,8 @@ size_t Tensor::hashcode() const {
 }
 
 Tensor::~Tensor() {
+    LOG("deleting tensor ", vec_to_string(shape()));
+
     if (underlying != nullptr) {
         TF_DeleteTensor(underlying);
     }

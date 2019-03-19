@@ -3,6 +3,7 @@ import Tensorflow.CWrappers.Helpers
 import Tensorflow.Tensor
 import Tensorflow.GeneratedOps
 import Tensorflow.Types
+import Tensorflow.Variables
 import Std.Foreign.C.Value
 
 # not sure if we want separate classes for each op type or one class for all?
@@ -32,6 +33,9 @@ class TFOutput:
     # - :: TFOutput a -> TFOutput a
     def - other:
         sub self other
+
+    def >> other:
+        sequence self other
 
     # toText :: Text
     def toText:
@@ -210,3 +214,6 @@ def reshapeOp input newdims:
 
     out = reshapeGen name input shape input.typetag Int32Type
     out
+
+def >> a b:
+    a.>> b
