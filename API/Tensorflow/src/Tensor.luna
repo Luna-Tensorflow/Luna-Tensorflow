@@ -65,7 +65,7 @@ class Tensor a:
 
 
 # tensorFromPtr :: TypeTag a -> Pointer None -> Tensor a
-def tensorFromPtr typetag tgagensorPtr:
+def tensorFromPtr typetag tensorPtr:
     releaseMethod = lookupSymbol "TFL" "release"
     managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
 
