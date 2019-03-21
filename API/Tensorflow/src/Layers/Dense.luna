@@ -19,10 +19,10 @@ class DenseLayer varT layerT:
 
       # forward :: Operation a -> Operation a
       def forward inp:
-          myin = self.parentLayer.forward inp
-          prod = matMul self.weights myin
-          out = add prod self.biases
-          out
+          in = self.parentLayer.forward inp
+          prod = matMul self.weights in
+          result = add prod self.biases
+          result
 
       # trainableVariables :: List Variable a
       def trainableVariables:

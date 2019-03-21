@@ -12,13 +12,11 @@ class GradientDescent:
           lr = constFromScalar FloatType self.lr
           err = loss yTrue yPred
           grads = gradients [err] variables []
-          scaledGrads = grads.each g: g * lr
+          scaledGrads = grads.each (* lr)
           varsAndGrads = variables.zip scaledGrads
-          varsAndNewValues = varsAndGrads.each ((v, g):
-            ng = v - g
-            (v, ng))
+          varsAndNewValues = varsAndGrads.each ((v, g): (v, v-g))
 
-          errWithSideEffect = varsAndNewValues.foldLeft err ((var, val): se: assign se var val)
+          errWithSideEffect = sequence' err (uncurry assign) varsAndNewValues
 
           makeGraphFromOutput errWithSideEffect
 

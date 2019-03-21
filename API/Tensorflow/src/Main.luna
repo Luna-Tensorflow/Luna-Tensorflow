@@ -7,9 +7,9 @@ import Tensorflow.Examples.Convolutional
 
 def main:
     print "hello"
-    vartest
-    lowlevelNetExample
+    0 #vartest
+    0 #lowlevelNetExample
     exampleClassification
-    exampleConvolutional
-    tensorTest
+    0 #exampleConvolutional
+    0 #tensorTest
     print "done"

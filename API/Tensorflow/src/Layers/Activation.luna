@@ -25,7 +25,3 @@ class ActivationLayer layerT:
 
     def outputType:
         self.parentLayer.outputType
-
-def tanhlayer parent:
-    name = getNextName "tanh"
-    ActivationLayer name tanh parent
