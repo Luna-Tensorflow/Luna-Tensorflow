@@ -81,12 +81,10 @@ def makePlaceholderWrapper typetag name:
     makeOp = lookupSymbol "TFL" "make_op_placeholder"
     releaseMethod = lookupSymbol "TFL" "release"
 
-    nameCStr = CString.fromText name
+    out = CString.with name nameCStr:
+            makeOp.call (Pointer None) [nameCStr.toCArg, CInt32.fromInt typetag.num . toCArg]
 
-    out = makeOp.call (Pointer None) [nameCStr.toCArg, CInt32.fromInt typetag.num . toCArg]
     managedOut = ManagedPointer None . fromPointer releaseMethod out
-
-    nameCStr.free
 
     OutputWrapper managedOut typetag
 
@@ -97,12 +95,10 @@ def makeBinaryOpWrapper name a b:
     makeOp = lookupSymbol "TFL" "make_op_binary"
     releaseMethod = lookupSymbol "TFL" "release"
 
-    nameCStr = CString.fromText name
+    out = CString.with name nameCStr:
+            makeOp.call (Pointer None) [nameCStr.toCArg, a'.ptr.toCArg, b'.ptr.toCArg]
 
-    out = makeOp.call (Pointer None) [nameCStr.toCArg, a'.ptr.toCArg, b'.ptr.toCArg]
     managedOut = ManagedPointer None . fromPointer releaseMethod out
-
-    nameCStr.free
 
     OutputWrapper managedOut a'.typetag
 
@@ -111,12 +107,10 @@ def makeUnaryOpWrapper name a:
     makeOp = lookupSymbol "TFL" "make_op_unary"
     releaseMethod = lookupSymbol "TFL" "release"
 
-    nameCStr = CString.fromText name
+    out = CString.with name nameCStr:
+            makeOp.call (Pointer None) [nameCStr.toCArg, a'.ptr.toCArg]
 
-    out = makeOp.call (Pointer None) [nameCStr.toCArg, a'.ptr.toCArg]
     managedOut = ManagedPointer None . fromPointer releaseMethod out
-
-    nameCStr.free
 
     OutputWrapper managedOut a'.typetag
 
@@ -149,18 +143,14 @@ def makeOutputWrappers name inputs outputTypetags attrList chosenName:
     indexed . each (idx, input):
         inputsCArr . moveElems idx . write input.ptr.ptr
 
-    nameCStr = CString.fromText name
-    chosenNameCStr = CString.fromText chosenName
-
-    outsPtr = makeOp.call (Pointer (Pointer None)) [nameCStr.toCArg, inputsCArr.toCArg, CInt32.fromInt inputs'.length . toCArg, CInt32.fromInt noutputs . toCArg, attrList'.toCArg, chosenNameCStr.toCArg]
+    outsPtr = CString.with name nameCStr: CString.with chosenName chosenNameCStr:
+            makeOp.call (Pointer (Pointer None)) [nameCStr.toCArg, inputsCArr.toCArg, CInt32.fromInt inputs'.length . toCArg, CInt32.fromInt noutputs . toCArg, attrList'.toCArg, chosenNameCStr.toCArg]
 
     outsArr = Array (Pointer None) . make noutputs outsPtr
     typedOuts = outputTypetags.zip outsArr.toList
     outs = typedOuts.each (typetag, output): outputWrapperFromPtr typetag output
 
-    nameCStr.free
     inputsCArr.free
-    chosenNameCStr.free
 
     freePointer = lookupSymbol "TFL" "free_pointer"
     freePointer.call None [outsPtr.toCArg]

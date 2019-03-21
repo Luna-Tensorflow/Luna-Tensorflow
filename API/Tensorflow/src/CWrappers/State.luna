@@ -34,6 +34,7 @@ class StateWrapper:
         freePointer = lookupSymbol "TFL" "free_pointer"
         freePointer.call None [returnedPtr.toCArg]
 
+        0.upto (phCount - 1) . each (idx: varNameArr . moveElems idx . read . free)
         varNameArr.free
 
         retval
@@ -42,11 +43,12 @@ class StateWrapper:
         releaseMethod = lookupSymbol "TFL" "release"
         getValueOp = lookupSymbol "TFL" "get_value_from_state"
 
-        retptr =  getValueOp . call (Pointer None) [self.toCArg, CString . fromText name . toCArg]
+        retptr = CString.with name nameCStr:
+                getValueOp . call (Pointer None) [self.toCArg, nameCStr.toCArg]
         managed = ManagedPointer None . fromPointer releaseMethod retptr
         TensorWrapper managed
 
-    def update values:
+    def update values: # when this function gets actually implemented, make sure to
         count = values . length
         releaseMethod = lookupSymbol "TFL" "release"
         updateOp = lookupSymbol "TFL" "update_values_state"
@@ -59,13 +61,14 @@ class StateWrapper:
             varNameArr . moveElems idx . write (CString . fromText elem)
 
         valsArr = Pointer (Pointer None) . mallocElems count
-        indexed = 0 . upto count . zip substs
+        indexed = 0 . upto (count - 1) . zip substs
         indexed . each (idx, elem):
             valsArr . moveElems idx . write (elem.ptr.ptr)
 
         newstatePtr = updateOp.call (Pointer None) [self.toCArg,
                 varNameArr.toCArg, valsArr.toCArg, (CInt64.fromInt count).toCArg]
 
+        0.upto (count - 1) . each (idx: varNameArr . moveElems idx . read . free)
         varNameArr.free
         valsArr.free
 
