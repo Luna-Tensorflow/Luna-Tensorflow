@@ -12,21 +12,9 @@ def step func (x, y) [a, b]:
     func x y a b
 
 def gradientDescent lr x y a b:
-    diff'' = a*x
-    diff'  = diff'' + b
-    diff   = diff' - y
+    meanSqErr = (a * x + b - y) * (a * x + b - y)
 
-    meanSqErr = diff * diff
-    pa'' = partial meanSqErr a
-    pb'' = partial meanSqErr b
-
-    pa'  = pa'' * lr
-    pb'  = pb'' * lr
-
-    pa = a + pa'
-    pb = b + pb'
-
-    [pa, pb]
+    [a + (partial meanSqErr a) * lr, b + (partial meanSqErr b) * lr]
 
 def testRegression:
     print "Regression"

@@ -191,7 +191,8 @@ class StringType:
     def cleanupLuna val:
         val.free
     def cleanupC val:
+        val' = val
         freePointer = lookupSymbol "TFL" "free_pointer"
-        freePointer.call None [val.toCArg]
+        freePointer.call None [val'.toCArg]
     def num:
         7

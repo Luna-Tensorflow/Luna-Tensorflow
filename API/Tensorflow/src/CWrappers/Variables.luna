@@ -4,21 +4,24 @@ import Std.Foreign.C.Value
 import Tensorflow.CWrappers.Operations
 
 def makeSequence sideeffect value:
+    sideeffect' = sideeffect
+    value' = value
     releaseMethod = lookupSymbol "TFL" "release"
     makeOp = lookupSymbol "TFL" "make_sequence"
 
-    ptr = makeOp . call (Pointer None) [sideeffect.wrapper.toCArg, value.wrapper.toCArg]
+    ptr = makeOp . call (Pointer None) [sideeffect'.wrapper.toCArg, value'.wrapper.toCArg]
     newValuePtr = ManagedPointer None . fromPointer releaseMethod ptr
 
-    wrapper = OutputWrapper newValuePtr value.wrapper.typetag
+    wrapper = OutputWrapper newValuePtr value'.wrapper.typetag
     wrapper
 
 def makeVariableWrapper name defaultValue:
+    defaultValue' = defaultValue
     releaseMethod = lookupSymbol "TFL" "release"
     makeVariableOp = lookupSymbol "TFL" "make_variable"
 
-    ptr = makeVariableOp.call (Pointer None) [CString.fromText name . toCArg, defaultValue.ptr.toCArg]
+    ptr = makeVariableOp.call (Pointer None) [CString.fromText name . toCArg, defaultValue'.ptr.toCArg]
 
     outPtr = ManagedPointer None . fromPointer releaseMethod ptr
-    outWrapper = OutputWrapper outPtr (defaultValue.wrapper.typetag)
+    outWrapper = OutputWrapper outPtr (defaultValue'.wrapper.typetag)
     outWrapper

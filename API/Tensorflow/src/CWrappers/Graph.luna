@@ -18,6 +18,8 @@ class GraphWrapper:
         evalSubsts outputCount [] state
 
     def evalSubsts outputCount substitutions state:
+        state' = state
+
         count = outputCount
         phCount = substitutions . length
 
@@ -38,7 +40,7 @@ class GraphWrapper:
             substsArr . moveElems idx . write (elem.ptr.ptr)
 
         returnedPtr = evalGraphOp.call (Pointer (Pointer None)) [self.toCArg,
-                subsNameArr.toCArg, substsArr.toCArg, (CInt64.fromInt phCount).toCArg, state.wrapper.toCArg]
+                subsNameArr.toCArg, substsArr.toCArg, (CInt64.fromInt phCount).toCArg, state'.wrapper.toCArg]
 
         returnedArr = Array (Pointer None) . make (1+count) returnedPtr
 
@@ -59,8 +61,11 @@ class GraphWrapper:
         (statewrapper, retwrappers)
 
     def foldEval placeholderNames placeholderVals initialState:
+        placeholderVals' = placeholderVals. each id
+        initialState' = initialState
+
         phCount = placeholderNames . length
-        evalCount = placeholderVals . length
+        evalCount = placeholderVals' . length
 
         evalGraphOp = lookupSymbol "TFL" "fold_eval"
         releaseMethod = lookupSymbol "TFL" "release"
@@ -71,12 +76,12 @@ class GraphWrapper:
             subsNameArr . moveElems idx . write (CString . fromText elem)
 
         substsArr = Pointer (Pointer None) . mallocElems (evalCount * phCount)
-        substs = placeholderVals . fold [] (+)
+        substs = placeholderVals' . fold [] (+)
         indexed = 0 . upto (phCount * evalCount - 1) . zip substs
         indexed . each (idx, elem):
             substsArr . moveElems idx . write (elem.ptr.ptr)
 
-        returnedState = evalGraphOp . call (Pointer None) [self.toCArg, subsNameArr . toCArg, (CInt64.fromInt phCount).toCArg, substsArr.toCArg,  initialState.wrapper.toCArg, (CInt64.fromInt evalCount).toCArg]
+        returnedState = evalGraphOp . call (Pointer None) [self.toCArg, subsNameArr . toCArg, (CInt64.fromInt phCount).toCArg, substsArr.toCArg,  initialState'.wrapper.toCArg, (CInt64.fromInt evalCount).toCArg]
 
         managed = ManagedPointer None . fromPointer releaseMethod returnedState
         stateWrapper = StateWrapper managed
@@ -90,13 +95,14 @@ class GraphWrapper:
 
 
 def makeGraphWrapperFromOutputList outputList:
-    count = outputList . length
+    outputList' = outputList.each id
+    count = outputList' . length
 
     makeGraphFnc = lookupSymbol "TFL" "make_graph_from_outputs"
     releaseMethod = lookupSymbol "TFL" "release"
 
     carr = Pointer (Pointer None) . mallocElems count
-    indexed = 0 . upto (count - 1) . zip outputList
+    indexed = 0 . upto (count - 1) . zip outputList'
     indexed . each (idx, elem):
         carr . moveElems idx . write (elem.ptr.ptr)
 
