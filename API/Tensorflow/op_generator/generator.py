@@ -10,8 +10,6 @@ import Tensorflow.CWrappers.Helpers
 import Tensorflow.Types
 import Tensorflow.Operations"""
 
-underscore_replacement = 'x'  # TODO: what to do with this?
-
 typetags = {
     1: 'FloatType',
     2: 'DoubleType',
@@ -29,91 +27,93 @@ typetags = {
 
 
 def lunify_name(name):
-    return (name[:1].lower() + name[1:]).replace('_', underscore_replacement)
+    name_parts = name.split('_')
+    lunified_name = ''.join(name_parts[:1] + list(map(lambda part: part[:1].upper() + part[1:], name_parts[1:])))
+    return lunified_name[:1].lower() + lunified_name[1:]
 
 
 def attr_code(attr):
     adjusted_name = lunify_name(attr.name)
 
     attr_function_calls = {
-        'type': '    callHandlingError "add_attr_type" None [attrList.toCArg, nameCStr.toCArg, '
+        'type': '        callHandlingError "add_attr_type" None [attrList.toCArg, nameCStr.toCArg, '
                 'CInt32.fromInt {}.num . toCArg]\n'
                 .format(adjusted_name),
-        'list(type)': '    ctypes = {0}.map (type: CInt32.fromInt type.num)\n'
-                      '    ctypesArray = (Array CInt32) . fromList ctypes\n'
-                      '    callHandlingError "add_attr_type_list" None '
+        'list(type)': '        ctypes = {0}.map (type: CInt32.fromInt type.num)\n'
+                      '        Array CInt32 . with ctypes ctypesArray:\n'
+                      '            callHandlingError "add_attr_type_list" None '
                       '[attrList.toCArg, nameCStr.toCArg, ctypesArray.toCArg, CUInt32.fromInt {0}.length . toCArg]\n'
-                      '    ctypesArray.free\n'.format(adjusted_name),
-        'shape': '    cdims = {0}.map CInt64.fromInt\n'
-                 '    cdimsArray = (Array CInt64) . fromList cdims\n'
-                 '    callHandlingError "add_attr_shape" None '
+                      .format(adjusted_name),
+        'shape': '        cdims = {0}.map CInt64.fromInt\n'
+                 '        Array CInt64 . with cdims cdimsArray:\n'
+                 '            callHandlingError "add_attr_shape" None '
                  '[attrList.toCArg, nameCStr.toCArg, cdimsArray.toCArg, CUInt32.fromInt {0}.length . toCArg]\n'
-                 '    cdimsArray.free\n'.format(adjusted_name),
-        'list(shape)': '    len = {0}.length\n'
-                       '    cValues = ManagedPointer (Pointer CInt64) . mallocElems len\n'
-                       '    indexed = 0.upto (len - 1) . zip {0}\n'
-                       '    indexed.each (idx, elem):\n'
-                       '            cValues.moveElems idx . write (Array CInt64 . fromList (elem.map CInt64.fromInt))\n'
-                       '    cLengths = ManagedPointer CUInt32 . mallocElems len\n'
-                       '    indexed.each (ids, elem): cLengths.moveElems idx . write (CUInt32.fromInt elem.length)\n'
-                       '    callHandlingError "add_attr_shape_list" None '
+                 .format(adjusted_name),
+        'list(shape)': '        len = {0}.length\n'
+                       '        cValues = ManagedPointer (Pointer CInt64) . mallocElems len\n'
+                       '        indexed = 0.upto (len - 1) . zip {0}\n'
+                       '        indexed.each (idx, elem):\n'
+                       '                cValues.moveElems idx . write '
+                       '(Array CInt64 . fromList (elem.map CInt64.fromInt))\n'
+                       '        cLengths = ManagedPointer CUInt32 . mallocElems len\n'
+                       '        indexed.each (ids, elem): cLengths.moveElems idx . write '
+                       '(CUInt32.fromInt elem.length)\n'
+                       '        callHandlingError "add_attr_shape_list" None '
                        '[attrList.toCArg, nameCStr.toCArg, cValues.toCArg, cLengths.toCArg, '
                        'CUInt32.fromInt len . toCArg]\n'
-                       '    cValues.toList.each (str: str.free)\n'
-                       '    0.upto (len - 1) . each (idx: cValues.moveElems idx . read . free)\n'.format(adjusted_name),
-        'tensor': '    callHandlingError "add_attr_tensor" None [attrList.toCArg, nameCStr.toCArg, {}.ptr.toCArg]\n'
-                .format(adjusted_name),
-        'list(tensor)': '    ctensors = {0}.map (elem: elem.ptr.ptr)\n'
-                        '    ctensorsArray = (Array (Pointer None)) . fromList ctensors\n'
-                        '    callHandlingError "add_attr_tensor_list" None '
+                       '        cValues.toList.each (str: str.free)\n'
+                       '        0.upto (len - 1) . each (idx: cValues.moveElems idx . read . free)\n'
+                       .format(adjusted_name),
+        'tensor': '        callHandlingError "add_attr_tensor" None [attrList.toCArg, nameCStr.toCArg, {}.ptr.toCArg]\n'
+                  .format(adjusted_name),
+        'list(tensor)': '        ctensors = {0}.map (elem: elem.ptr.ptr)\n'
+                        '        Array (Pointer None) . with ctensors ctensorsArray:\n'
+                        '            callHandlingError "add_attr_tensor_list" None '
                         '[attrList.toCArg, nameCStr.toCArg, ctensorsArray.toCArg, '
-                        'CUInt32.fromInt {0}.length . toCArg]\n'
-                        '    ctensorsArray.free\n'.format(adjusted_name),
-        'int': '    callHandlingError "add_attr_int" None [attrList.toCArg, nameCStr.toCArg, '
+                        'CUInt32.fromInt {0}.length . toCArg]\n'.format(adjusted_name),
+        'int': '        callHandlingError "add_attr_int" None [attrList.toCArg, nameCStr.toCArg, '
                'CInt64.fromInt {} . toCArg]\n'
-                .format(adjusted_name),
-        'list(int)': '    cvalues = {0}.map CInt64.fromInt\n'
-                     '    cvaluesArray = (Array CInt64) . fromList cvalues\n'
-                     '    callHandlingError "add_attr_int_list" None '
+               .format(adjusted_name),
+        'list(int)': '        cvalues = {0}.map CInt64.fromInt\n'
+                     '        Array CInt64 . with cvalues cvaluesArray:\n'
+                     '            callHandlingError "add_attr_int_list" None '
                      '[attrList.toCArg, nameCStr.toCArg, cvaluesArray.toCArg, CUInt32.fromInt {0}.length . toCArg]\n'
-                     '    cvaluesArray.free\n'.format(adjusted_name),
-        'float': '    callHandlingError "add_attr_float" None [attrList.toCArg, nameCStr.toCArg, '
+                     .format(adjusted_name),
+        'float': '        callHandlingError "add_attr_float" None [attrList.toCArg, nameCStr.toCArg, '
                  'CFloat.fromReal {} . toCArg]\n'
-                .format(adjusted_name),
-        'list(float)': '    cvalues = {0}.map CFloat.fromReal\n'
-                     '    cvaluesArray = (Array CFloat) . fromList cvalues\n'
-                     '    callHandlingError "add_attr_float_list" None '
-                     '[attrList.toCArg, nameCStr.toCArg, cvaluesArray.toCArg, CUInt32.fromInt {0}.length . toCArg]\n'
-                     '    cvaluesArray.free\n'.format(adjusted_name),
-        'bool': '    callHandlingError "add_attr_bool" '
+                 .format(adjusted_name),
+        'list(float)': '        cvalues = {0}.map CFloat.fromReal\n'
+                       '        Array CFloat . with cvalues cvaluesArray:\n'
+                       '            callHandlingError "add_attr_float_list" None '
+                       '[attrList.toCArg, nameCStr.toCArg, cvaluesArray.toCArg, CUInt32.fromInt {0}.length . toCArg]\n'
+                       .format(adjusted_name),
+        'bool': '        callHandlingError "add_attr_bool" '
                 'None [attrList.toCArg, nameCStr.toCArg, CUChar.fromInt (if {} then 1 else 0) . toCArg]\n'
                 .format(adjusted_name),
-        'list(bool)': '    cvalues = {0}.map (b: CUChar.fromInt (if b then 1 else 0))\n'
-                     '    cvaluesArray = (Array CUChar) . fromList cvalues\n'
-                     '    callHandlingError "add_attr_bool_list" None '
-                     '[attrList.toCArg, nameCStr.toCArg, cvaluesArray.toCArg, CUInt32.fromInt {0}.length . toCArg]\n'
-                     '    cvaluesArray.free\n'.format(adjusted_name),
-        'string': '    valCStr = CString.fromText {}\n'
-                  '    callHandlingError "add_attr_string" None [attrList.toCArg, nameCStr.toCArg, valCStr.toCArg]\n'
-                  '    valCStr.free\n'.format(adjusted_name),
-        'list(string)': '    len = {0}.length\n'
-                        '    cValues = ManagedPointer (Pointer CInt64) . mallocElems len\n'
-                        '    indexed = 0.upto (len - 1) . zip {0}\n'
-                        '    indexed.each (idx, elem):\n'
-                        '            cValues.moveElems idx . write (CString.fromText elem)\n'
-                        '    callHandlingError "add_attr_string_list" None '
+        'list(bool)': '        cvalues = {0}.map (b: CUChar.fromInt (if b then 1 else 0))\n'
+                      '        Array CUChar . with cvalues cvaluesArray:\n'
+                      '            callHandlingError "add_attr_bool_list" None '
+                      '[attrList.toCArg, nameCStr.toCArg, cvaluesArray.toCArg, CUInt32.fromInt {0}.length . toCArg]\n'
+                      .format(adjusted_name),
+        'string': '        CString.with {} valCStr:\n'
+                  '            callHandlingError "add_attr_string" None [attrList.toCArg, nameCStr.toCArg, '
+                  'valCStr.toCArg]\n'.format(adjusted_name),
+        'list(string)': '        len = {0}.length\n'
+                        '        cValues = ManagedPointer (Pointer CInt64) . mallocElems len\n'
+                        '        indexed = 0.upto (len - 1) . zip {0}\n'
+                        '        indexed.each (idx, elem):\n'
+                        '                cValues.moveElems idx . write (CString.fromText elem)\n'
+                        '        callHandlingError "add_attr_string_list" None '
                         '[attrList.toCArg, nameCStr.toCArg, cValues.toCArg, CUInt32.fromInt len . toCArg]\n'
-                        '    0.upto (len - 1) . each (idx: cValues.moveElems idx . read . free)\n'
+                        '        0.upto (len - 1) . each (idx: cValues.moveElems idx . read . free)\n'
                         .format(adjusted_name),
-        'func': '    funcNameCStr = CString.fromText {}\n'
-                '    callHandlingError "add_attr_func_name" None [attrList.toCArg, nameCStr.toCArg, '
-                'funcNameCStr.toCArg]\n'
-                '    funcNameCStr.free\n'.format(adjusted_name)
+        'func': '        CString.with {} funcNameCStr:\n'
+                '            callHandlingError "add_attr_func_name" None [attrList.toCArg, nameCStr.toCArg, '
+                'funcNameCStr.toCArg]\n'.format(adjusted_name)
     }
 
-    return '    nameCStr = CString.fromText "{}"\n'.format(attr.name)\
-        + attr_function_calls[attr.type]\
-        + '    nameCStr.free\n'
+    return '    CString.with "{}" nameCStr:\n'.format(attr.name)\
+        + attr_function_calls[attr.type]
 
 
 def output_arg_typetag(output_arg, op):
@@ -207,8 +207,12 @@ def has_supported_types(op):
     return True
 
 
+def is_internal(op):
+    return op.name[0] == '_'
+
+
 def is_supported(op):
-    return not op.is_stateful and not has_tensor_list(op) and has_supported_types(op)
+    return not op.is_stateful and not has_tensor_list(op) and has_supported_types(op) and not is_internal(op)
 
 
 with open(generated_ops_file, 'w') as f:

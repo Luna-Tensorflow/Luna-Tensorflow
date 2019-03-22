@@ -30,15 +30,12 @@ class TensorWrapper a:
     def at indexes:
         cindexes = indexes.map CInt64.fromInt
 
-        cindexesArr = Array CInt64 . fromList cindexes
-
-        res = callHandlingError ("get_tensor_value_at_" + self.typetag.typename) (self.typetag.ctype) [self.toCArg,
-                cindexesArr . toCArg, CInt64.fromInt cindexes.length . toCArg]
-        ret = self.typetag.fromC res
-        self.typetag.cleanupC res
-
-        cindexesArr.free
-
+        ret = Array CInt64 . with cindexes cindexesArr:
+                res = callHandlingError ("get_tensor_value_at_" + self.typetag.typename) (self.typetag.ctype) [self.toCArg,
+                        cindexesArr . toCArg, CInt64.fromInt cindexes.length . toCArg]
+                ret = self.typetag.fromC res
+                self.typetag.cleanupC res
+                ret
         ret
 
     def atIndex index:
@@ -69,17 +66,12 @@ def createTensorWrapper typetag dims values:
     if (values.length == expectedValuesCount).not then throw "values must be exactly of the size needed to fill a tensor with dimensions dims" else None
 
     cvalues = values.each typetag.toC
-    cvaluesArray = (Array typetag.ctype) . fromList cvalues
-
-    cdims = dims.map CInt64.fromInt
-    cdimsArray = (Array CInt64) . fromList cdims
-
-    tensor = callHandlingError "make_tensor" (Pointer None) [cvaluesArray.toCArg, CInt32.fromInt typetag.num . toCArg,
-            cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg]
-
+    tensor = Array typetag.ctype . with cvalues cvaluesArray:
+            cdims = dims.map CInt64.fromInt
+            Array CInt64 . with cdims cdimsArray:
+                    callHandlingError "make_tensor" (Pointer None) [cvaluesArray.toCArg, CInt32.fromInt typetag.num . toCArg,
+                            cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg]
     cvalues.each typetag.cleanupLuna
-    cvaluesArray.free
-    cdimsArray.free
 
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
     TensorWrapper managedTensor typetag
@@ -89,12 +81,9 @@ def createRandomTensorWrapper typetag dims minValue maxValue:
     maxCVal = typetag.toC maxValue
 
     cdims = dims.map CInt64.fromInt
-    cdimsArray = (Array CInt64) . fromList cdims
-
-    tensor = callHandlingError ("make_random_tensor_" + typetag.typename) (Pointer None) [cdimsArray.toCArg,
-            CInt64.fromInt cdims.length . toCArg, minCVal . toCArg, maxCVal . toCArg]
-
-    cdimsArray.free
+    tensor = Array CInt64 . with cdims cdimsArray:
+            callHandlingError ("make_random_tensor_" + typetag.typename) (Pointer None) [cdimsArray.toCArg,
+                    CInt64.fromInt cdims.length . toCArg, minCVal . toCArg, maxCVal . toCArg]
 
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
     TensorWrapper managedTensor typetag
@@ -103,12 +92,9 @@ def createConstTensorWrapper typetag dims value:
     cVal = typetag.toC value
 
     cdims = dims.map CInt64.fromInt
-    cdimsArray = (Array CInt64) . fromList cdims
-
-    tensor = callHandlingError ("make_const_tensor_" + typetag.typename) (Pointer None) [cdimsArray.toCArg,
-            CInt64.fromInt cdims.length . toCArg, cVal . toCArg]
-
-    cdimsArray.free
+    tensor = Array CInt64 . with cdims cdimsArray:
+            callHandlingError ("make_const_tensor_" + typetag.typename) (Pointer None) [cdimsArray.toCArg,
+                    CInt64.fromInt cdims.length . toCArg, cVal . toCArg]
 
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
     TensorWrapper managedTensor typetag

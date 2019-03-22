@@ -11,21 +11,21 @@ def gradients ys xs dxs:
     dxs' = dxs.each id
     typetag = ys.head.get.wrapper.typetag
 
-    ysArr = Array (Pointer None) . fromList (ys'.map y: y.ptr.ptr)
-    xsArr = Array (Pointer None) . fromList (xs'.map x: x.ptr.ptr)
+    dysRet = Array (Pointer None) . with (ys'.map y: y.ptr.ptr) ysArr:
+        Array (Pointer None) . with (xs'.map x: x.ptr.ptr) xsArr:
+            dxsPtr = if dxs'.isEmpty then nullPtr else if dxs'.length == ys.length then Array (Pointer None) . fromList (dxs'.map dx: dx.ptr.ptr) . ptr . ptr else throw "gradients: dxs must be empty or of the same size as ys"
 
-    dxsPtr = if dxs'.isEmpty then nullPtr else if dxs'.length == ys.length then Array (Pointer None) . fromList (dxs'.map dx: dx.ptr.ptr) . ptr . ptr else throw "gradients: dxs must be empty or of the same size as ys"
+            dysPtr = callHandlingError "add_gradients" (Pointer (Pointer None)) [ysArr.toCArg, CInt64.fromInt ys'.length . toCArg, xsArr.toCArg,
+                    CInt64.fromInt xs'.length . toCArg, dxsPtr.toCArg]
 
-    dysPtr = callHandlingError "add_gradients" (Pointer (Pointer None)) [ysArr.toCArg, CInt64.fromInt ys'.length . toCArg, xsArr.toCArg,
-            CInt64.fromInt xs'.length . toCArg, dxsPtr.toCArg]
+            dysArr = Array (Pointer None) . make xs'.length dysPtr
 
-    dysArr = Array (Pointer None) . make xs'.length dysPtr
+            dysRet = dysArr . toList . each (outputFromPtr typetag)
 
-    dysRet = dysArr . toList . each (outputFromPtr typetag)
+            callHandlingError "free_pointer" None [dysPtr.toCArg]
 
-    callHandlingError "free_pointer" None [dysPtr.toCArg]
-    ysArr.free
-    xsArr.free
-    dxsPtr.free
+            dxsPtr.free
+
+            dysRet
 
     dysRet
