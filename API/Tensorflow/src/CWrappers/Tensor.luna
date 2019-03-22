@@ -2,6 +2,8 @@ import Std.Foreign
 import Std.Foreign.C.Value
 import Tensorflow.Types
 
+import Tensorflow.CWrappers.Helpers
+
 class TensorWrapper a:
     ptr :: ManagedPointer None
     typetag :: a
@@ -10,33 +12,28 @@ class TensorWrapper a:
         self.ptr.toCArg
 
     def numDims:
-        numDimsFun = lookupSymbol "TFL" "get_tensor_num_dims"
-
-        res = numDimsFun.call CInt64 [self.toCArg]
+        res = callHandlingError "get_tensor_num_dims" CInt64 [self.toCArg]
 
         res.toInt
 
     def dims:
         n = self.numDims
 
-        dimsFun = lookupSymbol "TFL" "get_tensor_dims"
-        freeFun = lookupSymbol "TFL" "free_pointer"
-
-        dimsPtr = dimsFun.call (Pointer CInt64) [self.toCArg]
+        dimsPtr = callHandlingError "get_tensor_dims" (Pointer CInt64) [self.toCArg]
         dimsArr = Array CInt64 . make n dimsPtr
         cdims = dimsArr.toList
         dims = cdims.each (i: i.toInt)
-        freeFun.call None [dimsPtr.toCArg]
+        callHandlingError "free_pointer" None [dimsPtr.toCArg]
 
         dims
 
     def at indexes:
-        atFun = lookupSymbol "TFL" ("get_tensor_value_at_" + self.typetag.typename)
         cindexes = indexes.map CInt64.fromInt
 
         cindexesArr = Array CInt64 . fromList cindexes
 
-        res = atFun.call (self.typetag.ctype) [self.toCArg, cindexesArr . toCArg, CInt64.fromInt cindexes.length . toCArg]
+        res = callHandlingError ("get_tensor_value_at_" + self.typetag.typename) (self.typetag.ctype) [self.toCArg,
+                cindexesArr . toCArg, CInt64.fromInt cindexes.length . toCArg]
         ret = self.typetag.fromC res
         self.typetag.cleanupC res
 
@@ -45,29 +42,25 @@ class TensorWrapper a:
         ret
 
     def atIndex index:
-        atIndexFun = lookupSymbol "TFL" ("get_tensor_value_at_index_" + self.typetag.typename)
-        res = atIndexFun.call (self.typetag.ctype) [self.toCArg, CInt64.fromInt index . toCArg]
+        res = callHandlingError ("get_tensor_value_at_index_" + self.typetag.typename) (self.typetag.ctype) [self.toCArg,
+                CInt64.fromInt index . toCArg]
         ret = self.typetag.fromC res
         self.typetag.cleanupC res
         ret
 
     def flatLength:
-        lenFun = lookupSymbol "TFL" "get_tensor_flatlist_length"
-        res = lenFun.call CInt64 [self.toCArg]
+        res = callHandlingError "get_tensor_flatlist_length" CInt64 [self.toCArg]
         res.toInt
 
     def toFlatList:
         len = self.flatLength
 
-        flatListFun = lookupSymbol "TFL" ("tensor_to_flatlist_" + self.typetag.typename)
-        freeFun = lookupSymbol "TFL" "free_pointer"
-
-        ptr = flatListFun.call (Pointer (self.typetag.ctype)) [self.toCArg]
+        ptr = callHandlingError ("tensor_to_flatlist_" + self.typetag.typename) (Pointer (self.typetag.ctype)) [self.toCArg]
         arr = Array (self.typetag.ctype) . make len ptr
         clist = arr.toList
         list = clist.each (self.typetag.fromC)
         clist.each (self.typetag.cleanupC)
-        freeFun.call None [ptr.toCArg]
+        callHandlingError "free_pointer" None [ptr.toCArg]
 
         list
 
@@ -81,10 +74,8 @@ def createTensorWrapper typetag dims values:
     cdims = dims.map CInt64.fromInt
     cdimsArray = (Array CInt64) . fromList cdims
 
-    makeTensor = lookupSymbol "TFL" "make_tensor"
-    releaseMethod = lookupSymbol "TFL" "release"
-
-    tensor = makeTensor.call (Pointer None) [cvaluesArray.toCArg, CInt32.fromInt typetag.num . toCArg, cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg]
+    tensor = callHandlingError "make_tensor" (Pointer None) [cvaluesArray.toCArg, CInt32.fromInt typetag.num . toCArg,
+            cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg]
 
     cvalues.each typetag.cleanupLuna
     cvaluesArray.free
@@ -100,10 +91,8 @@ def createRandomTensorWrapper typetag dims minValue maxValue:
     cdims = dims.map CInt64.fromInt
     cdimsArray = (Array CInt64) . fromList cdims
 
-    makeRandomTensor = lookupSymbol "TFL" ("make_random_tensor_" + typetag.typename)
-    releaseMethod = lookupSymbol "TFL" "release"
-
-    tensor = makeRandomTensor.call (Pointer None) [cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg, minCVal . toCArg, maxCVal . toCArg]
+    tensor = callHandlingError ("make_random_tensor_" + typetag.typename) (Pointer None) [cdimsArray.toCArg,
+            CInt64.fromInt cdims.length . toCArg, minCVal . toCArg, maxCVal . toCArg]
 
     cdimsArray.free
 
@@ -116,10 +105,8 @@ def createConstTensorWrapper typetag dims value:
     cdims = dims.map CInt64.fromInt
     cdimsArray = (Array CInt64) . fromList cdims
 
-    makeConstTensor = lookupSymbol "TFL" ("make_const_tensor_" + typetag.typename)
-    releaseMethod = lookupSymbol "TFL" "release"
-
-    tensor = makeConstTensor.call (Pointer None) [cdimsArray.toCArg, CInt64.fromInt cdims.length . toCArg, cVal . toCArg]
+    tensor = callHandlingError ("make_const_tensor_" + typetag.typename) (Pointer None) [cdimsArray.toCArg,
+            CInt64.fromInt cdims.length . toCArg, cVal . toCArg]
 
     cdimsArray.free
 

@@ -8,6 +8,8 @@ import Tensorflow.Operations
 import Tensorflow.Types
 import Tensorflow.Graph
 
+import Tensorflow.CWrappers.Helpers
+
 class GraphWrapper:
     ptr :: ManagedPointer None
 
@@ -23,9 +25,6 @@ class GraphWrapper:
         count = outputCount
         phCount = substitutions . length
 
-        evalGraphOp = lookupSymbol "TFL" "eval_graph_with_placeholders"
-        releaseMethod = lookupSymbol "TFL" "release"
-
         (names, substs) = unzip substitutions
 
         subsNameArr = Pointer CString . mallocElems phCount
@@ -39,7 +38,7 @@ class GraphWrapper:
         indexed . each (idx, elem):
             substsArr . moveElems idx . write (elem.ptr.ptr)
 
-        returnedPtr = evalGraphOp.call (Pointer (Pointer None)) [self.toCArg,
+        returnedPtr = callHandlingError "eval_graph_with_placeholders" (Pointer (Pointer None)) [self.toCArg,
                 subsNameArr.toCArg, substsArr.toCArg, (CInt64.fromInt phCount).toCArg, state'.wrapper.toCArg]
 
         returnedArr = Array (Pointer None) . make (1+count) returnedPtr
@@ -51,8 +50,7 @@ class GraphWrapper:
         managed1 = (lst . drop 1) . each (x: ManagedPointer None . fromPointer releaseMethod x)
         retwrappers = managed1 . each (ptr: TensorWrapper ptr)
 
-        freePointer = lookupSymbol "TFL" "free_pointer"
-        freePointer.call None [returnedPtr.toCArg]
+        callHandlingError "free_pointer" None [returnedPtr.toCArg]
 
         0.upto (phCount - 1) . each (idx: subsNameArr . moveElems idx . read . free)
         subsNameArr.free
@@ -67,9 +65,6 @@ class GraphWrapper:
         phCount = placeholderNames . length
         evalCount = placeholderVals' . length
 
-        evalGraphOp = lookupSymbol "TFL" "fold_eval"
-        releaseMethod = lookupSymbol "TFL" "release"
-
         subsNameArr = Pointer CString . mallocElems phCount
         indexed = 0 . upto (phCount - 1) . zip placeholderNames
         indexed . each (idx, elem):
@@ -81,7 +76,9 @@ class GraphWrapper:
         indexed . each (idx, elem):
             substsArr . moveElems idx . write (elem.ptr.ptr)
 
-        returnedState = evalGraphOp . call (Pointer None) [self.toCArg, subsNameArr . toCArg, (CInt64.fromInt phCount).toCArg, substsArr.toCArg,  initialState'.wrapper.toCArg, (CInt64.fromInt evalCount).toCArg]
+        returnedState = callHandlingError "fold_eval" (Pointer None) [self.toCArg, subsNameArr . toCArg,
+                (CInt64.fromInt phCount).toCArg, substsArr.toCArg,  initialState'.wrapper.toCArg,
+                (CInt64.fromInt evalCount).toCArg]
 
         managed = ManagedPointer None . fromPointer releaseMethod returnedState
         stateWrapper = StateWrapper managed
@@ -98,15 +95,12 @@ def makeGraphWrapperFromOutputList outputList:
     outputList' = outputList.each id
     count = outputList' . length
 
-    makeGraphFnc = lookupSymbol "TFL" "make_graph_from_outputs"
-    releaseMethod = lookupSymbol "TFL" "release"
-
     carr = Pointer (Pointer None) . mallocElems count
     indexed = 0 . upto (count - 1) . zip outputList'
     indexed . each (idx, elem):
         carr . moveElems idx . write (elem.ptr.ptr)
 
-    returnedPtr = makeGraphFnc.call (Pointer None) [carr.toCArg, (CInt64.fromInt count).toCArg]
+    returnedPtr = callHandlingError "make_graph_from_outputs" (Pointer None) [carr.toCArg, (CInt64.fromInt count).toCArg]
     managedGraph = ManagedPointer None . fromPointer releaseMethod returnedPtr
 
     carr.free

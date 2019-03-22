@@ -3,6 +3,8 @@ import Std.Foreign
 
 import Tensorflow.CWrappers.Tensor
 
+import Tensorflow.CWrappers.Helpers
+
 def unzip listpair: case listpair of
     Empty: (Empty, Empty)
     Prepend (x,y) tail: case unzip tail of
@@ -16,23 +18,20 @@ class StateWrapper:
 
     def values names:
         count = names . length
-        releaseMethod = lookupSymbol "TFL" "release"
-        getValuesOp = lookupSymbol "TFL" "get_values_from_state"
 
         varNameArr = Pointer CString . mallocElems phCount
         indexed = 0 . upto phCount . zip names
         indexed . each (idx, elem):
             varNameArr . moveElems idx . write (CString . fromText elem)
 
-        returnedPtr = getValuesOp.call (Pointer (Pointer None)) [self.toCArg,
+        returnedPtr = callHandlingError "get_values_from_state" (Pointer (Pointer None)) [self.toCArg,
                 varNameArr.toCArg, (CInt64.fromInt count).toCArg]
 
         returnedArr = Array (Pointer None) . make count returnedPtr
 
         retval = returnedArr . toList . each (x: TensorWrapper ManagedPointer None . fromPointer releaseMethod x)
 
-        freePointer = lookupSymbol "TFL" "free_pointer"
-        freePointer.call None [returnedPtr.toCArg]
+        callHandlingError "free_pointer" None [returnedPtr.toCArg]
 
         0.upto (phCount - 1) . each (idx: varNameArr . moveElems idx . read . free)
         varNameArr.free
@@ -40,18 +39,14 @@ class StateWrapper:
         retval
 
     def value name:
-        releaseMethod = lookupSymbol "TFL" "release"
-        getValueOp = lookupSymbol "TFL" "get_value_from_state"
 
         retptr = CString.with name nameCStr:
-                getValueOp . call (Pointer None) [self.toCArg, nameCStr.toCArg]
+                callHandlingError "get_value_from_state" (Pointer None) [self.toCArg, nameCStr.toCArg]
         managed = ManagedPointer None . fromPointer releaseMethod retptr
         TensorWrapper managed
 
     def update values: # when this function gets actually implemented, make sure to
         count = values . length
-        releaseMethod = lookupSymbol "TFL" "release"
-        updateOp = lookupSymbol "TFL" "update_values_state"
 
         (valnames, vals) = unzip values
 
@@ -65,7 +60,7 @@ class StateWrapper:
         indexed . each (idx, elem):
             valsArr . moveElems idx . write (elem.ptr.ptr)
 
-        newstatePtr = updateOp.call (Pointer None) [self.toCArg,
+        newstatePtr = callHandlingError "update_values_state" (Pointer None) [self.toCArg,
                 varNameArr.toCArg, valsArr.toCArg, (CInt64.fromInt count).toCArg]
 
         0.upto (count - 1) . each (idx: varNameArr . moveElems idx . read . free)
@@ -77,9 +72,6 @@ class StateWrapper:
 
 
 def emptyState:
-    releaseMethod = lookupSymbol "TFL" "release"
-    newstateOp = lookupSymbol "TFL" "make_empty_state"
-
-    ptr = newstateOp . call (Pointer None) []
+    ptr = callHandlingError "make_empty_state" (Pointer None) []
     managed = ManagedPointer None . fromPointer releaseMethod ptr
     StateWrapper managed

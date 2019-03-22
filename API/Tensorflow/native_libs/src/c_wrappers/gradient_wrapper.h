@@ -17,7 +17,7 @@ extern "C"
 #endif
 
 TFL_API Output** add_gradients(Output** ys, std::int64_t nys, Output** xs,
-        std::int64_t nxs, Output** dxs);
+        std::int64_t nxs, Output** dxs, const char **outError);
 
 #ifdef __cplusplus
 }
