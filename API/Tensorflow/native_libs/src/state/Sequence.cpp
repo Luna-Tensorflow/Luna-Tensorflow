@@ -1,7 +1,3 @@
-//
-// Created by Radek on 27.02.2019.
-//
-
 #include "Sequence.h"
 
 Sequence::Sequence(std::shared_ptr<Output> sideffect, std::shared_ptr<Output> value)

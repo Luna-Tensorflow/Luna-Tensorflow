@@ -1,7 +1,3 @@
-//
-// Created by wojtek on 19.12.18.
-//
-
 #ifndef TFL_GRADIENT_H
 #define TFL_GRADIENT_H
 

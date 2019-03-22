@@ -1,7 +1,3 @@
-//
-// Created by Radek on 27.02.2019.
-//
-
 #ifndef TFL_VARIABLE_H
 #define TFL_VARIABLE_H
 

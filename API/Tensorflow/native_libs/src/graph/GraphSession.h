@@ -1,7 +1,3 @@
-//
-// Created by mateusz on 04.12.18.
-//
-
 #ifndef TFL_GRAPH_H
 #define TFL_GRAPH_H
 

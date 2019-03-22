@@ -1,7 +1,3 @@
-//
-// Created by wojtek on 13.02.19.
-//
-
 #ifndef TFL_OUTPUT_H
 #define TFL_OUTPUT_H
 

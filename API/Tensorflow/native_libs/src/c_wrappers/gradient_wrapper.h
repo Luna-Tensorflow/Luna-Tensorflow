@@ -1,7 +1,3 @@
-//
-// Created by wojtek on 20.12.18.
-//
-
 #ifndef TFL_GRADIENT_WRAPPER_H
 #define TFL_GRADIENT_WRAPPER_H
 

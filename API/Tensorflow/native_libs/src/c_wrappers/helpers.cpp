@@ -1,6 +1,3 @@
-//
-// Created by radeusgd on 05.03.19.
-//
 #include <string>
 #include <unordered_map>
 #include "../helpers/logging.h"

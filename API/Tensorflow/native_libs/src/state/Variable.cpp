@@ -1,7 +1,3 @@
-//
-// Created by Radek on 27.02.2019.
-//
-
 #include "Variable.h"
 #include "../ops/Operation.h"
 

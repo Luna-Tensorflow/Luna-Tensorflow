@@ -1,7 +1,3 @@
-//
-// Created by mateusz on 01.12.18.
-//
-
 #include "tensorflow/c/c_api.h"
 #include "tensors.h"
 #include "../tensor/Tensor.h"
@@ -30,7 +26,7 @@ TFL_API Tensor *make_tensor(void const *array, TF_DataType type, const int64_t *
 TFL_API int get_tensor_num_dims(Tensor *tensor, const char **outError) {
     return TRANSLATE_EXCEPTION(outError) {
         auto r = LifetimeManager::instance().accessOwned(tensor)->shape().size();
-        FFILOGANDRETURN(r, tensor);
+        FFILOGANDRETURN(static_cast<int>(r), tensor);
     };
 }
 
@@ -126,27 +122,27 @@ TFL_API Tensor *make_const_tensor_##typelabel(const int64_t *dims, size_t num_di
 
 
 
-#define DECLARE_TENSOR(typelabel) \
+#define DEFINE_TENSOR(typelabel) \
 GET_TENSOR_VALUE_AT(typelabel); \
 GET_TENSOR_VALUE_AT_INDEX(typelabel); \
 TENSOR_TO_FLATLIST(typelabel);
 
-#define DECLARE_TENSOR_NUMERIC(typelabel, randomtype) \
-DECLARE_TENSOR(typelabel); \
+#define DEFINE_TENSOR_NUMERIC(typelabel, randomtype) \
+DEFINE_TENSOR(typelabel); \
 MAKE_RANDOM_TENSOR(typelabel, randomtype);\
 MAKE_CONST_TENSOR(typelabel, randomtype);\
 
 
-DECLARE_TENSOR_NUMERIC(TF_FLOAT, real);
-DECLARE_TENSOR_NUMERIC(TF_DOUBLE, real);
-DECLARE_TENSOR_NUMERIC(TF_INT8, int);
-DECLARE_TENSOR_NUMERIC(TF_INT16, int);
-DECLARE_TENSOR_NUMERIC(TF_INT32, int);
-DECLARE_TENSOR_NUMERIC(TF_INT64, int);
-DECLARE_TENSOR_NUMERIC(TF_UINT8, int);
-DECLARE_TENSOR_NUMERIC(TF_UINT16, int);
-DECLARE_TENSOR_NUMERIC(TF_UINT32, int);
-DECLARE_TENSOR_NUMERIC(TF_UINT64, int);
-DECLARE_TENSOR(TF_BOOL);
-DECLARE_TENSOR(TF_STRING);
-//DECLARE_TENSOR(TF_HALF);
+DEFINE_TENSOR_NUMERIC(TF_FLOAT, real);
+DEFINE_TENSOR_NUMERIC(TF_DOUBLE, real);
+DEFINE_TENSOR_NUMERIC(TF_INT8, int);
+DEFINE_TENSOR_NUMERIC(TF_INT16, int);
+DEFINE_TENSOR_NUMERIC(TF_INT32, int);
+DEFINE_TENSOR_NUMERIC(TF_INT64, int);
+DEFINE_TENSOR_NUMERIC(TF_UINT8, int);
+DEFINE_TENSOR_NUMERIC(TF_UINT16, int);
+DEFINE_TENSOR_NUMERIC(TF_UINT32, int);
+DEFINE_TENSOR_NUMERIC(TF_UINT64, int);
+DEFINE_TENSOR(TF_BOOL);
+DEFINE_TENSOR(TF_STRING);
+//DEFINE_TENSOR(TF_HALF);

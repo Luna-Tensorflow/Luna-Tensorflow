@@ -1,7 +1,3 @@
-//
-// Created by wojtek on 13.02.19.
-//
-
 #ifndef TFL_ATTR_H
 #define TFL_ATTR_H
 

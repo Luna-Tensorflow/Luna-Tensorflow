@@ -1,7 +1,3 @@
-//
-// Created by Radek on 27.02.2019.
-//
-
 #ifndef TFL_ASSIGN_H
 #define TFL_ASSIGN_H
 

@@ -1,6 +1,3 @@
-//
-// Created by radeusgd on 01.12.18.
-//
 #include "utils.h"
 
 size_t hash_combine(size_t x, size_t y) {

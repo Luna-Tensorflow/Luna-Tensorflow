@@ -1,7 +1,3 @@
-//
-// Created by wojtek on 13.02.19.
-//
-
 #include <functional>
 #include <algorithm>
 #include "Attr.h"

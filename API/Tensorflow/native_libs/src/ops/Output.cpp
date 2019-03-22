@@ -1,7 +1,3 @@
-//
-// Created by wojtek on 13.02.19.
-//
-
 #include "Output.h"
 
 Output::Output(std::shared_ptr<Binder> binder, size_t index) : binder(std::move(binder)) {

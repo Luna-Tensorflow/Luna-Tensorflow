@@ -1,7 +1,3 @@
-//
-// Created by radeusgd on 05.03.19.
-//
-
 #ifndef TFL_HELPERS_H
 #define TFL_HELPERS_H
 
