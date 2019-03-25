@@ -3,6 +3,7 @@ import Tensorflow.Operations
 import Tensorflow.Types
 import Tensorflow.Gradient
 import Tensorflow.Graph
+import Tensorflow.GeneratedOps
 
 class GradientDescent:
       lr :: Real
@@ -12,11 +13,9 @@ class GradientDescent:
           lr = constFromScalar FloatType self.lr
           err = loss yTrue yPred
           grads = gradients [err] variables []
-          scaledGrads = grads.each (* lr)
-          varsAndGrads = variables.zip scaledGrads
-          varsAndNewValues = varsAndGrads.each ((v, g): (v, v-g))
+          varsAndGrads = variables.zip grads
 
-          errWithSideEffect = sequence' err (uncurry assign) varsAndNewValues
+          errWithSideEffect = sequence' err ((v, g): applyGradientDescentGen "" v lr g v.typetag False) varsAndGrads
 
           makeGraphFromOutput errWithSideEffect
 

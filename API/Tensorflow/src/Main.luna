@@ -9,7 +9,8 @@ def main:
     print "hello"
     vartest
     lowlevelNetExample
-    exampleClassification
+    exampleClassificationGradientDescent
+    exampleClassificationRMSProp
     exampleConvolutional
     tensorTest
     print "done"

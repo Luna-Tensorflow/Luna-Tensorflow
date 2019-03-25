@@ -7,7 +7,7 @@ import Tensorflow.Variables
 def vartest:
     defaultValue = tensorFromList1d FloatType [1.0]
     x = variable "x" defaultValue
-    c = constFromScalar FloatType 23.0
+    c = constFromList FloatType [23.0]
     u1 = assign x c
 
     g = makeGraphFromOutput u1

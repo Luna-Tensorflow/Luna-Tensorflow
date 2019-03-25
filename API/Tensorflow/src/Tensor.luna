@@ -49,7 +49,7 @@ class Tensor a:
         def toNested dims list:
             case dims of
                 Empty:
-                    throw "This shouldn't happen: dims should not be empty"
+                    list.head.get.toJSON
                 Prepend last Empty:
                     list.toJSON
                 Prepend h t:

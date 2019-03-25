@@ -62,7 +62,7 @@ def constFromList typetag list:
 
 # constFromScalar :: a -> Tensor a
 def constFromScalar typetag x:
-    constFromList typetag [x]
+    makeConst $ tensorFromList typetag [] [x]
 
 def outputFromPtr typetag ptr:
     wrapper = outputWrapperFromPtr typetag ptr

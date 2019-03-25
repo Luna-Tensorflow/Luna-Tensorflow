@@ -53,7 +53,7 @@ def testGradients:
     gs = gradients [d, e] [a, b] [p, q]
     result = gs.toJSON
     print result
-    if (result == [[34.0.negate], [16.0.negate]].toJSON).not then throw $ "Gradients error: expected [[-34],[-16]], got " + result.toText else None
+    if (result == [34.0.negate, 16.0.negate].toJSON).not then throw $ "Gradients error: expected [-34,-16], got " + result.toText else None
     print "Gradients OK"
     print ""
     print ""
@@ -70,7 +70,7 @@ def testUInt8:
     print "="
     cVal = c.toJSON
     print cVal
-    if (cVal.toText == "[4]").not then throw $ "UInt8 error: expected [4], got " + cVal.toText else None
+    if (cVal.toText == "4").not then throw $ "UInt8 error: expected 4, got " + cVal.toText else None
     print "UInt8 OK"
     print ""
     print ""
@@ -80,7 +80,7 @@ def testBool:
     a = constFromScalar BoolType True
     aVal = a.toJSON
     print aVal
-    if (aVal.toText == "[true]").not then throw $ "Bool error: expected [true], got " + aVal.toText else None
+    if (aVal.toText == "true").not then throw $ "Bool error: expected true, got " + aVal.toText else None
     print "Bool OK"
     print ""
     print ""
@@ -121,12 +121,12 @@ def testString:
     a = constFromScalar StringType "test"
     aJSON = a.toJSON
     print aJSON
-    if (aJSON.toText == '["test"]').not then throw $ 'String error: expected "test", got "' + aJSON.toText + '"' else None
+    if (aJSON.toText == '"test"').not then throw $ 'String error: expected "test", got "' + aJSON.toText + '"' else None
 
     b = add a a
     bJSON = b.toJSON
     print bJSON
-    if (bJSON.toText == '["testtest"]').not then throw $ 'String error: expected "testtest", got "' + bJSON.toText + '"' else None
+    if (bJSON.toText == '"testtest"').not then throw $ 'String error: expected "testtest", got "' + bJSON.toText + '"' else None
 
     print "String OK"
     print ""
