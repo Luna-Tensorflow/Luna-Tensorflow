@@ -39,7 +39,6 @@ class StateWrapper:
         retval
 
     def value name:
-
         retptr = CString.with name nameCStr:
                 callHandlingError "get_value_from_state" (Pointer None) [self.toCArg, nameCStr.toCArg]
         managed = ManagedPointer None . fromPointer releaseMethod retptr
@@ -49,6 +48,7 @@ class StateWrapper:
         count = values . length
 
         (valnames, vals) = unzip values
+        vals' = vals.each id
 
         varNameArr = Pointer CString . mallocElems count
         indexed = 0 . upto count . zip names
@@ -56,7 +56,7 @@ class StateWrapper:
             varNameArr . moveElems idx . write (CString . fromText elem)
 
         valsArr = Pointer (Pointer None) . mallocElems count
-        indexed = 0 . upto (count - 1) . zip substs
+        indexed = 0 . upto (count - 1) . zip substs'
         indexed . each (idx, elem):
             valsArr . moveElems idx . write (elem.ptr.ptr)
 
