@@ -8,6 +8,12 @@ class InputLayer a:
       typetag :: a
       shape :: List Int
 
+      def toText:
+          self.name + self.shape.toText
+
+      def toJSON:
+          self.toText.toJSON
+
       # forward :: Operation a -> Operation a
       def forward inp:
           inp

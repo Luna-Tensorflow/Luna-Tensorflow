@@ -1,7 +1,3 @@
-//
-// Created by wojtek on 13.02.19.
-//
-
 #include "Output.h"
 
 Output::Output(std::shared_ptr<Binder> binder, size_t index) : binder(std::move(binder)) {
@@ -35,4 +31,9 @@ std::shared_ptr<Tensor> Output::eval() const {
 
 std::shared_ptr<Binder> Output::get_binder() {
     return binder;
+}
+
+Output::~Output()
+{
+    LOG("finalizing ~", binder->hash_log());
 }

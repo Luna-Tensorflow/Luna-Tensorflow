@@ -1,7 +1,3 @@
-//
-// Created by mateusz on 05.12.18.
-//
-
 #ifndef TFL_SALTER_HPP
 #define TFL_SALTER_HPP
 

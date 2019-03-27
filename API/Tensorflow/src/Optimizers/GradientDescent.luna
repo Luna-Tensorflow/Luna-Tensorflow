@@ -3,20 +3,26 @@ import Tensorflow.Operations
 import Tensorflow.Types
 import Tensorflow.Gradient
 import Tensorflow.Graph
+import Tensorflow.GeneratedOps
 
 class GradientDescent:
       lr :: Real
+
+      def toText:
+          "Gradient Descent " + self.lr.toText
+
+      def toJSON:
+          0 # TODO maybe some JSON format?
+          self.toText.toJSON
 
       # makeOptimizingGraph :: Operation a -> Operation a -> (Operation a -> Operation a -> Operation b) -> List Variable -> TFGraph
       def makeOptimizingGraph yTrue yPred loss variables:
           lr = constFromScalar FloatType self.lr
           err = loss yTrue yPred
           grads = gradients [err] variables []
-          scaledGrads = grads.each g: g * lr
-          varsAndGrads = variables.zip scaledGrads
-          varsAndNewValues = varsAndGrads.each ((v, g): (v, v - g))
+          varsAndGrads = variables.zip grads
 
-          errWithSideEffect = varsAndNewValues.foldLeft err ((var, val): se: assign se var val)
+          errWithSideEffect = sequence' err ((v, g): applyGradientDescentGen "" v lr g v.typetag False) varsAndGrads
 
           makeGraphFromOutput errWithSideEffect
 

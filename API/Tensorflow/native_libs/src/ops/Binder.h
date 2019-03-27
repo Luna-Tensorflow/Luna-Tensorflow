@@ -1,7 +1,3 @@
-//
-// Created by wojtek on 14.02.19.
-//
-
 #ifndef TFL_BINDER_H
 #define TFL_BINDER_H
 

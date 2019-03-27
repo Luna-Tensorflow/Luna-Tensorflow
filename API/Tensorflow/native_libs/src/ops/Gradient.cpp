@@ -1,7 +1,3 @@
-//
-// Created by wojtek on 14.02.19.
-//
-
 #include "Gradient.h"
 #include <utility>
 

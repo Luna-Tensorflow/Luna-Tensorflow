@@ -5,7 +5,7 @@
 
 extern "C" {
     TFL_API void release(void *handle) noexcept;
-    TFL_API void free_pointer(void *pointer);
+    TFL_API void free_pointer(void *pointer, const char **outError);
 };
 
 #endif //FFITESTHELPER_MEMORY_H

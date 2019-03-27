@@ -44,9 +44,9 @@ file(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/*.cpp)
 # Define the compilation target
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SRC_FILES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE BUILDING_TFL_HELPER)
-target_compile_definitions(${PROJECT_NAME} PRIVATE VERBOSE) # for debugging
-target_compile_definitions(${PROJECT_NAME} PRIVATE VERBOSEFFI) # for debugging
-target_compile_definitions(${PROJECT_NAME} PRIVATE LOG_GRAPH_STRUCTURE) # for debugging
+# target_compile_definitions(${PROJECT_NAME} PRIVATE VERBOSE) # for debugging
+# target_compile_definitions(${PROJECT_NAME} PRIVATE VERBOSEFFI) # for debugging
+# target_compile_definitions(${PROJECT_NAME} PRIVATE LOG_GRAPH_STRUCTURE) # for debugging
 target_compile_definitions(${PROJECT_NAME} PUBLIC)
 
 # set warning level

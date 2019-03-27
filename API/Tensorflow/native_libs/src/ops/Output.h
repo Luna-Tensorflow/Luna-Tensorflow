@@ -1,7 +1,3 @@
-//
-// Created by wojtek on 13.02.19.
-//
-
 #ifndef TFL_OUTPUT_H
 #define TFL_OUTPUT_H
 
@@ -33,6 +29,8 @@ public:
 
     std::shared_ptr<Tensor> eval() const;
     std::shared_ptr<Binder> get_binder();
+
+    ~Output();
 private:
     size_t hash;
     std::shared_ptr<Binder> binder;

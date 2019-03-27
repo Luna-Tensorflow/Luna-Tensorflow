@@ -1,0 +1,44 @@
+import Tensorflow.Variables
+import Tensorflow.Operations
+import Tensorflow.Types
+import Tensorflow.Gradient
+import Tensorflow.Graph
+import Tensorflow.GeneratedOps
+import Tensorflow.Tensor
+
+class RMSProp:
+      lr :: Real
+      rho :: Real
+      momentum :: Real
+      epsilon :: Real
+
+      def toText:
+          "RMSProp lr=" + self.lr.toText + " rho=" + self.rho.toText + " momentum=" + self.momentum.toText + " epsilon=" + self.epsilon.toText 
+
+      def toJSON:
+          0 # TODO maybe some JSON format?
+          self.toText.toJSON
+
+      # makeOptimizingGraph :: Operation a -> Operation a -> (Operation a -> Operation a -> Operation b) -> List Variable -> TFGraph
+      def makeOptimizingGraph yTrue yPred loss variables:
+          lr = constFromScalar FloatType self.lr
+          rho = constFromScalar FloatType self.rho
+          momentum = constFromScalar FloatType self.momentum
+          epsilon = constFromScalar FloatType self.epsilon
+
+          err = loss yTrue yPred
+          grads = gradients [err] variables []
+          varsAndGrads = variables.zip grads
+
+          def makeAndApplyRMSProp ((v, g), i):
+              zerosTensor = zerosLikeGen "" v v.typetag . eval
+              ms = variable ("ms" + i.toText) zerosTensor
+              mom = variable ("mom" + i.toText) zerosTensor
+              applyRMSPropGen "" v ms mom lr rho momentum epsilon g v.typetag False
+
+          errWithSideEffect = sequence' err makeAndApplyRMSProp $ varsAndGrads.zip (0.upto (variables.length - 1))
+
+          makeGraphFromOutput errWithSideEffect
+
+def rmsPropOptimizer lr rho momentum epsilon:
+    RMSProp lr rho momentum epsilon

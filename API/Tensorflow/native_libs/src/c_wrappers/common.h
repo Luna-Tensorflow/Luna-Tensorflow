@@ -1,7 +1,3 @@
-//
-// Created by radeusgd on 06.12.18.
-//
-
 #ifndef TFL_COMMON_H
 #define TFL_COMMON_H
 

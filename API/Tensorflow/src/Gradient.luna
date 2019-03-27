@@ -2,27 +2,30 @@ import Std.Foreign
 import Std.Foreign.C.Value
 import Tensorflow.Operations
 
+import Tensorflow.CWrappers.Helpers
+
 def gradients ys xs dxs:
     None # TODO check if argument types match
+    ys' = ys.each id
+    xs' = xs.each id
+    dxs' = dxs.each id
     typetag = ys.head.get.wrapper.typetag
-    addGradients = lookupSymbol "TFL" "add_gradients"
-    releaseMethod = lookupSymbol "TFL" "release"
 
-    ysArr = Array (Pointer None) . fromList (ys.map y: y.ptr.ptr)
-    xsArr = Array (Pointer None) . fromList (xs.map x: x.ptr.ptr)
+    dysRet = Array (Pointer None) . with (ys'.map y: y.ptr.ptr) ysArr:
+        Array (Pointer None) . with (xs'.map x: x.ptr.ptr) xsArr:
+            dxsPtr = if dxs'.isEmpty then nullPtr else if dxs'.length == ys.length then Array (Pointer None) . fromList (dxs'.map dx: dx.ptr.ptr) . ptr . ptr else throw "gradients: dxs must be empty or of the same size as ys"
 
-    dxsPtr = if dxs.isEmpty then nullPtr else if dxs.length == ys.length then Array (Pointer None) . fromList (dxs.map dx: dx.ptr.ptr) . ptr . ptr else throw "gradients: dxs must be empty or of the same size as ys"
+            dysPtr = callHandlingError "add_gradients" (Pointer (Pointer None)) [ysArr.toCArg, CInt64.fromInt ys'.length . toCArg, xsArr.toCArg,
+                    CInt64.fromInt xs'.length . toCArg, dxsPtr.toCArg]
 
-    dysPtr = addGradients.call (Pointer (Pointer None)) [ysArr.toCArg, CInt64.fromInt ys.length . toCArg, xsArr.toCArg,
-            CInt64.fromInt xs.length . toCArg, dxsPtr.toCArg]
+            dysArr = Array (Pointer None) . make xs'.length dysPtr
 
-    dysArr = Array (Pointer None) . make xs.length dysPtr
+            dysRet = dysArr . toList . each (outputFromPtr typetag)
 
-    dysRet = dysArr . toList . each (outputFromPtr typetag)
+            callHandlingError "free_pointer" None [dysPtr.toCArg]
 
-    lookupSymbol "TFL" "free_pointer" . call None [dysPtr.toCArg]
-    ysArr.free
-    xsArr.free
-    dxsPtr.free
+            dxsPtr.free
+
+            dysRet
 
     dysRet

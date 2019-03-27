@@ -65,6 +65,12 @@ class TFGraph:
     def toJSON:
         self.eval.toJSON
 
+
+    # foldEval :: List Text -> List List Tensor a -> State -> State
+    def foldEval placeholderNames placeholderVals initialState:
+        wrapper = self.wrapper.foldEval placeholderNames placeholderVals initialState
+        State wrapper
+
 # makeGraphFromOutputList :: List TFOutput -> TFGraph
 def makeGraphFromOutputList outputList:
     wrapper = makeGraphWrapperFromOutputList outputList

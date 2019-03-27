@@ -1,14 +1,19 @@
 #include "../helpers/LifeTimeManager.h"
 #include "memory.h"
 #include "../helpers/logging.h"
+#include "../helpers/error.h"
 
 void release(void *handle) noexcept
 {
-    // not logged as releaseOwnership logs
-    LifetimeManager::instance().releaseOwnership(handle);
+    TRANSLATE_EXCEPTION(nullptr) {
+        // not logged as releaseOwnership logs
+        LifetimeManager::instance().releaseOwnership(handle);
+    };
 }
 
-void free_pointer(void *pointer) {
-    FFILOG(pointer);
-    free(pointer);
+void free_pointer(void *pointer, const char **outError) {
+    TRANSLATE_EXCEPTION(outError) {
+        FFILOG(pointer);
+        free(pointer);
+    };
 }

@@ -1,0 +1,82 @@
+import Tensorflow.Tensor
+import Tensorflow.Types
+import Tensorflow.Operations
+import Tensorflow.Variables
+import Tensorflow.Layers.Activation
+import Tensorflow.CWrappers.Helpers
+
+class PaddingType:
+    Valid
+    Same
+
+    def toText: case (self) of
+        Valid: "VALID"
+        Same: "SAME"
+
+class Conv2dLayer varT layerT:
+    name :: Text
+    kernelWeights :: varT
+    outHeight :: Int
+    outWidth :: Int
+    outChannels :: Int
+    kernelHeight :: Int
+    kernelWidth :: Int
+    stride :: Tuple2 Int Int
+    paddingType :: PaddingType
+    parentLayer :: layerT
+
+
+    def toText:
+        self.name + self.shape.toText + " (TODO more info?)"
+
+    def toJSON:
+        self.toText.toJSON
+
+    def shape:
+        [self.outHeight, self.outWidth, self.outChannels]
+
+    def forward inp:
+        in = self.parentLayer.forward inp
+        expanded' = expandDim in 0 # expand batch dim as 1
+        expanded = if self.parentLayer.shape.length == 2 then (expandDim expanded' 1.negate) else expanded' #expand channel dim as 1
+        convo = conv2D expanded self.kernelWeights self.stride self.paddingType
+        squeezed = squeeze convo [0] # squeeze back
+        squeezed
+
+    # trainableVariables :: List Variable a
+    def trainableVariables:
+        Prepend self.kernelWeights self.parentLayer.trainableVariables
+
+    def outputType:
+        self.parentLayer.outputType
+
+def fitkern size ksize stride:
+    ((size - ksize + 1).toReal / (stride.toReal)).ceiling
+
+#conv2D :: List Int -> Int -> Tuple2 Int Int -> PaddingType -> Layer -> Layer
+def conv2d [kernelHeight, kernelWidth] outChannels (strideY, strideX) paddingType parent:
+    [outHeight, outWidth, inChannels] = case parent.shape of
+        [h, w]:  case paddingType of
+            Valid: [fitkern h kernelHeight strideY, fitkern w kernelWidth strideX, 1]
+            Same: [h, w, 1]
+        [h, w, c]: case paddingType of
+            Valid: [fitkern h kernelHeight strideY, fitkern w kernelWidth strideX, c]
+            Same:  [h, w, c]
+        _: throw $ "conv2d requires parent layer of shape h x w or h x w x c"
+
+    name = getNextName "Conv2D"
+    vartype = parent.outputType
+
+    winit = randomTensor vartype [kernelHeight, kernelWidth, inChannels, outChannels] 0.0 1.0
+    w = variable (name + "w") winit
+
+    c = Conv2dLayer name w outHeight outWidth outChannels kernelHeight kernelWidth (strideY, strideX) paddingType parent
+    c
+
+# conv2dWithActivation :: List Int -> Int -> Tuple2 Int -> PaddingType -> (Operation a -> Operation a) -> Layer -> Layer
+def conv2dWithActivation kernelHW outChannels stride paddingType activationFunction parent:
+    c = conv2d kernelHW outChannels stride paddingType parent
+    name = getNextName "Activation"
+    a = ActivationLayer name activationFunction c
+    a
+

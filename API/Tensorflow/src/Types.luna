@@ -1,6 +1,8 @@
 import Std.Foreign.C.Value
 import Std.Foreign
 
+import Tensorflow.CWrappers.Helpers
+
 class FloatType:
     def typename:
         "TF_FLOAT"
@@ -191,7 +193,7 @@ class StringType:
     def cleanupLuna val:
         val.free
     def cleanupC val:
-        freePointer = lookupSymbol "TFL" "free_pointer"
-        freePointer.call None [val.toCArg]
+        val' = val
+        callHandlingError "free_pointer" None [val'.toCArg]
     def num:
         7

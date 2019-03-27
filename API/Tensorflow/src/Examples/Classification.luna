@@ -1,0 +1,93 @@
+import Tensorflow.Types
+import Tensorflow.Tensor
+import Tensorflow.Operations
+
+import Tensorflow.Layers.Input
+import Tensorflow.Layers.Dense
+import Tensorflow.Optimizers.GradientDescent
+import Tensorflow.Optimizers.RMSProp
+import Tensorflow.Losses.MeanError
+import Tensorflow.Losses.Crossentropy
+import Tensorflow.Model
+
+def unzip listpair: case listpair of
+    Empty: (Empty, Empty)
+    Prepend (x,y) tail: case unzip tail of
+        (tailx, taily): ((Prepend x tailx), (Prepend y taily))
+
+def generateTest n:
+    xs = randomTensor FloatType [1, n] 2.0.negate 2.0 . toFlatList
+    ys = randomTensor FloatType [1, n] 2.0.negate 2.0 . toFlatList
+
+    xys = xs . zip ys
+
+    testp = xys . each ((x,y):
+        incircle = if x*x + y*y <= 1.0 then 1.0 else 0.0
+        t1 = tensorFromList FloatType [4,1] [x, x*x, y, y*y]
+        t2 = tensorFromList1d FloatType [incircle]
+        (t1, t2))
+
+    unzip testp
+
+def absPatch x:
+    if x < 0.0 then x.negate else x
+
+def exampleClassificationRMSProp:
+    n = 1000
+    print "Loading data"
+
+    (x,y) = generateTest n
+    (testX, testY) = generateTest n
+
+    print "Building net"
+    i = input FloatType [4, 1]
+    d1 = denseWithActivation 3 tanh i
+    d2 = denseWithActivation 1 sigmoid d1
+
+    print "Compiling model"
+    opt = rmsPropOptimizer 0.1 0.9 0.9 0.00000001
+    loss = meanSquareError
+
+    model = makeModel i d2 opt loss
+
+    print "Training"
+    fitted = model.train x y
+
+    print "Evaluation"
+    predY = testX . each (tx: fitted.evaluate tx . head . get)
+
+    result = (predY . zip testY) . fold 0.0 ((pY, tY): ((absPatch (pY.atIndex 0 - tY.atIndex 0)) . round 0 +) ) # 0 is ok, 1 is fail
+
+    maxn = n . toReal
+    effic = 100.0 * (maxn - result) / maxn
+    print ("Efficiency: " + (effic.toText) + "%")
+
+def exampleClassificationGradientDescent:
+    n = 1000
+    print "Loading data"
+
+    (x,y) = generateTest n
+    (testX, testY) = generateTest n
+
+    print "Building net"
+    i = input FloatType [4, 1]
+    d1 = denseWithActivation 3 tanh i
+    d2 = denseWithActivation 1 sigmoid d1
+
+    print "Compiling model"
+    opt = gradientDescentOptimizer 0.1
+    loss = meanSquareError
+
+    model = makeModel i d2 opt loss
+
+    print "Training"
+    fitted = model.train x y
+
+    print "Evaluation"
+    predY = testX . each (tx: fitted.evaluate tx . head . get)
+
+    result = (predY . zip testY) . fold 0.0 ((pY, tY): ((absPatch (pY.atIndex 0 - tY.atIndex 0)) . round 0 +) ) # 0 is ok, 1 is fail
+
+    maxn = n . toReal
+    effic = 100.0 * (maxn - result) / maxn
+    print ("Efficiency: " + (effic.toText) + "%")
