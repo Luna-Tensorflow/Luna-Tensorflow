@@ -26,6 +26,7 @@ class GraphWrapper:
         phCount = substitutions . length
 
         (names, substs) = unzip substitutions
+        substs' = substs.each id
 
         subsNameArr = Pointer CString . mallocElems phCount
         indexed = 0 . upto (phCount - 1) . zip names
@@ -34,7 +35,7 @@ class GraphWrapper:
 
 
         substsArr = Pointer (Pointer None) . mallocElems phCount
-        indexed = 0 . upto (phCount - 1) . zip substs
+        indexed = 0 . upto (phCount - 1) . zip substs'
         indexed . each (idx, elem):
             substsArr . moveElems idx . write (elem.ptr.ptr)
 
