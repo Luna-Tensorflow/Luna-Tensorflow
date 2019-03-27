@@ -104,6 +104,12 @@ def tanh x:
     out = tanhGen chosenName x x.wrapper.typetag
     out
 
+# relu :: TFOutput a -> TFOutput a
+def relu x:
+    chosenName = ""
+    out = reluGen chosenName x x.wrapper.typetag
+    out
+
 # sigmoid :: TFOutput a -> TFOutput a
 def sigmoid x:
     chosenName = ""

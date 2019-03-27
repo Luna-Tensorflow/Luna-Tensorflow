@@ -5,12 +5,32 @@ import Tensorflow.Examples.LowlevelNet
 import Tensorflow.Examples.Classification
 import Tensorflow.Examples.Convolutional
 
+import Tensorflow.Types
+import Tensorflow.Tensor
+import Tensorflow.Operations
+import Tensorflow.GeneratedOps
+
+import Dataframes.Table
+
+def transposeTensor t:
+    c = makeConst t
+    perm = constFromList Int64Type [1,0]
+    transposed = transposeGen "" c perm c.typetag perm.typetag
+    t' = transposed.eval
+    t'
+
 def main:
     print "hello"
-    vartest
-    lowlevelNetExample
-    exampleClassificationGradientDescent
-    exampleClassificationRMSProp
-    exampleConvolutional
-    tensorTest
+    0 # vartest
+    0 # lowlevelNetExample
+    0 # exampleClassificationGradientDescent
+    0 # exampleClassificationRMSProp
+    0 # exampleConvolutional
+    0 # tensorTest
+    t = tensorFromList2d FloatType [[1.0,2.0],[3.0,4.0],[5.0,6.0],[7.0,8.0]]
+    print t.toJSON
+    t' = transposeTensor t
+    print t'.toJSON
+    ra = randomTensor FloatType [10] 0.0 10.0
+    print ra.toJSON
     print "done"

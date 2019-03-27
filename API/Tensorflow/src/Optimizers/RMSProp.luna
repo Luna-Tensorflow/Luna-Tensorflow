@@ -12,6 +12,13 @@ class RMSProp:
       momentum :: Real
       epsilon :: Real
 
+      def toText:
+          "RMSProp lr=" + self.lr.toText + " rho=" + self.rho.toText + " momentum=" + self.momentum.toText + " epsilon=" + self.epsilon.toText 
+
+      def toJSON:
+          0 # TODO maybe some JSON format?
+          self.toText.toJSON
+
       # makeOptimizingGraph :: Operation a -> Operation a -> (Operation a -> Operation a -> Operation b) -> List Variable -> TFGraph
       def makeOptimizingGraph yTrue yPred loss variables:
           lr = constFromScalar FloatType self.lr

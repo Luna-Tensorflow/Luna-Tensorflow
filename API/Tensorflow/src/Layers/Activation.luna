@@ -9,6 +9,12 @@ class ActivationLayer layerT:
     activationFunction :: Operation a -> Operation a
     parentLayer :: layerT # :: Layer # TODO no interfaces
 
+    def toText:
+        self.name + self.shape.toText
+
+    def toJSON:
+        self.toText.toJSON
+
     # shape :: List Int
     def shape:
         self.parentLayer.shape # activation function inherits parent's shape

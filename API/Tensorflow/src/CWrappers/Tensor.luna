@@ -63,7 +63,7 @@ class TensorWrapper a:
 
 def createTensorWrapper typetag dims values:
     expectedValuesCount = dims.foldLeft 1 (x: a: a * x)
-    if (values.length == expectedValuesCount).not then throw "values must be exactly of the size needed to fill a tensor with dimensions dims" else None
+    if (values.length == expectedValuesCount).not then throw ("values (" + values.length.toText + ") must be exactly of the size needed to fill a tensor with dimensions " + dims.toText) else None
 
     cvalues = values.each typetag.toC
     tensor = Array typetag.ctype . with cvalues cvaluesArray:

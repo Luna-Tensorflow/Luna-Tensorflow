@@ -10,6 +10,12 @@ class ReshapeLayer layerT:
       resultDims :: List Int
       parentLayer :: layerT # :: Layer
 
+      def toText:
+          self.name + self.shape.toText
+
+      def toJSON:
+          self.toText.toJSON
+
       # shape :: List Int
       def shape:
           resultDims

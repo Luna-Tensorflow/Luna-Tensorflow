@@ -13,6 +13,12 @@ class DenseLayer varT layerT:
       biases :: varT # :: Variable a
       parentLayer :: layerT # :: Layer # TODO no interfaces
 
+      def toText:
+          self.name + self.shape.toText
+
+      def toJSON:
+          self.toText.toJSON
+
       # shape :: List Int
       def shape:
           [self.nOutputs, 1]

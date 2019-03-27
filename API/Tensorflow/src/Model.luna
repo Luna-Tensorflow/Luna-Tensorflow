@@ -7,6 +7,9 @@ class Model stateT:
       traingraph :: TFGraph
       state :: stateT # TODO
 
+      def toJSON:
+          "Tensorflow Model (TODO: toJSON)".toJSON
+
       # evaluate :: Tensor a -> Tensor b
       def evaluate x:
           (res, state') = self.evalgraph.evalSubsts self.state [("x", x)]

@@ -25,6 +25,13 @@ class Conv2dLayer varT layerT:
     paddingType :: PaddingType
     parentLayer :: layerT
 
+
+    def toText:
+        self.name + self.shape.toText + " (TODO more info?)"
+
+    def toJSON:
+        self.toText.toJSON
+
     def shape:
         [self.outHeight, self.outWidth, self.outChannels]
 
