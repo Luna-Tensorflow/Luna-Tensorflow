@@ -1,0 +1,50 @@
+import Tensorflow.Variables
+import Tensorflow.Operations
+import Tensorflow.Types
+import Tensorflow.Gradient
+import Tensorflow.Graph
+import Tensorflow.GeneratedOps
+import Tensorflow.Tensor
+
+class Adam:
+      beta1Power :: Real
+      beta2Power :: Real
+      lr :: Real
+      beta1 :: Real
+      beta2 :: Real
+      epsilon :: Real
+      useNesterov :: Bool
+
+      def toText:
+          "Adam beta1Power=" + self.beta1Power.toText + " beta2Power=" + self.beta2Power.toText + " lr=" + self.lr.toText +
+                  " beta1=" + self.lr.toText + " beta2=" + self.beta2.toText + " epsilon=" + self.epsilon.toText
+
+      def toJSON:
+          0 # TODO maybe some JSON format?
+          self.toText.toJSON
+
+      # makeOptimizingGraph :: Operation a -> Operation a -> (Operation a -> Operation a -> Operation b) -> List Variable -> TFGraph
+      def makeOptimizingGraph yTrue yPred loss variables:
+          err = loss yTrue yPred
+          grads = gradients [err] variables []
+          varsAndGrads = variables.zip grads
+
+          def makeAndApplyAdam ((v, g), i):
+              beta1Power = constFromScalar v.typetag self.beta1Power
+              beta2Power = constFromScalar v.typetag self.beta2Power
+              lr = constFromScalar v.typetag self.lr
+              beta1 = constFromScalar v.typetag self.beta1
+              beta2 = constFromScalar v.typetag self.beta2
+              epsilon = constFromScalar v.typetag self.epsilon
+
+              zerosTensor = zerosLikeGen "" v v.typetag . eval
+              m = variable ("m" + i.toText) zerosTensor
+              vAdam = variable ("v" + i.toText) zerosTensor
+              applyAdamGen "" v m vAdam beta1Power beta2Power lr beta1 beta2 epsilon g v.typetag False self.useNesterov
+
+          errWithSideEffect = sequence' err makeAndApplyAdam $ varsAndGrads.zip (0.upto (variables.length - 1))
+
+          makeGraphFromOutput errWithSideEffect
+
+def adamOptimizer beta1Power beta2Power lr beta1 beta2 epsilon useNesterov:
+    Adam beta1Power beta2Power lr beta1 beta2 epsilon useNesterov
