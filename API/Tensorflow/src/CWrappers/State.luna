@@ -29,7 +29,8 @@ class StateWrapper:
 
         returnedArr = Array (Pointer None) . make count returnedPtr
 
-        retval = returnedArr . toList . each (x: TensorWrapper (ManagedPointer None . fromPointer releaseMethod x))
+        managed = returnedArr.toList.each (ManagedPointer None . fromPointer releaseMethod)
+        retval = managed.each (ptr: TensorWrapper ptr)
 
         callHandlingError "free_pointer" None [returnedPtr.toCArg]
 
