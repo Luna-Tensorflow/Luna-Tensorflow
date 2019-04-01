@@ -1,11 +1,10 @@
 import Tensorflow.Graph
 import Tensorflow.Operations
 
-# TODO add state type once it's implemented
-class Model stateT:
+class Model:
       evalgraph :: TFGraph
       traingraph :: TFGraph
-      state :: stateT # TODO
+      state :: State
 
       def toJSON:
           "Tensorflow Model (TODO: toJSON)".toJSON

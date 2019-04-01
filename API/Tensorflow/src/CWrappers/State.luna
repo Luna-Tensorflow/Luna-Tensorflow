@@ -29,7 +29,7 @@ class StateWrapper:
 
         returnedArr = Array (Pointer None) . make count returnedPtr
 
-        retval = returnedArr . toList . each (x: TensorWrapper ManagedPointer None . fromPointer releaseMethod x)
+        retval = returnedArr . toList . each (x: TensorWrapper (ManagedPointer None . fromPointer releaseMethod x))
 
         callHandlingError "free_pointer" None [returnedPtr.toCArg]
 
@@ -75,3 +75,7 @@ def emptyState:
     ptr = callHandlingError "make_empty_state" (Pointer None) []
     managed = ManagedPointer None . fromPointer releaseMethod ptr
     StateWrapper managed
+
+# List Variable -> State -> ()
+def saveVarsFromState vars state:
+    None

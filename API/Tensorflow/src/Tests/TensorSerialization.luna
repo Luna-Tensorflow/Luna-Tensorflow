@@ -1,0 +1,14 @@
+import Tensorflow.Tensor
+import Tensorflow.Types
+
+def tensorSerializationTest:
+    t1d = tensorFromList FloatType [2,2] [1.0, 2.0, 3.0, 4.0]
+    print "Made tensors:"
+    print t1d.toJSON
+
+    print "Saving them"
+    saveTensor "tensors.tf" t1d
+
+    print "Saved"
+    ret = loadTensor "tensors.tf" FloatType
+    print ret.toJSON

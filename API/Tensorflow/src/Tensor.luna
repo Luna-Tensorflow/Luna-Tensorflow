@@ -135,3 +135,12 @@ def tensorTo2dList tensor:
     flat = tensor.toFlatList
     res = splitInPacksOf h flat
     res
+
+# saveTensor :: Text -> Tensor -> ()
+def saveTensor filename tensor:
+    saveTensorsWrapper filename [tensor]
+
+# loadTensor :: Text -> Typetag -> Tensor
+def loadTensor filename typetag:
+    [maker] = loadTensorsWrapper filename 1
+    Tensor (maker typetag)
