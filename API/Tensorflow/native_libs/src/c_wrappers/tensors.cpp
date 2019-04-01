@@ -102,7 +102,8 @@ static std::shared_ptr<Tensor> read_tensor(std::istream& binary_stream) {
 }
 
 TFL_API void save_tensors_to_file(const char* filename, Tensor** tensors, int64_t count, const char **outError) {
-    return TRANSLATE_EXCEPTION(outError) {
+    TRANSLATE_EXCEPTION(outError) {
+        FFILOG(filename, tensors, count);
         std::ofstream file(filename, std::ios::out | std::ios::trunc | std::ios::binary);
         if (!file.good()) {
             throw std::runtime_error("Error opening file " + std::string(filename) + " for writing");
@@ -117,6 +118,7 @@ TFL_API void save_tensors_to_file(const char* filename, Tensor** tensors, int64_
 
 TFL_API Tensor** load_tensors_from_file(const char* filename, int64_t count, const char **outError) {
     return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(filename, count);
         std::ifstream file(filename, std::ios::in | std::ios::binary);
         if (!file.good()) {
             throw std::runtime_error("Error opening file " + std::string(filename) + " for reading");
@@ -169,6 +171,7 @@ TFL_API Type<typelabel>::lunatype* tensor_to_flatlist_##typelabel(Tensor* tensor
 TFL_API Tensor *make_random_tensor_##typelabel(const int64_t *dims, size_t num_dims, \
     Type<typelabel>::lunatype const min, Type<typelabel>::lunatype const max, const char **outError){ \
     return TRANSLATE_EXCEPTION(outError) { \
+        FFILOG(dims, num_dims, min, max); \
         int64_t elems = std::accumulate(dims, dims+num_dims, 1, std::multiplies<int64_t>()); \
         auto* data = (Type<typelabel>::tftype*) malloc(elems * TF_DataTypeSize(typelabel)); \
         \
@@ -190,6 +193,7 @@ TFL_API Tensor *make_random_tensor_##typelabel(const int64_t *dims, size_t num_d
 TFL_API Tensor *make_const_tensor_##typelabel(const int64_t *dims, size_t num_dims, \
 	Type<typelabel>::lunatype const value, const char **outError){ \
 	return TRANSLATE_EXCEPTION(outError) { \
+	    FFILOG(dims, num_dims, value); \
         int64_t elems = std::accumulate(dims, dims+num_dims, 1, std::multiplies<int64_t>()); \
         auto* data = (Type<typelabel>::tftype*) malloc(elems * TF_DataTypeSize(typelabel)); \
         \

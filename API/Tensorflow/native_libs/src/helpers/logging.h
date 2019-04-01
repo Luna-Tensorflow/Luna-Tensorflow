@@ -72,21 +72,21 @@ void log_function_call_with_return(const char* prefix, const char* name, R ret, 
 #endif
 
 #ifdef VERBOSEFFI
-#define FFILOG(...) do { log_function_call("FFI", __FUNCTION__, __VA_ARGS__); } while(0)
+#define FFILOG(...) do { log_function_call("FFI", _func_, __VA_ARGS__); } while(0)
 #else
-#define FFILOG(...) do {} while(0)
+#define FFILOG(...) do { (void)_func_; } while(0)
 #endif
 
 #ifdef VERBOSEFFI
-#define FFILOG_PARAMLESS do { log_function_call("FFI", __FUNCTION__); } while(0)
+#define FFILOG_PARAMLESS do { log_function_call("FFI", _func_); } while(0)
 #else
-#define FFILOG_PARAMLESS do {} while(0)
+#define FFILOG_PARAMLESS do { (void)_func_; } while(0)
 #endif
 
 #ifdef VERBOSEFFI
-#define FFILOGANDRETURN(ret, ...) do { log_function_call_with_return("FFI", __FUNCTION__, ret, __VA_ARGS__); return ret; } while(0)
+#define FFILOGANDRETURN(ret, ...) do { log_function_call_with_return("FFI", _func_, ret, __VA_ARGS__); return ret; } while(0)
 #else
-#define FFILOGANDRETURN(ret, ...) do { return ret; } while(0)
+#define FFILOGANDRETURN(ret, ...) do { (void)_func_; return ret; } while(0)
 #endif
 
 #ifdef LOG_GRAPH_STRUCTURE

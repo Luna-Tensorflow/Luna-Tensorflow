@@ -141,6 +141,7 @@ Output* make_sequence(Output* sideefect, Output* value, const char **outError)
 
 Output **make_op(const char *name, Output **inputs, int ninputs, int noutputs, std::vector<std::shared_ptr<Attr>>* attr_list, const char *chosen_name, const char **outError) {
     return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(name, inputs, ninputs, noutputs, attr_list, chosen_name);
         if (attr_list == nullptr) {
             return make_op_helper(name, std::vector<Output *>(inputs, inputs + ninputs), {}, noutputs, chosen_name);
         }
