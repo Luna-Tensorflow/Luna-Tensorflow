@@ -24,7 +24,7 @@ def main:
     print "hello"
     0 # vartest
     0 # lowlevelNetExample
-    0 # exampleClassificationGradientDescent
+    exampleClassificationGradientDescent
     0 # exampleClassificationRMSProp
     0 # exampleConvolutional
     0 # tensorTest

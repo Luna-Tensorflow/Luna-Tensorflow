@@ -110,11 +110,11 @@ def saveVarsFromStateWrapper fname vars stateWrapper:
     "Now, save the tensors"
     saveTensorsWrapper fname managedTensors
 
-# loadVarsToStateWrapper :: Text -> List Variable -> StateWrapper
-def loadVarsToStateWrapper fname vars:
+# loadVarsToStateWrapper :: Text -> List Variable -> StateWrapper -> StateWrapper
+def loadVarsToStateWrapper fname vars stateWrapper:
+    st = stateWrapper
     varnames = vars.each (v: v.wrapper.opName)
     count = vars.length
     tensorptrs = loadTensorsWrapper fname count
-    st = emptyState
     st' = st.updatePtrs varnames tensorptrs
     st'

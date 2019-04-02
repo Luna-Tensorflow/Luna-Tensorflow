@@ -42,9 +42,9 @@ def setVarInState state varname value:
 def saveVarsFromState fname vars state:
     saveVarsFromStateWrapper fname vars state.wrapper
 
-# loadVarsToState :: Text -> List Variable -> State
-def loadVarsToState fname vars:
-    w = loadVarsToStateWrapper fname vars
+# loadVarsToState :: Text -> List Variable -> State -> State
+def loadVarsToState fname vars state:
+    w = loadVarsToStateWrapper fname vars state.wrapper
     State w
 
 class TFGraph:
