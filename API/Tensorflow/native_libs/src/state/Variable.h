@@ -6,7 +6,8 @@
 
 class Variable : public Binder {
 public:
-    std::string get_name();
+    // result of this function lives only as long as the object itself
+    const char* get_name() override;
 
     static std::shared_ptr<Output> make_variable(std::string& name,
         std::shared_ptr<Tensor> default_value);

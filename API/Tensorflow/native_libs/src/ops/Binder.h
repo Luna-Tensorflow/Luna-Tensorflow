@@ -35,6 +35,10 @@ public:
      */
     virtual void add_to_graph(GraphSession &graph) = 0;
 
+    virtual const char* get_name() {
+    	return nullptr;
+    }
+
     virtual ~Binder() = default;
 };
 

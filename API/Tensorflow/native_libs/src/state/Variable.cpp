@@ -56,9 +56,9 @@ void Variable::add_to_graph(GraphSession &graph)
     }
 }
 
-std::string Variable::get_name()
+const char* Variable::get_name()
 {
-	return name;
+	return name.c_str();
 }
 
 std::shared_ptr<Output> Variable::make_variable(std::string& name,

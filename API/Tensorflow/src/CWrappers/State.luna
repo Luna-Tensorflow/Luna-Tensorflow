@@ -77,6 +77,9 @@ def emptyState:
     managed = ManagedPointer None . fromPointer releaseMethod ptr
     StateWrapper managed
 
-# List Variable -> State -> ()
-def saveVarsFromState vars state:
+# saveVarsFromState :: Text -> List Variable -> State -> ()
+def saveVarsFromState fname vars state:
+    varnames = vars.each (v: v.wrapper.opName)
+    print varnames
+    print "TODO"
     None

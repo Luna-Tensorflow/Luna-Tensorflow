@@ -336,3 +336,15 @@ State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Te
         return LifetimeManager::instance().addOwnership(state);
     };
 }
+
+const char* get_operation_name(Output* output, const char** outError) {
+    return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(output);
+        auto o = LifetimeManager::instance().accessOwned(output);
+        const char* name = o->get_binder()->get_name();
+        if (name == nullptr) {
+            throw std::runtime_error("This operation doesn't support `get_name`");
+        }
+        return name;
+    };
+}

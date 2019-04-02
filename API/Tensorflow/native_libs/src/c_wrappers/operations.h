@@ -49,6 +49,8 @@ TFL_API Output* make_op_partial_derivative(Output* a, Output* b, const char **ou
 TFL_API size_t operation_hashcode(Output* op, const char **outError);
 TFL_API Tensor* eval_op(Output* op, const char **outError);
 
+TFL_API const char* get_operation_name(Output* output, const char** outError);
+
 #ifdef __cplusplus
 };
 #endif

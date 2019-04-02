@@ -1,5 +1,8 @@
 import Tensorflow.Tensor
+import Tensorflow.Graph
 import Tensorflow.Types
+import Tensorflow.Variables
+import Tensorflow.CWrappers.State
 
 def tensorSerializationTest:
     t1d = tensorFromList FloatType [2,2] [1.0, 2.0, 3.0, 4.0]
@@ -9,6 +12,15 @@ def tensorSerializationTest:
     print "Saving them"
     saveTensor "tensors.tf" t1d
 
-    print "Saved"
+    print "Saved, loading"
     ret = loadTensor "tensors.tf" FloatType
+    print "Loaded"
     print ret.toJSON
+
+    st = makeEmptyState
+    v1 = variable "v1" t1d
+    v2 = variable "v2" (tensorFromList1d StringType ["a", "bb", "ccc"])
+    print "Saving state"
+    saveVarsFromState "state.tf" [v1, v2] st
+    print "Saved"
+    
