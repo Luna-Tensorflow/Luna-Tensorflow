@@ -142,5 +142,5 @@ def saveTensor filename tensor:
 
 # loadTensor :: Text -> Typetag -> Tensor
 def loadTensor filename typetag:
-    [maker] = loadTensorsWrapper filename 1
-    Tensor (maker typetag)
+    [ptr] = loadTensorsWrapper filename 1
+    Tensor (TensorWrapper ptr typetag)

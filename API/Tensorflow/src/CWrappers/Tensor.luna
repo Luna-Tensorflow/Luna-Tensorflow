@@ -120,6 +120,5 @@ def loadTensorsWrapper filename count:
     returnedArr = Array (Pointer None) . make count returnedPtr
 
     managed = returnedArr.toList.each (ManagedPointer None . fromPointer releaseMethod)
-    retval = managed.each (ptr: TensorWrapper ptr)
     callHandlingError "free_pointer" None [returnedPtr.toCArg]
-    retval
+    managed

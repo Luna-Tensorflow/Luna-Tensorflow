@@ -16,12 +16,10 @@ class State:
         Tensor (wrapper typetag)
 
     def updateOne name value:
-        0 # TODO
-        wrapper = self.wrapper.updateOne name value
-        State wrapper
+        self.update [(name, value)]
 
     def update values:
-        wrapper = self.wrappers.update values
+        wrapper = self.wrapper.update values
         State wrapper
 
 

@@ -46,22 +46,27 @@ class StateWrapper:
         managed = ManagedPointer None . fromPointer releaseMethod retptr
         TensorWrapper managed
 
-    def update values: # when this function gets actually implemented, make sure to
-        count = values . length
+    def update values:
+        ptrs = values.each (name, value): (name, value.ptr.ptr)
+        self.updatePtrs ptrs
 
-        (valnames, vals) = unzip values
+    def updatePtrs values:
+        values' = values.each id
+        count = values' . length
+
+        (valnames, vals) = unzip values'
 
         varNameArr = Pointer CString . mallocElems count
-        indexed = 0 . upto count . zip names
+        indexed = 0 . upto count . zip valnames
         indexed . each (idx, elem):
             varNameArr . moveElems idx . write (CString . fromText elem)
 
         valsArr = Pointer (Pointer None) . mallocElems count
-        indexed = 0 . upto (count - 1) . zip substs
+        indexed = 0 . upto (count - 1) . zip vals
         indexed . each (idx, elem):
-            valsArr . moveElems idx . write (elem.ptr.ptr)
+            valsArr . moveElems idx . write elem
 
-        newstatePtr = callHandlingError "update_values_state" (Pointer None) [self.toCArg,
+        newstatePtr = callHandlingError "update_state" (Pointer None) [self.toCArg,
                 varNameArr.toCArg, valsArr.toCArg, (CInt64.fromInt count).toCArg]
 
         0.upto (count - 1) . each (idx: varNameArr . moveElems idx . read . free)

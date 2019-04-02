@@ -76,8 +76,9 @@ Tensor* get_value_from_state(State* ptr, const char* name, const char **outError
 	return TRANSLATE_EXCEPTION(outError) {
 		FFILOG(ptr, name);
 		auto stateptr = LifetimeManager::instance().accessOwned(ptr);
-		auto tensor = ptr->get(std::string(name));
-		if (tensor == nullptr) return static_cast<Tensor*>(nullptr);
+        std::string namestr = name;
+		auto tensor = ptr->get(namestr);
+		if (tensor == nullptr) throw std::runtime_error("No value found in state for " + namestr);
 		return LifetimeManager::instance().addOwnership(tensor);
 	};
 }
@@ -93,6 +94,11 @@ Tensor** get_values_from_state(State* ptr, const char** names, size_t count, con
         });
 
         auto returned = stateptr->get(names_v);
+        for (size_t i = 0; i < returned.size(); ++i) {
+            if (returned[i] == nullptr) {
+                throw std::runtime_error("No value found in state for " + names_v[i]);
+            }
+        }
 
         return LifetimeManager::instance().addOwnershipOfArray(returned);
     };
