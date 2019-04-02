@@ -2,7 +2,6 @@ import Tensorflow.Tensor
 import Tensorflow.Graph
 import Tensorflow.Types
 import Tensorflow.Variables
-import Tensorflow.CWrappers.State
 
 def tensorSerializationTest:
     t1d = tensorFromList FloatType [2,2] [1.0, 2.0, 3.0, 4.0]

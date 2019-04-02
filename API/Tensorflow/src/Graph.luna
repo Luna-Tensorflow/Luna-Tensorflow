@@ -40,6 +40,10 @@ def setVarInState state varname value:
     newstate = state . updateOne varname value
     newstate
 
+# saveVarsFromState :: Text -> List Variable -> State -> ()
+def saveVarsFromState fname vars state:
+    saveVarsFromStateWrapper fname vars state.wrapper
+
 class TFGraph:
     wrapper :: GraphWrapper
     outputs :: List (TFOutput)

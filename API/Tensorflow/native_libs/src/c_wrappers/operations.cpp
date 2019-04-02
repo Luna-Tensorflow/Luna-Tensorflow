@@ -98,6 +98,19 @@ Tensor** get_values_from_state(State* ptr, const char** names, size_t count, con
     };
 }
 
+Tensor** get_variable_values_from_state(State* ptr, const Output** vars, size_t count, const char **outError)
+{
+    return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(ptr, vars, count);
+        auto stateptr = LifetimeManager::instance().accessOwned(ptr);
+        auto outsarray = LifetimeManager::instance().accessOwnedArray(vars, count);
+
+        auto returned = stateptr->get_with_defaults(outsarray);
+
+        return LifetimeManager::instance().addOwnershipOfArray(returned);
+    };
+}
+
 State* update_value_state(State* ptr, const char* name, const Tensor* newvalue, const char **outError)
 {
     return TRANSLATE_EXCEPTION(outError) {

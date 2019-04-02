@@ -1,7 +1,7 @@
 #ifndef TFL_BINDER_H
 #define TFL_BINDER_H
 
-#include "../graph/GraphSession.h"
+#include <string>
 
 class GraphSession;
 

@@ -1,4 +1,5 @@
 #include "Sequence.h"
+#include "../graph/GraphSession.h"
 
 Sequence::Sequence(std::shared_ptr<Output> sideffect, std::shared_ptr<Output> value)
     : side_effect(sideffect), value(value) {

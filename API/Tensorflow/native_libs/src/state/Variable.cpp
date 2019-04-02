@@ -79,3 +79,7 @@ size_t Variable::hashcode() const {
 std::string Variable::hash_log() const {
     return "Variable: " + std::to_string(hash);
 }
+
+std::shared_ptr<Tensor> Variable::get_default_value() const {
+    return default_value;
+}

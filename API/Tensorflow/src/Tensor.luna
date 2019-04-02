@@ -138,7 +138,7 @@ def tensorTo2dList tensor:
 
 # saveTensor :: Text -> Tensor -> ()
 def saveTensor filename tensor:
-    saveTensorsWrapper filename [tensor]
+    saveTensorsWrapper filename [tensor.wrapper.ptr]
 
 # loadTensor :: Text -> Typetag -> Tensor
 def loadTensor filename typetag:

@@ -1,8 +1,12 @@
 #ifndef TFL_VARIABLE_H
 #define TFL_VARIABLE_H
 
+#include <string>
+#include <memory>
 
 #include "../ops/Binder.h"
+#include "../ops/Output.h"
+#include "../tensor/Tensor.h"
 
 class Variable : public Binder {
 public:
@@ -14,6 +18,8 @@ public:
     size_t hashcode() const override;
     std::string hash_log() const override;
 
+
+    std::shared_ptr<Tensor> get_default_value() const;
 
 private:
     Variable(std::string& name, std::shared_ptr<Tensor> default_value);

@@ -19,8 +19,8 @@ class StateWrapper:
     def values names:
         count = names . length
 
-        varNameArr = Pointer CString . mallocElems phCount
-        indexed = 0 . upto phCount . zip names
+        varNameArr = Pointer CString . mallocElems count
+        indexed = 0 . upto count . zip names
         indexed . each (idx, elem):
             varNameArr . moveElems idx . write (CString . fromText elem)
 
@@ -34,7 +34,7 @@ class StateWrapper:
 
         callHandlingError "free_pointer" None [returnedPtr.toCArg]
 
-        0.upto (phCount - 1) . each (idx: varNameArr . moveElems idx . read . free)
+        0.upto (count - 1) . each (idx: varNameArr . moveElems idx . read . free)
         varNameArr.free
 
         retval
@@ -77,9 +77,28 @@ def emptyState:
     managed = ManagedPointer None . fromPointer releaseMethod ptr
     StateWrapper managed
 
-# saveVarsFromState :: Text -> List Variable -> State -> ()
-def saveVarsFromState fname vars state:
-    varnames = vars.each (v: v.wrapper.opName)
-    print varnames
-    print "TODO"
-    None
+# saveVarsFromStateWrapper :: Text -> List Variable -> StateWrapper -> ()
+def saveVarsFromStateWrapper fname vars stateWrapper:
+    "First fetch vars from the state"
+    vars' = vars.each id
+    state' = stateWrapper
+    count = vars'.length
+
+    valsArr = Pointer (Pointer None) . mallocElems count
+    indexed = 0 . upto (count - 1) . zip vars'
+    indexed . each (idx, elem):
+        valsArr . moveElems idx . write (elem.ptr.ptr)
+
+    returnedPtr = callHandlingError "get_variable_values_from_state" (Pointer (Pointer None)) [state'.toCArg, 
+        valsArr.toCArg, (CInt64.fromInt count).toCArg]
+
+    returnedArr = Array (Pointer None) . make count returnedPtr
+
+    managedTensors = returnedArr.toList.each (ManagedPointer None . fromPointer releaseMethod)
+
+    callHandlingError "free_pointer" None [returnedPtr.toCArg]
+
+    valsArr.free
+
+    "Now, save the tensors"
+    saveTensorsWrapper fname managedTensors

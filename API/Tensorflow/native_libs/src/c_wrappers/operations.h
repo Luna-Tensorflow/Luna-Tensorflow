@@ -36,6 +36,7 @@ TFL_API Output* make_sequence(Output* sideefect, Output* value, const char **out
 TFL_API State* make_empty_state(const char **outError);
 TFL_API Tensor* get_value_from_state(State* ptr, const char* name, const char **outError);
 TFL_API Tensor** get_values_from_state(State* ptr, const char** names, size_t count, const char **outError);
+TFL_API Tensor** get_variable_values_from_state(State* ptr, const Output** vars, size_t count, const char **outError);
 
 TFL_API State* update_value_state(State* ptr, const char* name, const Tensor* newvalue, const char **outError);
 TFL_API State* update_state(State* ptr, const char** names, const Tensor** newvalues, size_t count, const char **outError);

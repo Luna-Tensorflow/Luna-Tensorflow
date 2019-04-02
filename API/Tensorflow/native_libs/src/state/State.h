@@ -7,6 +7,7 @@
 #include <map>
 #include <algorithm>
 #include "../tensor/Tensor.h"
+#include "../ops/Output.h"
 
 class State {
     std::map<std::string, std::shared_ptr<Tensor>> valuation;
@@ -48,6 +49,8 @@ public:
 
         return values;
     }
+
+    std::vector<std::shared_ptr<Tensor>> get_with_defaults(const std::vector<std::shared_ptr<Output>> vars);
 };
 
 

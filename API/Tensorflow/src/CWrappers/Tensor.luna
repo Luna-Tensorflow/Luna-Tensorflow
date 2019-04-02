@@ -99,18 +99,15 @@ def createConstTensorWrapper typetag dims value:
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
     TensorWrapper managedTensor typetag
 
-def saveTensorsWrapper filename tensors:
-    tensors' = tensors.each id
+def saveTensorsWrapper filename tensorPtrs:
+    tensors' = tensorPtrs.each id
     count = tensors'.length
 
     valsArr = Pointer (Pointer None) . mallocElems count
     indexed = 0 . upto (count - 1) . zip tensors'
-    indexed . each (idx, elem):
-            print idx
-            print elem
 
     indexed . each (idx, elem):
-      valsArr . moveElems idx . write (elem.ptr.ptr)
+      valsArr . moveElems idx . write (elem.ptr)
 
     CString.with filename fnamecstr:
             callHandlingError "save_tensors_to_file" None [fnamecstr.toCArg, valsArr.toCArg, (CInt64.fromInt count).toCArg]
