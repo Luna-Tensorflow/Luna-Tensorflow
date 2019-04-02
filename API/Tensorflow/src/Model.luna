@@ -24,15 +24,16 @@ class Model stateT:
 
 def makeModel input output optimizer loss:
     inputPlaceholder = makePlaceholder input.typetag "x"
-    yPred = output.forward inputPlaceholder
-    outType = yPred.typetag
+    yPredTrain = output.forward inputPlaceholder
+    yPredEval = output.eval inputPlaceholder
+    outType = yPredEval.typetag
 
     yTruePlaceholder = makePlaceholder outType "y"
 
-    evalgraph = makeGraphFromOutput yPred
+    evalgraph = makeGraphFromOutput yPredEval
 
     variables = output.trainableVariables
-    traingraph = optimizer.makeOptimizingGraph yTruePlaceholder yPred loss variables
+    traingraph = optimizer.makeOptimizingGraph yTruePlaceholder yPredTrain loss variables
 
     initialState = makeEmptyState # TODO state initialization by layers
 

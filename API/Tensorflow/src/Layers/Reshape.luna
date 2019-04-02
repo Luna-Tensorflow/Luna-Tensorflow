@@ -26,6 +26,11 @@ class ReshapeLayer layerT:
           reshaped = reshapeOp myin self.resultDims
           reshaped
 
+      # eval :: Operation a -> Operation a
+      def eval inp:
+          myin = self.parentLayer.eval inp
+          reshaped = reshapeOp myin self.resultDims
+          reshaped
 
       # trainableVariables :: List Variable a
       def trainableVariables:

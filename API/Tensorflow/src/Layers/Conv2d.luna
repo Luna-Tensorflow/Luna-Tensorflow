@@ -35,13 +35,22 @@ class Conv2dLayer varT layerT:
     def shape:
         [self.outHeight, self.outWidth, self.outChannels]
 
-    def forward inp:
-        in = self.parentLayer.forward inp
-        expanded' = expandDim in 0 # expand batch dim as 1
+    def calculateConv parentsOutput:
+        expanded' = expandDim parentsOutput 0 # expand batch dim as 1
         expanded = if self.parentLayer.shape.length == 2 then (expandDim expanded' 1.negate) else expanded' #expand channel dim as 1
         convo = conv2D expanded self.kernelWeights self.stride self.paddingType
         squeezed = squeeze convo [0] # squeeze back
         squeezed
+
+    def eval inp:
+        in = self.parentLayer.eval inp
+        out = self.calculateConv in
+        out
+
+    def forward inp:
+        in = self.parentLayer.forward inp
+        out = self.calculateConv in
+        out
 
     # trainableVariables :: List Variable a
     def trainableVariables:

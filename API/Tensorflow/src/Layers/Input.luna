@@ -18,6 +18,10 @@ class InputLayer a:
       def forward inp:
           inp
 
+      # eval :: Operation a -> Operation a
+      def eval inp:
+          inp
+
       # trainableVariables :: List Variable a
       def trainableVariables:
           []
