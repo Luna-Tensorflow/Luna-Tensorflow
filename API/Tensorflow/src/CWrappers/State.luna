@@ -116,5 +116,5 @@ def loadVarsToStateWrapper fname vars:
     count = vars.length
     tensorptrs = loadTensorsWrapper fname count
     st = emptyState
-
-    st
+    st' = st.updatePtrs varnames tensorptrs
+    st'
