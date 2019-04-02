@@ -19,12 +19,15 @@ def tensorSerializationTest:
     st = makeEmptyState
     v1 = variable "v1" t1d
     v2 = variable "v2" (tensorFromList1d StringType ["a", "bb", "ccc"])
+    vars = [v1, v2]
     st' = setVarInState st "v2" (tensorFromList1d StringType ["a'", "b'b", "c'dd"])
     print "Saving state"
-    saveVarsFromState "state.tf" [v1, v2] st'
+    saveVarsFromState "state.tf" vars st'
     print "Saved"
 
-    loaded = st' # TODO
+    print "Loading"
+    loaded = loadVarsToState "state.tf" vars
+    print "Loaded"
     v2' = loaded.value StringType "v2"
     print v2'.toJSON
     v1' = loaded.value FloatType "v1"

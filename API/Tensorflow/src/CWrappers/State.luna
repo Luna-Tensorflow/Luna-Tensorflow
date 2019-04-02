@@ -47,24 +47,26 @@ class StateWrapper:
         TensorWrapper managed
 
     def update values:
-        ptrs = values.each (name, value): (name, value.ptr.ptr)
-        self.updatePtrs ptrs
-
-    def updatePtrs values:
         values' = values.each id
-        count = values' . length
-
         (valnames, vals) = unzip values'
+        ptrs = vals.each v: v.ptr
+
+        res = self.updatePtrs valnames ptrs
+        res
+
+    def updatePtrs valnames ptrs:
+        vals = ptrs.each id
+        count = vals . length
 
         varNameArr = Pointer CString . mallocElems count
-        indexed = 0 . upto count . zip valnames
+        indexed = 0 . upto (count - 1) . zip valnames
         indexed . each (idx, elem):
             varNameArr . moveElems idx . write (CString . fromText elem)
 
         valsArr = Pointer (Pointer None) . mallocElems count
         indexed = 0 . upto (count - 1) . zip vals
         indexed . each (idx, elem):
-            valsArr . moveElems idx . write elem
+            valsArr . moveElems idx . write elem.ptr
 
         newstatePtr = callHandlingError "update_state" (Pointer None) [self.toCArg,
                 varNameArr.toCArg, valsArr.toCArg, (CInt64.fromInt count).toCArg]
@@ -82,7 +84,7 @@ def emptyState:
     managed = ManagedPointer None . fromPointer releaseMethod ptr
     StateWrapper managed
 
-# saveVarsFromStateWrapper :: Text -> List Variable -> StateWrapper -> ()
+# saveVarsFromState :: Text -> List Variable -> StateWrapper -> ()
 def saveVarsFromStateWrapper fname vars stateWrapper:
     "First fetch vars from the state"
     vars' = vars.each id
@@ -107,3 +109,12 @@ def saveVarsFromStateWrapper fname vars stateWrapper:
 
     "Now, save the tensors"
     saveTensorsWrapper fname managedTensors
+
+# loadVarsToStateWrapper :: Text -> List Variable -> StateWrapper
+def loadVarsToStateWrapper fname vars:
+    varnames = vars.each (v: v.wrapper.opName)
+    count = vars.length
+    tensorptrs = loadTensorsWrapper fname count
+    st = emptyState
+
+    st
