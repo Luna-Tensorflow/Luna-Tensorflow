@@ -9,10 +9,13 @@
 #include <random>
 #include <fstream>
 
-template<typename T> T* vector_as_array(const std::vector<T>& vec) {
-    T* r = static_cast<T*>(malloc(sizeof(T) * vec.size()));
-    memcpy(r, vec.data(), sizeof(T) * vec.size());
-    return r;
+namespace {
+    template<typename T>
+    T *vector_as_array(const std::vector<T> &vec) {
+        T *r = static_cast<T *>(malloc(sizeof(T) * vec.size()));
+        memcpy(r, vec.data(), sizeof(T) * vec.size());
+        return r;
+    }
 }
 
 TFL_API Tensor *make_tensor(void const *array, TF_DataType type, const int64_t *dims, size_t num_dims, const char **outError) {
@@ -53,54 +56,56 @@ TFL_API int64_t get_tensor_flatlist_length(Tensor* tensor, const char **outError
     };
 }
 
-static inline void write_int64(std::ostream& binary_stream, int64_t x) {
-    binary_stream.write(reinterpret_cast<char*>(&x), sizeof(x));
-}
-
-static inline int64_t read_int64(std::istream& binary_stream) {
-    int64_t x;
-    binary_stream.read(reinterpret_cast<char*>(&x), sizeof(x));
-    return x;
-}
-
-static void write_tensor(std::ostream& binary_stream, std::shared_ptr<Tensor> tensor) {
-    TF_Tensor* underlying = tensor->get_underlying();
-
-    int64_t size = TF_TensorByteSize(underlying);
-    write_int64(binary_stream, size);
-
-    int64_t typetag = static_cast<int64_t >(TF_TensorType(underlying));
-    write_int64(binary_stream, typetag);
-
-    std::vector<int64_t> dims = tensor->shape();
-    write_int64(binary_stream, dims.size());
-    for (auto dim : dims) {
-        write_int64(binary_stream, dim);
+namespace {
+    inline void write_int64(std::ostream &binary_stream, int64_t x) {
+        binary_stream.write(reinterpret_cast<char *>(&x), sizeof(x));
     }
 
-    binary_stream.write(static_cast<const char*>(TF_TensorData(underlying)), size);
-}
-
-static std::shared_ptr<Tensor> read_tensor(std::istream& binary_stream) {
-    int64_t size = read_int64(binary_stream);
-    int64_t typetag_value = read_int64(binary_stream);
-    TF_DataType typetag = static_cast<TF_DataType>(typetag_value);
-    int64_t dims_length = read_int64(binary_stream);
-    std::vector<int64_t> dims(static_cast<unsigned long>(dims_length));
-    for (auto& dim : dims) {
-        dim = read_int64(binary_stream);
+    inline int64_t read_int64(std::istream &binary_stream) {
+        int64_t x;
+        binary_stream.read(reinterpret_cast<char *>(&x), sizeof(x));
+        return x;
     }
 
-    TF_Tensor* underlying = TF_AllocateTensor(typetag, dims.data(), static_cast<int>(dims.size()), static_cast<size_t>(size));
-    try {
-        binary_stream.read(reinterpret_cast<char*>(TF_TensorData(underlying)), size);
-        return std::make_shared<Tensor>(underlying);
-    } catch(...) {
-        TF_DeleteTensor(underlying); // if allocation failed, we free the tensor
-        throw;
+    void write_tensor(std::ostream &binary_stream, std::shared_ptr<Tensor> tensor) {
+        TF_Tensor *underlying = tensor->get_underlying();
+
+        int64_t size = TF_TensorByteSize(underlying);
+        write_int64(binary_stream, size);
+
+        int64_t typetag = static_cast<int64_t >(TF_TensorType(underlying));
+        write_int64(binary_stream, typetag);
+
+        std::vector<int64_t> dims = tensor->shape();
+        write_int64(binary_stream, dims.size());
+        for (auto dim : dims) {
+            write_int64(binary_stream, dim);
+        }
+
+        binary_stream.write(static_cast<const char *>(TF_TensorData(underlying)), size);
+    }
+
+    std::shared_ptr<Tensor> read_tensor(std::istream &binary_stream) {
+        int64_t size = read_int64(binary_stream);
+        int64_t typetag_value = read_int64(binary_stream);
+        TF_DataType typetag = static_cast<TF_DataType>(typetag_value);
+        int64_t dims_length = read_int64(binary_stream);
+        std::vector<int64_t> dims(static_cast<unsigned long>(dims_length));
+        for (auto &dim : dims) {
+            dim = read_int64(binary_stream);
+        }
+
+        TF_Tensor *underlying = TF_AllocateTensor(typetag, dims.data(), static_cast<int>(dims.size()),
+                                                  static_cast<size_t>(size));
+        try {
+            binary_stream.read(reinterpret_cast<char *>(TF_TensorData(underlying)), size);
+            return std::make_shared<Tensor>(underlying);
+        } catch (...) {
+            TF_DeleteTensor(underlying); // if allocation failed, we free the tensor
+            throw;
+        }
     }
 }
-
 TFL_API void save_tensors_to_file(const char* filename, Tensor** tensors, int64_t count, const char **outError) {
     TRANSLATE_EXCEPTION(outError) {
         FFILOG(filename, tensors, count);
