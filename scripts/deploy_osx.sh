@@ -1,10 +1,10 @@
-echo "Deploying (Linux)"
+echo "Deploying (OSX)"
 set -xe
 cd build
 cmake --build .
 cd ..
 cd scripts/ # patch binaries
-stack run -- ../release/native_libs/macos/ ../API/Tensorflow/native_libs/TODO
+stack run -- ../release/native_libs/macos/ ../API/Tensorflow/native_libs/macos/libTFL.dylib
 cd ../release/
 cp -r ../API/Tensorflow/src/ . # copy Luna srcs and metadata
 cp -r ../API/Tensorflow/.luna-package/ .

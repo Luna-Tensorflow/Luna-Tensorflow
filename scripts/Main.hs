@@ -39,7 +39,14 @@ prepareDependencies binaryDestinationPath builtLibraryPath = do
       dependencies <- Linux.dependenciesToPackage builtLibs
       mapM_ (Patchelf.installDependencyTo binaryDestinationPath) dependencies
       mapM_ (Patchelf.installBinary binaryDestinationPath binaryDestinationPath) builtLibs
-    OSX -> error "Not implemented yet"
+    OSX -> do
+      allDeps <- OSX.getDependenciesOfDylibs builtLibs
+      let trulyLocalDependency path = OSX.isLocalDep path && (not $ elem path builtLibs)
+      let localDependencies = filter trulyLocalDependency allDeps
+      let binariesToInstall = localDependencies <> builtLibs
+      putStrLn $ "Binaries to install: " <> show binariesToInstall
+      binariesInstalled <- flip mapM binariesToInstall $ OSX.installBinary binaryDestinationPath
+      OSX.workaroundSymlinkedDeps binariesInstalled
     _ -> error "OS not supported"
 
 

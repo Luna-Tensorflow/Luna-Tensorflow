@@ -1,5 +1,5 @@
 set -xe
-echo "Running Linux build"
+echo "Running OSX build"
 # sudo add-apt-repository -y "ppa:ubuntu-toolchain-r/test"
 # sudo apt-get update -y
 # sudo apt-get install -y patchelf gcc-7 g++-7
