@@ -3,6 +3,7 @@
 # interface Layer:
 #       typetag :: a
 #       shape :: List Int # shape of layer's output
-#       forward :: Operation a -> Operation a # forward should return layers output after pipeing the input through all of its parents
+#       forward :: Operation a -> Operation a # forward should return layers output in learning phase after pipeing the input through all of its parents
+#       eval :: Operation a -> Operation a # eval should return layers output in testing phase after pipeing the input through all of its parents
 #       trainableVariables :: List Variable a # should return its own and its parents trainable variables (without duplicates)
 #       outputType :: typetag

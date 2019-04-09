@@ -40,7 +40,6 @@ class StateWrapper:
         retval
 
     def value name:
-
         retptr = CString.with name nameCStr:
                 callHandlingError "get_value_from_state" (Pointer None) [self.toCArg, nameCStr.toCArg]
         managed = ManagedPointer None . fromPointer releaseMethod retptr

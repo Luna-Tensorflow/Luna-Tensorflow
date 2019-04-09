@@ -2,11 +2,12 @@ import Tensorflow.Tensor
 import Tensorflow.Types
 import Tensorflow.Operations
 import Tensorflow.CWrappers.Helpers
+import Tensorflow.GeneratedOps
 
 # TODO this type parameter is temporary, due to lack of interfaces
-class ActivationLayer layerT:
+class DropoutLayer layerT:
     name :: Text
-    activationFunction :: Operation a -> Operation a
+    rate :: Real
     parentLayer :: layerT # :: Layer # TODO no interfaces
 
     def toText:
@@ -17,19 +18,26 @@ class ActivationLayer layerT:
 
     # shape :: List Int
     def shape:
-        self.parentLayer.shape # activation function inherits parent's shape
+        self.parentLayer.shape
 
     # forward :: Operation a -> Operation a
     def forward inp:
         myin = self.parentLayer.forward inp
-        out = self.activationFunction myin
+
+        shapeConst = constFromList Int32Type self.shape
+        uniform = randomUniform shapeConst FloatType
+
+        keepProb = constFromScalar FloatType (1.0 - self.rate)
+        shiftedUniform = keepProb + uniform
+        mask = floorGen "" shiftedUniform FloatType
+
+        out = (myin * mask) / keepProb
         out
 
     # eval :: Operation a -> Operation a
     def eval inp:
         myin = self.parentLayer.eval inp
-        out = self.activationFunction myin
-        out
+        myin
 
     # trainableVariables :: List Variable a
     def trainableVariables:
@@ -37,3 +45,9 @@ class ActivationLayer layerT:
 
     def outputType:
         self.parentLayer.outputType
+
+# dropout :: Real -> Layer -> Layer
+def dropout rate parent:
+    name = getNextName "Dropout"
+    d = DropoutLayer name rate parent
+    d

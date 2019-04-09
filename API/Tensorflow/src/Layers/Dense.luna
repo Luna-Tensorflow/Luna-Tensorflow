@@ -30,6 +30,13 @@ class DenseLayer varT layerT:
           result = add prod self.biases
           result
 
+      # eval :: Operation a -> Operation a
+      def eval inp:
+          in = self.parentLayer.eval inp
+          prod = matMul self.weights in
+          result = add prod self.biases
+          result
+
       # trainableVariables :: List Variable a
       def trainableVariables:
           [self.weights, self.biases] + self.parentLayer.trainableVariables

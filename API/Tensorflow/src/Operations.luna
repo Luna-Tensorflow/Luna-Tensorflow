@@ -34,6 +34,10 @@ class TFOutput:
     def - other:
         sub self other
 
+    # / :: TFOutput a -> TFOutput a
+    def / other:
+        div self other
+
     def >> other:
         sequence self other
 
@@ -85,6 +89,11 @@ def sub x y:
     chosenName = ""
     out = subGen chosenName x y x.wrapper.typetag
     out
+
+# div :: TFOutput a -> TFOutput a -> TFOutput a
+def div x y:
+    chosenName = ""
+    out = divGen chosenName x y x.wrapper.typetag
 
 # matMul :: TFOutput a -> TFOutput a -> TFOutput a
 def matMul x y:
@@ -223,3 +232,12 @@ def reshapeOp input newdims:
 
 def >> a b:
     a.>> b
+
+def randomUniform shape typetag:
+    name = ""
+    attrListPtr = callHandlingError "attr_list_init" (Pointer None) []
+    attrList = ManagedPointer None . fromPointer releaseMethod attrListPtr
+    CString.with "dtype" nameCStr:
+        callHandlingError "add_attr_type" None [attrList.toCArg, nameCStr.toCArg, CInt32.fromInt typetag.num . toCArg]
+    wrappers = makeOutputWrappers "RandomUniform" [shape] [typetag] attrList name
+    TFOutput wrappers.head.get

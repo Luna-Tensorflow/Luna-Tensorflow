@@ -33,15 +33,17 @@ def batchEval list:
     batchEvalSubstitutions list []
 
 def batchEvalSubstitutions list substitutions:
-    count = list . length
+    list' = list.each id
+    count = list' . length
     phCount = substitutions . length
 
     carr = Pointer (Pointer None) . mallocElems count
-    indexed = 0 . upto (count - 1) . zip list
+    indexed = 0 . upto (count - 1) . zip list'
     indexed . each (idx, elem):
         carr . moveElems idx . write (elem.ptr.ptr)
 
     (names, substs) = unzip substitutions
+    substs' = substs.each id
 
     subsNameArr = Pointer CString . mallocElems phCount
     indexed = 0 . upto (phCount - 1) . zip names
@@ -50,7 +52,7 @@ def batchEvalSubstitutions list substitutions:
 
 
     substsArr = Pointer (Pointer None) . mallocElems phCount
-    indexed = 0 . upto (phCount - 1) . zip substs
+    indexed = 0 . upto (phCount - 1) . zip substs'
     indexed . each (idx, elem):
         substsArr . moveElems idx . write (elem.ptr.ptr)
 

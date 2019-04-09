@@ -4,6 +4,7 @@ import Tensorflow.Operations
 
 import Tensorflow.Layers.Input
 import Tensorflow.Layers.Dense
+import Tensorflow.Layers.Dropout
 import Tensorflow.Optimizers.GradientDescent
 import Tensorflow.Optimizers.RMSProp
 import Tensorflow.Losses.MeanError
@@ -41,14 +42,15 @@ def exampleClassificationRMSProp:
 
     print "Building net"
     i = input FloatType [4, 1]
-    d1 = denseWithActivation 3 tanh i
-    d2 = denseWithActivation 1 sigmoid d1
+    d1 = denseWithActivation 10 tanh i
+    d2 = dropout 0.5 d1
+    d3 = denseWithActivation 1 sigmoid d2
 
     print "Compiling model"
     opt = rmsPropOptimizer 0.1 0.9 0.9 0.00000001
     loss = meanSquareError
 
-    model = makeModel i d2 opt loss
+    model = makeModel i d3 opt loss
 
     print "Training"
     fitted = model.train x y
