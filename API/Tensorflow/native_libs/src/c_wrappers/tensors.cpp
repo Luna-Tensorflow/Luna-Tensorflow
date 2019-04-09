@@ -7,11 +7,15 @@
 #include <vector>
 #include <memory>
 #include <random>
+#include <fstream>
 
-template<typename T> T* vector_as_array(const std::vector<T>& vec) {
-    T* r = static_cast<T*>(malloc(sizeof(T) * vec.size()));
-    memcpy(r, vec.data(), sizeof(T) * vec.size());
-    return r;
+namespace {
+    template<typename T>
+    T *vector_as_array(const std::vector<T> &vec) {
+        T *r = static_cast<T *>(malloc(sizeof(T) * vec.size()));
+        memcpy(r, vec.data(), sizeof(T) * vec.size());
+        return r;
+    }
 }
 
 TFL_API Tensor *make_tensor(void const *array, TF_DataType type, const int64_t *dims, size_t num_dims, const char **outError) {
@@ -52,6 +56,93 @@ TFL_API int64_t get_tensor_flatlist_length(Tensor* tensor, const char **outError
     };
 }
 
+namespace {
+    inline void write_int64(std::ostream &binary_stream, int64_t x) {
+        binary_stream.write(reinterpret_cast<char *>(&x), sizeof(x));
+    }
+
+    inline int64_t read_int64(std::istream &binary_stream) {
+        int64_t x;
+        binary_stream.read(reinterpret_cast<char *>(&x), sizeof(x));
+        return x;
+    }
+
+    void write_tensor(std::ostream &binary_stream, std::shared_ptr<Tensor> tensor) {
+        TF_Tensor *underlying = tensor->get_underlying();
+
+        int64_t size = TF_TensorByteSize(underlying);
+        write_int64(binary_stream, size);
+
+        int64_t typetag = static_cast<int64_t >(TF_TensorType(underlying));
+        write_int64(binary_stream, typetag);
+
+        std::vector<int64_t> dims = tensor->shape();
+        write_int64(binary_stream, dims.size());
+        for (auto dim : dims) {
+            write_int64(binary_stream, dim);
+        }
+
+        binary_stream.write(static_cast<const char *>(TF_TensorData(underlying)), size);
+    }
+
+    std::shared_ptr<Tensor> read_tensor(std::istream &binary_stream) {
+        int64_t size = read_int64(binary_stream);
+        int64_t typetag_value = read_int64(binary_stream);
+        TF_DataType typetag = static_cast<TF_DataType>(typetag_value);
+        int64_t dims_length = read_int64(binary_stream);
+        std::vector<int64_t> dims(static_cast<unsigned long>(dims_length));
+        for (auto &dim : dims) {
+            dim = read_int64(binary_stream);
+        }
+
+        TF_Tensor *underlying = TF_AllocateTensor(typetag, dims.data(), static_cast<int>(dims.size()),
+                                                  static_cast<size_t>(size));
+        try {
+            binary_stream.read(reinterpret_cast<char *>(TF_TensorData(underlying)), size);
+            return std::make_shared<Tensor>(underlying);
+        } catch (...) {
+            TF_DeleteTensor(underlying); // if allocation failed, we free the tensor
+            throw;
+        }
+    }
+}
+TFL_API void save_tensors_to_file(const char* filename, Tensor** tensors, int64_t count, const char **outError) {
+    TRANSLATE_EXCEPTION(outError) {
+        FFILOG(filename, tensors, count);
+        std::ofstream file(filename, std::ios::out | std::ios::trunc | std::ios::binary);
+        if (!file.good()) {
+            throw std::runtime_error("Error opening file " + std::string(filename) + " for writing");
+        }
+
+        write_int64(file, count);
+        for (int64_t i = 0; i < count; ++i) {
+            write_tensor(file, LifetimeManager::instance().accessOwned(tensors[i]));
+        }
+    };
+}
+
+TFL_API Tensor** load_tensors_from_file(const char* filename, int64_t count, const char **outError) {
+    return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(filename, count);
+        std::ifstream file(filename, std::ios::in | std::ios::binary);
+        if (!file.good()) {
+            throw std::runtime_error("Error opening file " + std::string(filename) + " for reading");
+        }
+
+        int64_t true_count = read_int64(file);
+        if (true_count != count) {
+            throw std::runtime_error("File contains " + std::to_string(true_count) + " tensors, but runtime wanted to load " + std::to_string(count));
+        }
+
+        std::vector<std::shared_ptr<Tensor>> result(static_cast<unsigned long>(count));
+        for (int64_t i = 0; i < count; ++i) {
+            result[i] = read_tensor(file);
+        }
+
+        return LifetimeManager::instance().addOwnershipOfArray(result);
+    };
+}
+
 #define GET_TENSOR_VALUE_AT(typelabel) \
 TFL_API Type<typelabel>::lunatype get_tensor_value_at_##typelabel(Tensor *tensor, int64_t *idxs, size_t len, const char **outError) { \
     return TRANSLATE_EXCEPTION(outError) { \
@@ -85,6 +176,7 @@ TFL_API Type<typelabel>::lunatype* tensor_to_flatlist_##typelabel(Tensor* tensor
 TFL_API Tensor *make_random_tensor_##typelabel(const int64_t *dims, size_t num_dims, \
     Type<typelabel>::lunatype const min, Type<typelabel>::lunatype const max, const char **outError){ \
     return TRANSLATE_EXCEPTION(outError) { \
+        FFILOG(dims, num_dims, min, max); \
         int64_t elems = std::accumulate(dims, dims+num_dims, 1, std::multiplies<int64_t>()); \
         auto* data = (Type<typelabel>::tftype*) malloc(elems * TF_DataTypeSize(typelabel)); \
         \
@@ -106,6 +198,7 @@ TFL_API Tensor *make_random_tensor_##typelabel(const int64_t *dims, size_t num_d
 TFL_API Tensor *make_const_tensor_##typelabel(const int64_t *dims, size_t num_dims, \
 	Type<typelabel>::lunatype const value, const char **outError){ \
 	return TRANSLATE_EXCEPTION(outError) { \
+	    FFILOG(dims, num_dims, value); \
         int64_t elems = std::accumulate(dims, dims+num_dims, 1, std::multiplies<int64_t>()); \
         auto* data = (Type<typelabel>::tftype*) malloc(elems * TF_DataTypeSize(typelabel)); \
         \

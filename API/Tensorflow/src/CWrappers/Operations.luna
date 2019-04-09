@@ -24,6 +24,11 @@ class OutputWrapper a:
         tensorPtr = callHandlingError "eval_op" (Pointer None) [self.toCArg]
         tensorFromPtr self.typetag tensorPtr
 
+    def opName:
+        cstr = callHandlingError "get_operation_name" CString [self.toCArg]
+        name = cstr.toText
+        name
+
 def batchEval list:
     batchEvalSubstitutions list []
 

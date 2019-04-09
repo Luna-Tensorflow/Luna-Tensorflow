@@ -1,11 +1,11 @@
 import Tensorflow.Graph
 import Tensorflow.Operations
 
-# TODO add state type once it's implemented
-class Model stateT:
+class Model:
       evalgraph :: TFGraph
       traingraph :: TFGraph
-      state :: stateT # TODO
+      vars :: List TFOutput
+      state :: State
 
       def toJSON:
           "Tensorflow Model (TODO: toJSON)".toJSON
@@ -19,8 +19,15 @@ class Model stateT:
       def train xs ys:
           0 # TODO we'd prefer to use batched fold that runs in C++ directly
           state' =  self.traingraph.foldEval ["x","y"] (xs.zipWith (x: y: [x,y]) ys) self.state # (xs.zip ys).foldLeft self.state ((x,y): state: (self.traingraph.evalSubsts state [("x", x), ("y", y)]).second)
-          Model self.evalgraph self.traingraph state'
+          Model self.evalgraph self.traingraph self.vars state'
+      # saveWeights :: Text -> ()
+      def saveWeights filename:
+          saveVarsFromState filename self.vars self.state
 
+      # loadWeights :: Text -> Model
+      def loadWeights filename:
+          state' = loadVarsToState filename self.vars makeEmptyState
+          Model self.evalgraph self.traingraph self.vars state'
 
 def makeModel input output optimizer loss:
     inputPlaceholder = makePlaceholder input.typetag "x"
@@ -36,4 +43,6 @@ def makeModel input output optimizer loss:
 
     initialState = makeEmptyState # TODO state initialization by layers
 
-    Model evalgraph traingraph initialState
+    vars = output.trainableVariables
+
+    Model evalgraph traingraph vars initialState

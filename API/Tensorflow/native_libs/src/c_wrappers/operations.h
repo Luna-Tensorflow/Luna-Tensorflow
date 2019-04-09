@@ -36,6 +36,7 @@ TFL_API Output* make_sequence(Output* sideefect, Output* value, const char **out
 TFL_API State* make_empty_state(const char **outError);
 TFL_API Tensor* get_value_from_state(State* ptr, const char* name, const char **outError);
 TFL_API Tensor** get_values_from_state(State* ptr, const char** names, size_t count, const char **outError);
+TFL_API Tensor** get_variable_values_from_state(State* ptr, const Output** vars, size_t count, const char **outError);
 
 TFL_API State* update_value_state(State* ptr, const char* name, const Tensor* newvalue, const char **outError);
 TFL_API State* update_state(State* ptr, const char** names, const Tensor** newvalues, size_t count, const char **outError);
@@ -48,6 +49,8 @@ TFL_API Output* make_op_unary(const char* name, Output* a, const char **outError
 TFL_API Output* make_op_partial_derivative(Output* a, Output* b, const char **outError);
 TFL_API size_t operation_hashcode(Output* op, const char **outError);
 TFL_API Tensor* eval_op(Output* op, const char **outError);
+
+TFL_API const char* get_operation_name(Output* output, const char** outError);
 
 #ifdef __cplusplus
 };

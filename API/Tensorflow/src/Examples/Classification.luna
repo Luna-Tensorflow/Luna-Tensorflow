@@ -83,8 +83,14 @@ def exampleClassificationGradientDescent:
     print "Training"
     fitted = model.train x y
 
+    print "Saving"
+    fitted.saveWeights "classification.tf"
+
+    print "Loading"
+    loaded = model.loadWeights "classification.tf"
+
     print "Evaluation"
-    predY = testX . each (tx: fitted.evaluate tx . head . get)
+    predY = testX . each (tx: loaded.evaluate tx . head . get)
 
     result = (predY . zip testY) . fold 0.0 ((pY, tY): ((absPatch (pY.atIndex 0 - tY.atIndex 0)) . round 0 +) ) # 0 is ok, 1 is fail
 

@@ -16,12 +16,10 @@ class State:
         Tensor (wrapper typetag)
 
     def updateOne name value:
-        0 # TODO
-        wrapper = self.wrapper.updateOne name value
-        State wrapper
+        self.update [(name, value)]
 
     def update values:
-        wrapper = self.wrappers.update values
+        wrapper = self.wrapper.update values
         State wrapper
 
 
@@ -39,6 +37,15 @@ def alterState state values:
 def setVarInState state varname value:
     newstate = state . updateOne varname value
     newstate
+
+# saveVarsFromState :: Text -> List Variable -> State -> ()
+def saveVarsFromState fname vars state:
+    saveVarsFromStateWrapper fname vars state.wrapper
+
+# loadVarsToState :: Text -> List Variable -> State -> State
+def loadVarsToState fname vars state:
+    w = loadVarsToStateWrapper fname vars state.wrapper
+    State w
 
 class TFGraph:
     wrapper :: GraphWrapper

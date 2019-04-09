@@ -13,7 +13,7 @@ void clearError(const char **outError) noexcept;
 template<typename Function>
 auto translateExceptionToError(const char *functionName, const char **outError, Function &&f)
 {
-    using ResultType = std::invoke_result_t<Function>;
+    using ResultType = std::invoke_result_t<Function, const char *>;
     constexpr auto returnVoid = std::is_same_v<void, ResultType>;
 
     try
@@ -23,7 +23,7 @@ auto translateExceptionToError(const char *functionName, const char **outError, 
         if constexpr(!returnVoid)
         {
 #ifdef VERBOSE
-            auto ret = f();
+            auto ret = f(functionName);
             if constexpr(std::is_pointer_v<decltype(ret)>)
                 LOG("returning: {}", (void*)ret);
             else
@@ -32,11 +32,11 @@ auto translateExceptionToError(const char *functionName, const char **outError, 
 			//	std::cout << "Out error " << (void*)outError << " is set to " << (void*)*outError << std::endl;
             return ret;
 #else
-            return f();
+            return f(functionName);
 #endif
         }
         else
-            f();
+            f(functionName);
     }
     catch(std::exception &e)
     {
@@ -76,6 +76,6 @@ struct ExceptionHelper
 // If no exception is thrown, OutError shall be written with nullptr.
 // Macro yields a call that returns the value that nested body returns.
 // Body requires a semicolon after end.
-#define TRANSLATE_EXCEPTION(OutError) ExceptionHelper(__FUNCTION__, OutError) << [&] () mutable
+#define TRANSLATE_EXCEPTION(OutError) ExceptionHelper(__FUNCTION__, OutError) << [&] (const char *_func_) mutable
 
 #endif //TFL_ERROR_H

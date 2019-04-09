@@ -76,8 +76,9 @@ Tensor* get_value_from_state(State* ptr, const char* name, const char **outError
 	return TRANSLATE_EXCEPTION(outError) {
 		FFILOG(ptr, name);
 		auto stateptr = LifetimeManager::instance().accessOwned(ptr);
-		auto tensor = ptr->get(std::string(name));
-		if (tensor == nullptr) return static_cast<Tensor*>(nullptr);
+        std::string namestr = name;
+		auto tensor = ptr->get(namestr);
+		if (tensor == nullptr) throw std::runtime_error("No value found in state for " + namestr);
 		return LifetimeManager::instance().addOwnership(tensor);
 	};
 }
@@ -93,6 +94,24 @@ Tensor** get_values_from_state(State* ptr, const char** names, size_t count, con
         });
 
         auto returned = stateptr->get(names_v);
+        for (size_t i = 0; i < returned.size(); ++i) {
+            if (returned[i] == nullptr) {
+                throw std::runtime_error("No value found in state for " + names_v[i]);
+            }
+        }
+
+        return LifetimeManager::instance().addOwnershipOfArray(returned);
+    };
+}
+
+Tensor** get_variable_values_from_state(State* ptr, const Output** vars, size_t count, const char **outError)
+{
+    return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(ptr, vars, count);
+        auto stateptr = LifetimeManager::instance().accessOwned(ptr);
+        auto outsarray = LifetimeManager::instance().accessOwnedArray(vars, count);
+
+        auto returned = stateptr->get_with_defaults(outsarray);
 
         return LifetimeManager::instance().addOwnershipOfArray(returned);
     };
@@ -141,6 +160,7 @@ Output* make_sequence(Output* sideefect, Output* value, const char **outError)
 
 Output **make_op(const char *name, Output **inputs, int ninputs, int noutputs, std::vector<std::shared_ptr<Attr>>* attr_list, const char *chosen_name, const char **outError) {
     return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(name, inputs, ninputs, noutputs, attr_list, chosen_name);
         if (attr_list == nullptr) {
             return make_op_helper(name, std::vector<Output *>(inputs, inputs + ninputs), {}, noutputs, chosen_name);
         }
@@ -333,5 +353,17 @@ State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Te
         }
 
         return LifetimeManager::instance().addOwnership(state);
+    };
+}
+
+const char* get_operation_name(Output* output, const char** outError) {
+    return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(output);
+        auto o = LifetimeManager::instance().accessOwned(output);
+        const char* name = o->get_binder()->get_name();
+        if (name == nullptr) {
+            throw std::runtime_error("This operation doesn't support `get_name`");
+        }
+        return name;
     };
 }

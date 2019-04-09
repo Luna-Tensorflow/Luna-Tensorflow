@@ -1,4 +1,5 @@
 #include "Output.h"
+#include "../graph/GraphSession.h"
 
 Output::Output(std::shared_ptr<Binder> binder, size_t index) : binder(std::move(binder)) {
     hash = std::hash<int>()(index);

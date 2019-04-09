@@ -1,4 +1,5 @@
 import Tensorflow.Tests.TensorTest
+import Tensorflow.Tests.TensorSerialization
 import Tensorflow.Tests.Variables
 
 import Tensorflow.Examples.LowlevelNet
@@ -23,14 +24,8 @@ def main:
     print "hello"
     0 # vartest
     0 # lowlevelNetExample
-    0 # exampleClassificationGradientDescent
+    exampleClassificationGradientDescent
     0 # exampleClassificationRMSProp
     0 # exampleConvolutional
     0 # tensorTest
-    t = tensorFromList2d FloatType [[1.0,2.0],[3.0,4.0],[5.0,6.0],[7.0,8.0]]
-    print t.toJSON
-    t' = transposeTensor t
-    print t'.toJSON
-    ra = randomTensor FloatType [10] 0.0 10.0
-    print ra.toJSON
-    print "done"
+    tensorSerializationTest

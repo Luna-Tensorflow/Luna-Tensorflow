@@ -99,4 +99,26 @@ def createConstTensorWrapper typetag dims value:
     managedTensor = ManagedPointer None . fromPointer releaseMethod tensor
     TensorWrapper managedTensor typetag
 
+def saveTensorsWrapper filename tensorPtrs:
+    tensors' = tensorPtrs.each id
+    count = tensors'.length
 
+    valsArr = Pointer (Pointer None) . mallocElems count
+    indexed = 0 . upto (count - 1) . zip tensors'
+
+    indexed . each (idx, elem):
+      valsArr . moveElems idx . write (elem.ptr)
+
+    CString.with filename fnamecstr:
+            callHandlingError "save_tensors_to_file" None [fnamecstr.toCArg, valsArr.toCArg, (CInt64.fromInt count).toCArg]
+
+    valsArr.free
+
+def loadTensorsWrapper filename count:
+    returnedPtr = CString.with filename fnamecstr:
+            callHandlingError "load_tensors_from_file" (Pointer (Pointer None)) [fnamecstr.toCArg, (CInt64.fromInt count).toCArg]
+    returnedArr = Array (Pointer None) . make count returnedPtr
+
+    managed = returnedArr.toList.each (ManagedPointer None . fromPointer releaseMethod)
+    callHandlingError "free_pointer" None [returnedPtr.toCArg]
+    managed

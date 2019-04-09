@@ -1,7 +1,7 @@
 #ifndef TFL_BINDER_H
 #define TFL_BINDER_H
 
-#include "../graph/GraphSession.h"
+#include <string>
 
 class GraphSession;
 
@@ -34,6 +34,10 @@ public:
      * AND add all of the Node's Outputs that haven't been freed yet as well.
      */
     virtual void add_to_graph(GraphSession &graph) = 0;
+
+    virtual const char* get_name() {
+    	return nullptr;
+    }
 
     virtual ~Binder() = default;
 };

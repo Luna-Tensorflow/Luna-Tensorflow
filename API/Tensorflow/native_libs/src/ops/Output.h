@@ -2,9 +2,10 @@
 #define TFL_OUTPUT_H
 
 #include <vector>
+#include <memory>
 
-#include "../graph/GraphSession.h"
 #include "../helpers/utils.h"
+#include "../tensor/Tensor.h"
 #include "Binder.h"
 
 class GraphSession;
