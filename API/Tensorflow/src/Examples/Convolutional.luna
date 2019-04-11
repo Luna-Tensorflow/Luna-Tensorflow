@@ -14,18 +14,18 @@ def exampleConvolutional:
     h = 5
     w = 10
     print "Loading data"
-    picture = randomTensor FloatType [h, w] 1.0.negate 1.0
+    picture = Tensors.random FloatType [h, w] 1.0.negate 1.0
 
     print "Building net"
-    i = input FloatType [h, w]
-    c1 = conv2dWithActivation [4, 5] 1 (1, 2) Valid tanh i
-    r = reshape [2,-1] c1
+    i =  Input.create FloatType [h, w]
+    c1 = Conv2d.createWithActivation [4, 5] 1 (1, 2) Valid Operations.tanh i
+    r =  Reshape.create [2, -1] c1
 
     print "Compiling model"
-    opt = gradientDescentOptimizer 0.1
-    loss = meanSquareError
+    opt = GradientDescentOptimizer.create 0.1
+    loss = MeanErrors.meanSquareError
 
-    model = makeModel i r opt loss
+    model = Models.make i r opt loss
 
     print "Evaluation"
     res = model . evaluate picture

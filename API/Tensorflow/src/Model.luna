@@ -20,30 +20,34 @@ class Model:
           0 # TODO we'd prefer to use batched fold that runs in C++ directly
           state' =  self.traingraph.foldEval ["x","y"] (xs.zipWith (x: y: [x,y]) ys) self.state # (xs.zip ys).foldLeft self.state ((x,y): state: (self.traingraph.evalSubsts state [("x", x), ("y", y)]).second)
           Model self.evalgraph self.traingraph self.vars state'
+
       # saveWeights :: Text -> ()
       def saveWeights filename:
-          saveVarsFromState filename self.vars self.state
+          StateOps.saveVariables filename self.vars self.state
 
       # loadWeights :: Text -> Model
       def loadWeights filename:
-          state' = loadVarsToState filename self.vars makeEmptyState
+          state' = StateOps.loadVariables filename self.vars StateOps.makeEmpty
           Model self.evalgraph self.traingraph self.vars state'
 
-def makeModel input output optimizer loss:
-    inputPlaceholder = makePlaceholder input.typetag "x"
-    yPredTrain = output.forward inputPlaceholder
-    yPredEval = output.eval inputPlaceholder
-    outType = yPredEval.typetag
+class Models:
+    Models
 
-    yTruePlaceholder = makePlaceholder outType "y"
+    def make input output optimizer loss:
+        inputPlaceholder = Operations.makePlaceholder input.typetag "x"
+        yPredTrain = output.forward inputPlaceholder
+        yPredEval = output.eval inputPlaceholder
+        outType = yPredEval.typetag
 
-    evalgraph = makeGraphFromOutput yPredEval
+        yTruePlaceholder = Operations.makePlaceholder outType "y"
 
-    variables = output.trainableVariables
-    traingraph = optimizer.makeOptimizingGraph yTruePlaceholder yPredTrain loss variables
+        evalgraph = TFGraphMaker.makeFromOutput yPredEval
 
-    initialState = makeEmptyState # TODO state initialization by layers
+        variables = output.trainableVariables
+        traingraph = optimizer.makeOptimizingGraph yTruePlaceholder yPredTrain loss variables
 
-    vars = output.trainableVariables
+        initialState = StateOps.makeEmpty # TODO state initialization by layers
 
-    Model evalgraph traingraph vars initialState
+        vars = output.trainableVariables
+
+        Model evalgraph traingraph vars initialState

@@ -26,15 +26,15 @@ class DenseLayer varT layerT:
       # forward :: Operation a -> Operation a
       def forward inp:
           in = self.parentLayer.forward inp
-          prod = matMul self.weights in
-          result = add prod self.biases
+          prod = Operations.matMul self.weights in
+          result = Operations.add prod self.biases
           result
 
       # eval :: Operation a -> Operation a
       def eval inp:
           in = self.parentLayer.eval inp
-          prod = matMul self.weights in
-          result = add prod self.biases
+          prod = Operations.matMul self.weights in
+          result = Operations.add prod self.biases
           result
 
       # trainableVariables :: List Variable a
@@ -44,27 +44,30 @@ class DenseLayer varT layerT:
       def outputType:
           self.parentLayer.outputType
 
-# dense :: Int -> Layer -> Layer
-def dense nOutputs parent:
-    nInputs = case parent.shape of
-        [x, 1]: x
-        _: throw $ "Dense layer requires its input to be a flat tensor n x 1"
+class Dense:
+    Dense
 
-    vartype = parent.outputType
+    # create :: Int -> Layer -> Layer
+    def create nOutputs parent:
+        nInputs = case parent.shape of
+            [x, 1]: x
+            _: throw $ "Dense layer requires its input to be a flat tensor n x 1"
 
-    name = getNextName "Dense"
+        vartype = parent.outputType
 
-    winit = randomTensor vartype [nOutputs, nInputs] 0.0 1.0
-    binit = randomTensor vartype [nOutputs, 1] 0.0 1.0
-    w = variable (name + "w") winit  # TODO defaultValue, TODO name scope to layer - need a mechanism for prefixes
-    b = variable (name + "b") binit # TODO j.w.
+        name = getNextName "Dense"
 
-    d = DenseLayer name nOutputs w b parent
-    d
+        winit = Tensors.random vartype [nOutputs, nInputs] 0.0 1.0
+        binit = Tensors.random vartype [nOutputs, 1] 0.0 1.0
+        w = Variables.make (name + "w") winit  # TODO defaultValue, TODO name scope to layer - need a mechanism for prefixes
+        b = Variables.make (name + "b") binit # TODO j.w.
 
-# denseWithActivation :: Int -> (Operation a -> Operation a) -> Layer -> Layer
-def denseWithActivation nOutputs activationFunction parent:
-    d = dense nOutputs parent
-    name = getNextName "Activation"
-    a = ActivationLayer name activationFunction d
-    a
+        d = DenseLayer name nOutputs w b parent
+        d
+
+    # createWithActivation :: Int -> (Operation a -> Operation a) -> Layer -> Layer
+    def createWithActivation nOutputs activationFunction parent:
+        d = self.create nOutputs parent
+        name = getNextName "Activation"
+        a = ActivationLayer name activationFunction d
+        a

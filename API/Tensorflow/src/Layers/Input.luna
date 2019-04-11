@@ -28,7 +28,9 @@ class InputLayer a:
 
       def outputType:
           self.typetag
+class Input:
+    Input
 
-def input typetag shape:
-    name = getNextName "Input"
-    InputLayer name typetag shape
+    def create typetag shape:
+        name = getNextName "Input"
+        InputLayer name typetag shape

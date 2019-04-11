@@ -1,12 +1,15 @@
 import Tensorflow.Operations
 
-def meanSquareError yTrue yPred:
-    diff = yTrue - yPred
-    sq = diff * diff
-    m = mean sq [0]
+class MeanErrors:
+    MeanErrors
 
-def meanAbsoluteError yTrue yPred:
-    diff = yTrue - yPred
-    ab = abs diff
-    m = mean ab [0]
+    def meanSquareError yTrue yPred:
+        diff = yTrue - yPred
+        sq = diff * diff
+        m = Operations.mean sq [0]
+
+    def meanAbsoluteError yTrue yPred:
+        diff = yTrue - yPred
+        ab = Operations.abs diff
+        m = Operations.mean ab [0]
 

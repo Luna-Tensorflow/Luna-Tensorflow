@@ -23,13 +23,13 @@ class ReshapeLayer layerT:
       # forward :: Operation a -> Operation a
       def forward inp:
           myin = self.parentLayer.forward inp
-          reshaped = reshapeOp myin self.resultDims
+          reshaped = Operations.reshape myin self.resultDims
           reshaped
 
       # eval :: Operation a -> Operation a
       def eval inp:
           myin = self.parentLayer.eval inp
-          reshaped = reshapeOp myin self.resultDims
+          reshaped = Operations.reshape myin self.resultDims
           reshaped
 
       # trainableVariables :: List Variable a
@@ -39,22 +39,25 @@ class ReshapeLayer layerT:
       def outputType:
           self.parentLayer.outputType
 
-# reshape :: List Int -> Layer -> Layer
-def reshape newdims parent:
-    nNegOnes = newdims . filter (e: e == -1) . length
-    if nNegOnes > 1 then throw $ "There can be at most one -1 in Reshape!" else
-        name = getNextName "Reshape"
-        if nNegOnes == 0 then (ReshapeLayer name newdims parent) else
-            parentLength = parent.shape.fold 1 (*)
-            remaining = newdims . filter (e: (e == -1).not) . fold 1 (*)
-            if ((parentLength % remaining) == 0).not then throw $ "Illegal reshape shapes!" else
-                unknownDim = parentLength / remaining
-                ndims = newdims . map (e: if e == -1 then unknownDim else e)
-                r = ReshapeLayer name ndims parent
-                r
+class Reshape:
+    Reshape
+
+    # create :: List Int -> Layer -> Layer
+    def create newdims parent:
+        nNegOnes = newdims . filter (e: e == -1) . length
+        if nNegOnes > 1 then throw $ "There can be at most one -1 in Reshape!" else
+            name = getNextName "Reshape"
+            if nNegOnes == 0 then (ReshapeLayer name newdims parent) else
+                parentLength = parent.shape.fold 1 (*)
+                remaining = newdims . filter (e: (e == -1).not) . fold 1 (*)
+                if ((parentLength % remaining) == 0).not then throw $ "Illegal reshape shapes!" else
+                    unknownDim = parentLength / remaining
+                    ndims = newdims . map (e: if e == -1 then unknownDim else e)
+                    r = ReshapeLayer name ndims parent
+                    r
 
 
-# flatten :: Layer -> Layer
-def flatten parent:
-    r = reshape [-1] parent
-    r
+    # flatten :: Layer -> Layer
+    def flatten parent:
+        r = reshape [-1] parent
+        r

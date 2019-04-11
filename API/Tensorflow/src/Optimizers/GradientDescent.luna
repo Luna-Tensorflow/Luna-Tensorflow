@@ -18,16 +18,19 @@ class GradientDescent:
       # makeOptimizingGraph :: Operation a -> Operation a -> (Operation a -> Operation a -> Operation b) -> List Variable -> TFGraph
       def makeOptimizingGraph yTrue yPred loss variables:
           err = loss yTrue yPred
-          grads = gradients [err] variables []
+          grads = Gradients.make [err] variables []
           varsAndGrads = variables.zip grads
 
           def makeAndApplyGradientDescent (v, g):
-              lr = constFromScalar v.typetag self.lr
+              lr = Operations.constFromScalar v.typetag self.lr
               applyGradientDescentGen "" v lr g v.typetag False
 
-          errWithSideEffect = sequence' err makeAndApplyGradientDescent varsAndGrads
+          errWithSideEffect = Variables.sequence' err makeAndApplyGradientDescent varsAndGrads
 
-          makeGraphFromOutput errWithSideEffect
+          TFGraphMaker.makeFromOutput errWithSideEffect
 
-def gradientDescentOptimizer lr:
-    GradientDescent lr
+class GradientDescentOptimizer:
+    GradientDescentOptimizer
+
+    def create lr:
+        GradientDescent lr

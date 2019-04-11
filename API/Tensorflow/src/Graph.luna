@@ -22,30 +22,32 @@ class State:
         wrapper = self.wrapper.update values
         State wrapper
 
+class StateOps:
+    StateOps
 
-# makeEmptyState :: State
-def makeEmptyState:
-    wrapper = emptyState
-    State wrapper
+    # makeEmpty :: State
+    def makeEmpty:
+        wrapper = emptyState
+        State wrapper
 
-# alterState :: State -> List Tuple2 Text Tensor -> State
-def alterState state values:
-    newstate = state . update values
-    newstate
+    # alter :: State -> List Tuple2 Text Tensor -> State
+    def alter state values:
+        newstate = state . update values
+        newstate
 
-# setVarInState :: State -> Text -> Tensor -> State
-def setVarInState state varname value:
-    newstate = state . updateOne varname value
-    newstate
+    # setVariableValue :: State -> Text -> Tensor -> State
+    def setVariableValue state varname value:
+        newstate = state . updateOne varname value
+        newstate
 
-# saveVarsFromState :: Text -> List Variable -> State -> ()
-def saveVarsFromState fname vars state:
-    saveVarsFromStateWrapper fname vars state.wrapper
+    # saveVariables :: Text -> List Variable -> State -> ()
+    def saveVariables fname vars state:
+        saveVarsFromStateWrapper fname vars state.wrapper
 
-# loadVarsToState :: Text -> List Variable -> State -> State
-def loadVarsToState fname vars state:
-    w = loadVarsToStateWrapper fname vars state.wrapper
-    State w
+    # loadVariables :: Text -> List Variable -> State -> State
+    def loadVariables fname vars state:
+        w = loadVarsToStateWrapper fname vars state.wrapper
+        State w
 
 class TFGraph:
     wrapper :: GraphWrapper
@@ -78,11 +80,14 @@ class TFGraph:
         wrapper = self.wrapper.foldEval placeholderNames placeholderVals initialState
         State wrapper
 
-# makeGraphFromOutputList :: List TFOutput -> TFGraph
-def makeGraphFromOutputList outputList:
-    wrapper = makeGraphWrapperFromOutputList outputList
-    TFGraph wrapper outputList
+class TFGraphMaker:
+    TFGraphMaker
 
-# makeGraphFromOutput :: TFOutput-> TFGraph
-def makeGraphFromOutput output:
-    makeGraphFromOutputList [output]
+    # makeGraphFromOutputList :: List TFOutput -> TFGraph
+    def makeFromOutputList outputList:
+        wrapper = makeGraphWrapperFromOutputList outputList
+        TFGraph wrapper outputList
+
+    # makeGraphFromOutput :: TFOutput-> TFGraph
+    def makeFromOutput output:
+        self.makeFromOutputList [output]

@@ -10,9 +10,9 @@ import Tensorflow.Graph
 import Tensorflow.Variables
 
 def forwardStep (weight, bias) layer:
-    prod = matMul weight layer
-    nextLayer = add prod bias
-    nextLayerActivated = tanh nextLayer
+    prod = Operations.matMul weight layer
+    nextLayer = Operations.add prod bias
+    nextLayerActivated = Operations.tanh nextLayer
     nextLayerActivated
 
 def forward input weights biases:
@@ -21,39 +21,31 @@ def forward input weights biases:
     netOutput
 
 def backward lr weights biases sqError:
-    wGrads = gradients [sqError] weights []
-    wNew = (weights.zip wGrads).each((w, g):
-        delta = lr * g
-        retval = w + delta
-        retval)
+    wGrads = Gradients.make [sqError] weights []
+    wNew = (weights.zip wGrads).each((w, g): lr*g + w)
 
-    bGrads = gradients [sqError] biases []
-    bNew = (biases.zip bGrads).each((b, g):
-        delta = lr * g
-        retval = b + delta
-        retval)
+    bGrads = Gradients.make [sqError] biases []
+    bNew = (biases.zip bGrads).each((b, g): lr*g + b)
 
     [wNew, bNew]
 
 def neuralNetwork lr in weights biases out:
     netOutput = forward in weights biases
-    diff' = netOutput - out
-    sqError = diff' * diff'
-    new = backward lr weights biases sqError
+    new = backward lr weights biases ((netOutput - out) * (netOutput - out))
     new
 
 def liftNet fun layercount:
-    lr = makePlaceholder FloatType "lr"
-    in = makePlaceholder FloatType "in"
+    lr = Operations.makePlaceholder FloatType "lr"
+    in = Operations.makePlaceholder FloatType "in"
 
-    weights = (1.upto layercount).each (x: makePlaceholder FloatType ("w" + x.toText))
+    weights = (1.upto layercount).each (x: Operations.makePlaceholder FloatType ("w" + x.toText))
 
-    biases = (1.upto layercount).each (x: makePlaceholder FloatType ("b" + x.toText))
+    biases = (1.upto layercount).each (x: Operations.makePlaceholder FloatType ("b" + x.toText))
 
-    out = makePlaceholder FloatType "out"
+    out = Operations.makePlaceholder FloatType "out"
 
     [resultW, resultB] = fun lr in weights biases out
-    graph = makeGraphFromOutputList (resultW + resultB)
+    graph = TFGraphMaker.makeFromOutputList (resultW + resultB)
 
     def liftedNet lr in w b out:
         weights = ((1.upto layercount) . zip w).each((i, t): ("w" + i.toText, t))
@@ -61,7 +53,7 @@ def liftNet fun layercount:
 
         params = [("lr", lr), ("in", in), ("out", out)]
         inputs = params + weights + biases
-        empty = makeEmptyState
+        empty = StateOps.makeEmpty
         res = (graph . evalSubsts empty inputs).first
         res1 = res . take layercount
         res2 = res . drop layercount
@@ -69,14 +61,14 @@ def liftNet fun layercount:
     liftedNet
 
 def liftNet2 fun layercount:
-    in = makePlaceholder FloatType "in"
+    in = Operations.makePlaceholder FloatType "in"
 
-    weights = (1.upto layercount).each (x: makePlaceholder FloatType ("w" + x.toText))
+    weights = (1.upto layercount).each (x: Operations.makePlaceholder FloatType ("w" + x.toText))
 
-    biases = (1.upto layercount).each (x: makePlaceholder FloatType ("b" + x.toText))
+    biases = (1.upto layercount).each (x: Operations.makePlaceholder FloatType ("b" + x.toText))
 
     out = fun in weights biases
-    graph = makeGraphFromOutputList [out]
+    graph = TFGraphMaker.makeFromOutputList [out]
 
     def liftedNet in w b:
         weights = ((1.upto layercount) . zip w).each((i, t): ("w" + i.toText, t))
@@ -84,7 +76,7 @@ def liftNet2 fun layercount:
 
         params = [("in", in)]
         inputs = params + weights + biases
-        empty = makeEmptyState
+        empty = StateOps.makeEmpty
         res = (graph . evalSubsts empty inputs).first
         res
     liftedNet
@@ -113,12 +105,12 @@ def lowlevelNetExample:
     inputsZipped = xValues.zip yValues
     inputsZipped2 = xValues2.zip yValues2
 
-    inputs = inputsZipped.each ((x, y): tensorFromList FloatType [2, 1] [x, y])
-    inputs2 = inputsZipped2.each ((x, y): tensorFromList FloatType [2, 1] [x, y])
+    inputs = inputsZipped.each ((x, y): Tensors.fromList FloatType [2, 1] [x, y])
+    inputs2 = inputsZipped2.each ((x, y): Tensors.fromList FloatType [2, 1] [x, y])
 
-    outs = [(1.negate), (1.negate), (1.negate), (1.negate), (1), (1), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1)].each (x: tensorFromList FloatType [1, 1] [x.toReal])
+    outs = [(1.negate), (1.negate), (1.negate), (1.negate), (1), (1), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1)].each (x: Tensors.fromList FloatType [1, 1] [x.toReal])
 
-    outs2 = [(1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate)].each (x: tensorFromList FloatType [1, 1] [x.toReal])
+    outs2 = [(1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate), (1.negate), (1), (1.negate), (1.negate), (1.negate), (1.negate)].each (x: Tensors.fromList FloatType [1, 1] [x.toReal])
 
 
     train = inputs.zip outs
@@ -127,17 +119,17 @@ def lowlevelNetExample:
     print "Dataset:"
     print train.toJSON
 
-    lr = tensorFromList1d FloatType [(0.001.negate)]
+    lr = Tensors.fromList1d FloatType [(0.001.negate)]
 
-    w1 = randomTensor FloatType [3, 2] (1.0 . negate) 1.0
-    w2 = randomTensor FloatType [3, 3] (1.0 . negate) 1.0
-    w3 = randomTensor FloatType [1, 3] (1.0 . negate) 1.0
+    w1 = Tensors.random FloatType [3, 2] (1.0 . negate) 1.0
+    w2 = Tensors.random FloatType [3, 3] (1.0 . negate) 1.0
+    w3 = Tensors.random FloatType [1, 3] (1.0 . negate) 1.0
 
     wInitial = [w1, w2, w3]
 
-    b1 = randomTensor FloatType [3, 1] (1.0 . negate) 1.0
-    b2 = randomTensor FloatType [3, 1] (1.0 . negate) 1.0
-    b3 = randomTensor FloatType [1, 1] (1.0 . negate) 1.0
+    b1 = Tensors.random FloatType [3, 1] (1.0 . negate) 1.0
+    b2 = Tensors.random FloatType [3, 1] (1.0 . negate) 1.0
+    b3 = Tensors.random FloatType [1, 1] (1.0 . negate) 1.0
 
     bInitial = [b1, b2, b3]
 
@@ -159,10 +151,7 @@ def lowlevelNetExample:
 
     lifted = liftNet2 forward 3
     def outDiff a b:
-        jeden = constFromList FloatType [1.0]
-        s = sign b
-        r = equal a s
-        [r]
+        [Operations.equal a (Operations.sign b)]
     
     diffun = lift2 outDiff
 

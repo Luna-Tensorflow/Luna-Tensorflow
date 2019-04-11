@@ -65,82 +65,84 @@ class Tensor a:
     def toText:
         "Tensor " + (self.dims.toText)
 
+class Tensors:
+    Tensors
 
-# tensorFromPtr :: TypeTag a -> Pointer None -> Tensor a
-def tensorFromPtr typetag tensorPtr:
-    managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
+    # fromPtr :: TypeTag a -> Pointer None -> Tensor a
+    def fromPtr typetag tensorPtr:
+        managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
 
-    wrapper = TensorWrapper managedTensorPtr typetag
-    Tensor wrapper
+        wrapper = TensorWrapper managedTensorPtr typetag
+        Tensor wrapper
 
-# tensorFromList1d :: TypeTag a -> List a -> Tensor a
-def tensorFromList1d typetag list:
-    wrapper = createTensorWrapper typetag [list.length] list
-    Tensor wrapper
+    # fromList1d :: TypeTag a -> List a -> Tensor a
+    def fromList1d typetag list:
+        wrapper = createTensorWrapper typetag [list.length] list
+        Tensor wrapper
 
-# tensorFromList2d :: TypeTag a -> List (List a) -> Tensor a
-def tensorFromList2d typetag list:
-    lengths = list.each (l: l.length)
-    w = list.length
-    h = lengths.getAt 0
-    if (lengths.all (l: l == h)).not then throw "tensorFromList2d: All lists have to be of equal lengts" else None
-    flat = list.concat
-    tensorFromList typetag [w, h] flat
+    # fromList2d :: TypeTag a -> List (List a) -> Tensor a
+    def fromList2d typetag list:
+        lengths = list.each (l: l.length)
+        w = list.length
+        h = lengths.getAt 0
+        if (lengths.all (l: l == h)).not then throw "tensorFromList2d: All lists have to be of equal lengts" else None
+        flat = list.concat
+        self.fromList typetag [w, h] flat
 
-# tensorFromList :: TypeTag a -> List Int -> List a -> Tensor a
-def tensorFromList typetag dims list:
-    wrapper = createTensorWrapper typetag dims list
-    Tensor wrapper
+    # fromList :: TypeTag a -> List Int -> List a -> Tensor a
+    def fromList typetag dims list:
+        wrapper = createTensorWrapper typetag dims list
+        Tensor wrapper
 
-# randomTensor :: TypeTag a -> List Int -> a -> a -> Tensor a
-def randomTensor typetag dims minVal maxVal:
-    wrapper = createRandomTensorWrapper typetag dims minVal maxVal
-    Tensor wrapper
+    # random :: TypeTag a -> List Int -> a -> a -> Tensor a
+    def random typetag dims minVal maxVal:
+        wrapper = createRandomTensorWrapper typetag dims minVal maxVal
+        Tensor wrapper
 
-# zeros :: Typetag a -> List Int -> Tensor a
-def zeros typetag dims:
-    wrapper = createConstTensorWrapper typetag dims 0
-    Tensor wrapper
+    # zeros :: Typetag a -> List Int -> Tensor a
+    def zeros typetag dims:
+        wrapper = createConstTensorWrapper typetag dims 0
+        Tensor wrapper
 
-# zerosLike :: Typetag a -> Tensor a -> Tensor a
-def zerosLike typetag x:
-    wrapper = createConstTensorWrapper typetag x.dims 0
-    Tensor wrapper
+    # zerosLike :: Typetag a -> Tensor a -> Tensor a
+    def zerosLike typetag x:
+        wrapper = createConstTensorWrapper typetag x.dims 0
+        Tensor wrapper
 
-# ones :: Typetag a -> List Int -> Tensor a
-def ones typetag dims:
-    wrapper = createConstTensorWrapper typetag dims 1
-    Tensor wrapper
+    # ones :: Typetag a -> List Int -> Tensor a
+    def ones typetag dims:
+        wrapper = createConstTensorWrapper typetag dims 1
+        Tensor wrapper
 
-# onesLike :: Typetag a -> Tensor a -> Tensor a
-def onesLike typetag x:
-    wrapper = createConstTensorWrapper typetag x.dims 1
-    Tensor wrapper
+    # onesLike :: Typetag a -> Tensor a -> Tensor a
+    def onesLike typetag x:
+        wrapper = createConstTensorWrapper typetag x.dims 1
+        Tensor wrapper
 
-# eye :: Typetag a -> List Int -> Int -> Tensor a
-#def eye typetag dims k:
-#    wrapper = createEyeTensorWrapper typetag dims k
-#    Tensor wrapper
+    # eye :: Typetag a -> List Int -> Int -> Tensor a
+    #def eye typetag dims k:
+    #    wrapper = createEyeTensorWrapper typetag dims k
+    #    Tensor wrapper
 
-# eyeLike :: Typetag a -> Tensor a -> Int -> Tensor a
-#def eyeLike typetag x k:
-#    wrapper = createEyeTensorWrapper typetag x.dims k
-#    Tensor wrapper
+    # eyeLike :: Typetag a -> Tensor a -> Int -> Tensor a
+    #def eyeLike typetag x k:
+    #    wrapper = createEyeTensorWrapper typetag x.dims k
+    #    Tensor wrapper
 
-# tensorTo2dList :: Tensor a -> List (List a)
-def tensorTo2dList tensor:
-    dims = tensor.dims
-    if (dims.length == 2).not then throw "Only tensors with shape [w,h] can be converted to a 2d list" else None
-    [w,h] = dims
-    flat = tensor.toFlatList
-    res = splitInPacksOf h flat
-    res
+    # to2dList :: Tensor a -> List (List a)
+    def to2dList tensor:
+        dims = tensor.dims
+        if (dims.length == 2).not then throw "Only tensors with shape [w,h] can be converted to a 2d list" else None
+        [w,h] = dims
+        flat = tensor.toFlatList
+        res = splitInPacksOf h flat
+        res
 
-# saveTensor :: Text -> Tensor -> ()
-def saveTensor filename tensor:
-    saveTensorsWrapper filename [tensor.wrapper.ptr]
+    # save :: Text -> Tensor -> ()
+    def save filename tensor:
+        saveTensorsWrapper filename [tensor.wrapper.ptr]
 
-# loadTensor :: Text -> Typetag -> Tensor
-def loadTensor filename typetag:
-    [ptr] = loadTensorsWrapper filename 1
-    Tensor (TensorWrapper ptr typetag)
+    # load :: Text -> Typetag -> Tensor
+    def load filename typetag:
+        [ptr] = loadTensorsWrapper filename 1
+        Tensor (TensorWrapper ptr typetag)

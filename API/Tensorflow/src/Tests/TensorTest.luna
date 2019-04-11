@@ -2,30 +2,30 @@ import Tensorflow.Tensor
 import Tensorflow.Types
 
 def tensorTest:
-    t1d = tensorFromList1d FloatType [1.0, 2.0, 3.0, 4.0]
+    t1d = Tensors.fromList1d FloatType [1.0, 2.0, 3.0, 4.0]
     print "1d"
     print t1d.toFlatList
     print t1d.toJSON
 
     print "2d"
-    t2d = tensorFromList2d StringType [["a","b"],["c","dd"]]
+    t2d = Tensors.fromList2d StringType [["a","b"],["c","dd"]]
     print t2d.toFlatList
     print t2d.toJSON
-    l2d = tensorTo2dList t2d
+    l2d = Tensors.to2dList t2d
     print l2d
 
     print "3d"
-    t3d = tensorFromList Int32Type [2,2,3] [1,2,3,4,5,6,7,8,9,10,11,12]
+    t3d = Tensors.fromList Int32Type [2,2,3] [1,2,3,4,5,6,7,8,9,10,11,12]
     print t3d.toFlatList
     print t3d.toJSON
 
-    t1 = ones Int32Type [5, 5]
+    t1 = Tensors.ones Int32Type [5, 5]
     print t1.toJSON
-    t2 = zeros Int32Type [3, 3]
+    t2 = Tensors.zeros Int32Type [3, 3]
     print t2.toJSON
-    t3 = onesLike Int32Type t2
+    t3 = Tensors.onesLike Int32Type t2
     print t3.toJSON
-    t4 = zerosLike Int32Type t1
+    t4 = Tensors.zerosLike Int32Type t1
     print t4.toJSON
 
     

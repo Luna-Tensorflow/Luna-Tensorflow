@@ -11,21 +11,24 @@ import Tensorflow.Tensor
 import Tensorflow.Operations
 import Tensorflow.GeneratedOps
 
+import Tensorflow.Test
+
 import Dataframes.Table
 
 def transposeTensor t:
-    c = makeConst t
-    perm = constFromList Int64Type [1,0]
+    c = Operations.makeConst t
+    perm = Operations.constFromList Int64Type [1,0]
     transposed = transposeGen "" c perm c.typetag perm.typetag
     t' = transposed.eval
     t'
 
 def main:
     print "hello"
-    0 # vartest
-    0 # lowlevelNetExample
+    testMain
+    vartest
+    lowlevelNetExample
     exampleClassificationGradientDescent
-    0 # exampleClassificationRMSProp
-    0 # exampleConvolutional
-    0 # tensorTest
+    exampleClassificationRMSProp
+    exampleConvolutional
+    tensorTest
     tensorSerializationTest

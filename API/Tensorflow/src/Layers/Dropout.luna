@@ -24,10 +24,10 @@ class DropoutLayer layerT:
     def forward inp:
         myin = self.parentLayer.forward inp
 
-        shapeConst = constFromList Int32Type self.shape
-        uniform = randomUniform shapeConst FloatType
+        shapeConst = Operations.constFromList Int32Type self.shape
+        uniform = Operations.randomUniform shapeConst FloatType
 
-        keepProb = constFromScalar FloatType (1.0 - self.rate)
+        keepProb = Operations.constFromScalar FloatType (1.0 - self.rate)
         shiftedUniform = keepProb + uniform
         mask = floorGen "" shiftedUniform FloatType
 
@@ -46,8 +46,11 @@ class DropoutLayer layerT:
     def outputType:
         self.parentLayer.outputType
 
-# dropout :: Real -> Layer -> Layer
-def dropout rate parent:
-    name = getNextName "Dropout"
-    d = DropoutLayer name rate parent
-    d
+class Dropout:
+    Dropout
+
+    # dropout :: Real -> Layer -> Layer
+    def create rate parent:
+        name = getNextName "Dropout"
+        d = DropoutLayer name rate parent
+        d

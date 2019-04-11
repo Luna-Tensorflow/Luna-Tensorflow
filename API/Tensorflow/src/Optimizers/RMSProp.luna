@@ -22,23 +22,26 @@ class RMSProp:
       # makeOptimizingGraph :: Operation a -> Operation a -> (Operation a -> Operation a -> Operation b) -> List Variable -> TFGraph
       def makeOptimizingGraph yTrue yPred loss variables:
           err = loss yTrue yPred
-          grads = gradients [err] variables []
+          grads = Gradients.make [err] variables []
           varsAndGrads = variables.zip grads
 
           def makeAndApplyRMSProp ((v, g), i):
-              lr = constFromScalar v.typetag self.lr
-              rho = constFromScalar v.typetag self.rho
-              momentum = constFromScalar v.typetag self.momentum
-              epsilon = constFromScalar v.typetag self.epsilon
+              lr = Operations.constFromScalar v.typetag self.lr
+              rho = Operations.constFromScalar v.typetag self.rho
+              momentum = Operations.constFromScalar v.typetag self.momentum
+              epsilon = Operations.constFromScalar v.typetag self.epsilon
 
               zerosTensor = zerosLikeGen "" v v.typetag . eval
-              ms = variable ("ms" + i.toText) zerosTensor
-              mom = variable ("mom" + i.toText) zerosTensor
+              ms = Variables.make ("ms" + i.toText) zerosTensor
+              mom = Variables.make ("mom" + i.toText) zerosTensor
               applyRMSPropGen "" v ms mom lr rho momentum epsilon g v.typetag False
 
-          errWithSideEffect = sequence' err makeAndApplyRMSProp $ varsAndGrads.zip (0.upto (variables.length - 1))
+          errWithSideEffect = Variables.sequence' err makeAndApplyRMSProp $ varsAndGrads.zip (0.upto (variables.length - 1))
 
-          makeGraphFromOutput errWithSideEffect
+          TFGraphMaker.makeFromOutput errWithSideEffect
 
-def rmsPropOptimizer lr rho momentum epsilon:
-    RMSProp lr rho momentum epsilon
+class RMSPropOptimizer:
+    RMSPropOptimizer
+
+    def create lr rho momentum epsilon:
+        RMSProp lr rho momentum epsilon

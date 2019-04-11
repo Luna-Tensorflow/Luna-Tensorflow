@@ -26,25 +26,28 @@ class Adam:
       # makeOptimizingGraph :: Operation a -> Operation a -> (Operation a -> Operation a -> Operation b) -> List Variable -> TFGraph
       def makeOptimizingGraph yTrue yPred loss variables:
           err = loss yTrue yPred
-          grads = gradients [err] variables []
+          grads = Gradients.make [err] variables []
           varsAndGrads = variables.zip grads
 
           def makeAndApplyAdam ((v, g), i):
-              beta1Power = constFromScalar v.typetag self.beta1Power
-              beta2Power = constFromScalar v.typetag self.beta2Power
-              lr = constFromScalar v.typetag self.lr
-              beta1 = constFromScalar v.typetag self.beta1
-              beta2 = constFromScalar v.typetag self.beta2
-              epsilon = constFromScalar v.typetag self.epsilon
+              beta1Power = Operations.constFromScalar v.typetag self.beta1Power
+              beta2Power = Operations.constFromScalar v.typetag self.beta2Power
+              lr = Operations.constFromScalar v.typetag self.lr
+              beta1 = Operations.constFromScalar v.typetag self.beta1
+              beta2 = Operations.constFromScalar v.typetag self.beta2
+              epsilon = Operations.constFromScalar v.typetag self.epsilon
 
               zerosTensor = zerosLikeGen "" v v.typetag . eval
-              m = variable ("m" + i.toText) zerosTensor
-              vAdam = variable ("v" + i.toText) zerosTensor
+              m = Variables.make ("m" + i.toText) zerosTensor
+              vAdam = Variables.make ("v" + i.toText) zerosTensor
               applyAdamGen "" v m vAdam beta1Power beta2Power lr beta1 beta2 epsilon g v.typetag False self.useNesterov
 
-          errWithSideEffect = sequence' err makeAndApplyAdam $ varsAndGrads.zip (0.upto (variables.length - 1))
+          errWithSideEffect = Variables.sequence' err makeAndApplyAdam $ varsAndGrads.zip (0.upto (variables.length - 1))
 
-          makeGraphFromOutput errWithSideEffect
+          TFGraphMaker.makeFromOutput errWithSideEffect
 
-def adamOptimizer beta1Power beta2Power lr beta1 beta2 epsilon useNesterov:
-    Adam beta1Power beta2Power lr beta1 beta2 epsilon useNesterov
+class AdamOptimizer:
+    AdamOptimizer
+
+    def create beta1Power beta2Power lr beta1 beta2 epsilon useNesterov:
+        Adam beta1Power beta2Power lr beta1 beta2 epsilon useNesterov

@@ -4,28 +4,31 @@ import Tensorflow.Operations
 
 import Tensorflow.CWrappers.Helpers
 
-def gradients ys xs dxs:
-    None # TODO check if argument types match
-    ys' = ys.each id
-    xs' = xs.each id
-    dxs' = dxs.each id
-    typetag = ys.head.get.wrapper.typetag
+class Gradients:
+    Gradients
 
-    dysRet = Array (Pointer None) . with (ys'.map y: y.ptr.ptr) ysArr:
-        Array (Pointer None) . with (xs'.map x: x.ptr.ptr) xsArr:
-            dxsPtr = if dxs'.isEmpty then nullPtr else if dxs'.length == ys.length then Array (Pointer None) . fromList (dxs'.map dx: dx.ptr.ptr) . ptr . ptr else throw "gradients: dxs must be empty or of the same size as ys"
+    def make ys xs dxs:
+        None # TODO check if argument types match
+        ys' = ys.each id
+        xs' = xs.each id
+        dxs' = dxs.each id
+        typetag = ys.head.get.wrapper.typetag
 
-            dysPtr = callHandlingError "add_gradients" (Pointer (Pointer None)) [ysArr.toCArg, CInt64.fromInt ys'.length . toCArg, xsArr.toCArg,
-                    CInt64.fromInt xs'.length . toCArg, dxsPtr.toCArg]
+        dysRet = Array (Pointer None) . with (ys'.map y: y.ptr.ptr) ysArr:
+            Array (Pointer None) . with (xs'.map x: x.ptr.ptr) xsArr:
+                dxsPtr = if dxs'.isEmpty then nullPtr else if dxs'.length == ys.length then Array (Pointer None) . fromList (dxs'.map dx: dx.ptr.ptr) . ptr . ptr else throw "gradients: dxs must be empty or of the same size as ys"
 
-            dysArr = Array (Pointer None) . make xs'.length dysPtr
+                dysPtr = callHandlingError "add_gradients" (Pointer (Pointer None)) [ysArr.toCArg, CInt64.fromInt ys'.length . toCArg, xsArr.toCArg,
+                        CInt64.fromInt xs'.length . toCArg, dxsPtr.toCArg]
 
-            dysRet = dysArr . toList . each (outputFromPtr typetag)
+                dysArr = Array (Pointer None) . make xs'.length dysPtr
 
-            callHandlingError "free_pointer" None [dysPtr.toCArg]
+                dysRet = dysArr . toList . each (Operations.outputFromPtr typetag)
 
-            dxsPtr.free
+                callHandlingError "free_pointer" None [dysPtr.toCArg]
 
-            dysRet
+                dxsPtr.free
 
-    dysRet
+                dysRet
+
+        dysRet
