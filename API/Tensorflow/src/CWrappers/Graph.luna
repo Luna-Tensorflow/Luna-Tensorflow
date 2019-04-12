@@ -72,7 +72,7 @@ class GraphWrapper:
             subsNameArr . moveElems idx . write (CString . fromText elem)
 
         substsArr = Pointer (Pointer None) . mallocElems (evalCount * phCount)
-        substs = placeholderVals' . fold [] (+)
+        substs = placeholderVals' . foldLeft [] (+)
         indexed = 0 . upto (phCount * evalCount - 1) . zip substs
         indexed . each (idx, elem):
             substsArr . moveElems idx . write (elem.ptr.ptr)

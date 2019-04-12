@@ -1,0 +1,45 @@
+import Tensorflow.Tensor
+import Tensorflow.Types
+import Tensorflow.Operations
+import Tensorflow.Variables
+import Tensorflow.Layers.Activation
+import Tensorflow.CWrappers.Helpers
+
+class AddLayer layerT:
+      name :: Text
+      parentLayers :: List layerT # :: Layer
+
+      def toText:
+          self.name + self.shape.toText
+
+      def toJSON:
+          self.toText.toJSON
+
+      # shape :: List Int
+      def shape:
+          self.parentLayers.getAt 0 . shape
+
+      # forward :: Operation a -> Operation a
+      def forward inp:
+          myin = self.parentLayers.getAt 0 . forward inp
+          myin # TODO
+
+      # eval :: Operation a -> Operation a
+      def eval inp:
+          myin = self.parentLayers.getAt 0 . eval inp
+          myin # TODO
+
+      # trainableVariables :: List Variable a
+      def trainableVariables:
+          self.parentLayers.getAt 0 . trainableVariables
+
+      def outputType:
+          self.parentLayers.getAt 0 . outputType
+
+class Marge:
+      Merge
+
+      def add layers:
+          0 # TODO check outputType and shape
+          name = getNextName "Add"
+          AddLayer name layers

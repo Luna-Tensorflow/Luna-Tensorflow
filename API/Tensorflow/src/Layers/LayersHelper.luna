@@ -1,0 +1,7 @@
+class LayersHelper:
+      # removes duplicate layers from list (ie. having the same names), the order may not be preserved
+      # uniqueLayers :: List Layer -> List Layer
+      def uniqueLayers list:
+          grouped = list.chunkBy (l: l.name)
+          uniq = list.each ((name, instances): instanes.getAt 0)
+          uniq
