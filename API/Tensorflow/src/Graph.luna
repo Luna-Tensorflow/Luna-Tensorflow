@@ -78,7 +78,7 @@ class StateOps:
 
     # Loads given variables from file into state.
     # `fname` :: Text
-    # `vars` :: List Variables
+    # `vars` :: List Variable
     # `state` :: State
     # loadVariables :: Text -> List Variable -> State -> State
     def loadVariables fname vars state:

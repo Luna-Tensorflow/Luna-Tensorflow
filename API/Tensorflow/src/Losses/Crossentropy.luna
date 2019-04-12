@@ -2,15 +2,26 @@ import Tensorflow.Types
 import Tensorflow.Tensor
 import Tensorflow.Operations
 
+# Most common loss functions.
 class Losses:
     Losses
 
+    # Classical categorical cross-entropy.
+    # Arguments:
+    # `yTrue` :: TFOperation
+    # `yPred` :: TFOperation
+    # categoricalCrossentropy :: TFOperation -> TFOperation -> TFOperation
     def categoricalCrossentropy yTrue yPred:
         l = Operations.log yPred
         prod = yTrue * l
         summed = Operations.sum prod [0]
         n = Operations.neg summed
 
+    # Classical binary cross-entropy.
+    # Arguments:
+    # `yTrue` :: TFOperation
+    # `yPred` :: TFOperation
+    # binaryCrossentropy :: TFOperation -> TFOperation -> TFOperation
     def binaryCrossentropy yTrue yPred:
         t = Tensor.fromList1d FloatType [1.0]
         ones = Operations.makeConst t

@@ -1,13 +1,24 @@
 import Tensorflow.Operations
 
+# Most common mean error losses.
 class MeanErrors:
     MeanErrors
 
+    # Classical mean square error.
+    # Arguments:
+    # `yTrue` :: TFOperation
+    # `yPred` :: TFOperation
+    # meanSquareError :: TFOperation -> TFOperation -> TFOperation
     def meanSquareError yTrue yPred:
         diff = yTrue - yPred
         sq = diff * diff
         m = Operations.mean sq [0]
 
+    # Classical mean absolute error.
+    # Arguments:
+    # `yTrue` :: TFOperation
+    # `yPred` :: TFOperation
+    # meanAbsoluteError :: TFOperation -> TFOperation -> TFOperation
     def meanAbsoluteError yTrue yPred:
         diff = yTrue - yPred
         ab = Operations.abs diff
