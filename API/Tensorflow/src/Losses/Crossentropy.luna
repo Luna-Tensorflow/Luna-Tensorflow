@@ -6,18 +6,16 @@ import Tensorflow.Operations
 class Losses:
     Losses
 
-    # Classical categorical cross-entropy.
+    # Categorical cross-entropy loss function.
     # Arguments:
     # `yTrue` :: TFOperation
     # `yPred` :: TFOperation
     # categoricalCrossentropy :: TFOperation -> TFOperation -> TFOperation
     def categoricalCrossentropy yTrue yPred:
-        l = Operations.log yPred
-        prod = yTrue * l
-        summed = Operations.sum prod [0]
-        n = Operations.neg summed
+        out = Operations.neg (Operations.sum (yTrue * (Operations.log yPred)) [0])
+        out
 
-    # Classical binary cross-entropy.
+    # Binary cross-entropy loss function.
     # Arguments:
     # `yTrue` :: TFOperation
     # `yPred` :: TFOperation
@@ -26,12 +24,6 @@ class Losses:
         t = Tensor.fromList1d FloatType [1.0]
         ones = Operations.makeConst t
 
-        diff1 = ones - yTrue
-        diff2 = ones - yPred
-        ln1 = log yPred
-        ln2 = log diff2
-        prod1 = yTrue * ln1
-        prod2 = diff1 * ln2
-        added = prod1 + prod2
-        m = Operations.mean added [0]
-        n = Operations.neg m
+        added = (yTrue * (log yPred)) + ((ones - yTrue) * (log (ones - yPred)))
+        out = Operations.neg (Operations.mean added [0])
+        out

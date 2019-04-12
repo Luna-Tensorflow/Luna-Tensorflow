@@ -38,12 +38,10 @@ class Variables:
         TFOutput seqWrapper
 
     # Internal.
-    # Classical uncurry function
     def uncurry f (a, b):
         f a b
 
     # Internal.
-    # Classical curry function
     def curry f a b:
         f (a, b)
 
