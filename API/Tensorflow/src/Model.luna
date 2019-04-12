@@ -7,32 +7,52 @@ class Model:
       vars :: List TFOutput
       state :: State
 
+      # Returns Model in JSON type.
       def toJSON:
           "Tensorflow Model (TODO: toJSON)".toJSON
 
+      # Predicts model's output on given input.
+      # Arguments: 
+      # x :: Tensor a
       # evaluate :: Tensor a -> Tensor b
       def evaluate x:
           (res, state') = self.evalgraph.evalSubsts self.state [("x", x)]
           res
 
+      # Trains model on given inputs and outputs.
+      # Arguments: 
+      # `xs` :: List Tensor a
+      # `ys` :: List Tensor b
       # train :: List Tensor a -> List Tensor b -> Model # TODO also consider real time visualization of loss in GUI
       def train xs ys:
           0 # TODO we'd prefer to use batched fold that runs in C++ directly
           state' =  self.traingraph.foldEval ["x","y"] (xs.zipWith (x: y: [x,y]) ys) self.state # (xs.zip ys).foldLeft self.state ((x,y): state: (self.traingraph.evalSubsts state [("x", x), ("y", y)]).second)
           Model self.evalgraph self.traingraph self.vars state'
 
+      # Saving trained model's weights into file.
+      # `filename` :: Text
       # saveWeights :: Text -> ()
       def saveWeights filename:
           StateOps.saveVariables filename self.vars self.state
 
+      # Loading saved model's weights from file.
+      # `filename` :: Text
       # loadWeights :: Text -> Model
       def loadWeights filename:
           state' = StateOps.loadVariables filename self.vars StateOps.makeEmpty
           Model self.evalgraph self.traingraph self.vars state'
 
+# Model building methods.
 class Models:
     Models
 
+    # Creates model with given data and parameters.
+    # Arguments: 
+    # `input` :: List Tensor
+    # `output` :: List Tensor
+    # `optimizer` :: TF_Optimizer
+    # `loss` :: TF_Loss
+    # make :: List Tensor -> List Tensor -> TF_Optimizer -> TF_Loss -> Model 
     def make input output optimizer loss:
         inputPlaceholder = Operations.makePlaceholder input.typetag "x"
         yPredTrain = output.forward inputPlaceholder
