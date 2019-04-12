@@ -14,7 +14,11 @@ class AddLayer layerA layerB:
           self.name + self.shape.toText
 
       def toJSON:
-          self.toText.toJSON
+          name = self.name
+          shape = self.shape
+          parents = [self.parentLayerA, self.parentLayerB]
+          type = "Add"
+          JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type
 
       # shape :: List Int
       def shape:

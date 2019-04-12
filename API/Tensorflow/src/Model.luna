@@ -1,14 +1,16 @@
 import Tensorflow.Graph
 import Tensorflow.Operations
 
-class Model:
+class Model layerT:
       evalgraph :: TFGraph
       traingraph :: TFGraph
       vars :: List TFOutput
       state :: State
+      outLayer :: layerT
+      # outLayer is only used for toJSON so might be removed if we change that
 
       def toJSON:
-          "Tensorflow Model (TODO: toJSON)".toJSON
+          self.outLayer.toJSON
 
       # evaluate :: Tensor a -> Tensor b
       def evaluate x:
@@ -19,7 +21,7 @@ class Model:
       def train xs ys:
           0 # TODO we'd prefer to use batched fold that runs in C++ directly
           state' =  self.traingraph.foldEval ["x","y"] (xs.zipWith (x: y: [x,y]) ys) self.state # (xs.zip ys).foldLeft self.state ((x,y): state: (self.traingraph.evalSubsts state [("x", x), ("y", y)]).second)
-          Model self.evalgraph self.traingraph self.vars state'
+          Model self.evalgraph self.traingraph self.vars state' self.outLayer
 
       # saveWeights :: Text -> ()
       def saveWeights filename:
@@ -28,7 +30,7 @@ class Model:
       # loadWeights :: Text -> Model
       def loadWeights filename:
           state' = StateOps.loadVariables filename self.vars StateOps.makeEmpty
-          Model self.evalgraph self.traingraph self.vars state'
+          Model self.evalgraph self.traingraph self.vars state' self.outLayer
 
 class Models:
     Models
@@ -50,4 +52,4 @@ class Models:
 
         vars = output.trainableVariables
 
-        Model evalgraph traingraph vars initialState
+        Model evalgraph traingraph vars initialState output

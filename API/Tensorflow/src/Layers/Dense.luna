@@ -17,7 +17,11 @@ class DenseLayer varT layerT:
           self.name + self.shape.toText
 
       def toJSON:
-          self.toText.toJSON
+          name = self.name
+          shape = self.shape
+          parents = [self.parentLayer]
+          type = "Dense"
+          JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type
 
       # shape :: List Int
       def shape:

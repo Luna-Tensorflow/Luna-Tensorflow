@@ -14,7 +14,12 @@ class DropoutLayer layerT:
         self.name + self.shape.toText
 
     def toJSON:
-        self.toText.toJSON
+        name = self.name
+        shape = self.shape
+        parents = [self.parentLayer]
+        props = JSON.empty . insert "rate" self.rate
+        type = "Dropout"
+        JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type . insert "properties" props
 
     # shape :: List Int
     def shape:

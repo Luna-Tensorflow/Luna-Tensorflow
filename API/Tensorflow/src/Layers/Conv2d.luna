@@ -13,6 +13,9 @@ class PaddingType:
         Valid: "VALID"
         Same: "SAME"
 
+    def toJSON:
+        self.toText.toJSON
+
 class Conv2dLayer varT layerT:
     name :: Text
     kernelWeights :: varT
@@ -30,7 +33,12 @@ class Conv2dLayer varT layerT:
         self.name + self.shape.toText + " (TODO more info?)"
 
     def toJSON:
-        self.toText.toJSON
+        name = self.name
+        shape = self.shape
+        parents = [self.parentLayer]
+        props = JSON.empty . insert "kernel" [self.kernelWidth, self.kernelHeight] . insert "stride" self.stride . insert "padding" self.paddingType . insert "out" [self.outHeight, self.outWidth, self.outChannels]
+        type = "Conv2d"
+        JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type . insert "properties" props
 
     def shape:
         [self.outHeight, self.outWidth, self.outChannels]
