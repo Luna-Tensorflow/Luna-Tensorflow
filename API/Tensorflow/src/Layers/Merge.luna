@@ -2,7 +2,7 @@ import Tensorflow.Tensor
 import Tensorflow.Types
 import Tensorflow.Operations
 import Tensorflow.Variables
-import Tensorflow.Layers.Activation
+import Tensorflow.Layers.LayersHelper
 import Tensorflow.CWrappers.Helpers
 
 class AddLayer layerA layerB:
@@ -41,7 +41,8 @@ class AddLayer layerA layerB:
       # trainableVariables :: List Variable a
       def trainableVariables:
           vars = self.parentLayerA.trainableVariables + self.parentLayerB.trainableVariables
-          vars # TODO uniq
+          unique = LayersHelper.uniqueVariables vars
+          unique
 
       def outputType:
           self.parentLayerA . outputType

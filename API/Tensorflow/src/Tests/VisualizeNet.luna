@@ -10,16 +10,23 @@ import Tensorflow.Types
 
 def testMerge:
     i =  Input.create FloatType [4, 1]
-    d1 = Dense.create 4 i
-    a = Merge.add i d1
-    d2 = Dense.create 1 a
+    d1 = Dense.create 7 i
+    d2 = Dense.create 4 d1
+    d3 = Dense.create 4 d2
+    a = Merge.add d2 d3
+    out = Dense.create 1 a
 
     opt = GradientDescentOptimizer.create 0.1
     loss = MeanErrors.meanSquareError
 
-    model = Models.make i d2 opt loss
+    model = Models.make i out opt loss
 
-    print d2.toJSON
+    print out.toJSON
+
+    vars = out.trainableVariables
+    varnames = vars.each (v: v.wrapper.opName)
+    print "These variable names should be unique: "
+    print varnames.toJSON
 
     0 # Data only for testing that the flow works, we're not building a practical example here
     testX = Tensors.random FloatType [4, 1] 0.0 1.0
