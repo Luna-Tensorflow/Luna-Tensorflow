@@ -5,9 +5,10 @@ import Tensorflow.Variables
 import Tensorflow.Layers.Activation
 import Tensorflow.CWrappers.Helpers
 
-class AddLayer layerT:
+class AddLayer layerA layerB:
       name :: Text
-      parentLayers :: List layerT # :: Layer
+      parentLayerA :: layerA # :: Layer
+      parentLayerB :: layerB # :: Layer
 
       def toText:
           self.name + self.shape.toText
@@ -17,29 +18,39 @@ class AddLayer layerT:
 
       # shape :: List Int
       def shape:
-          self.parentLayers.getAt 0 . shape
+          self.parentLayerA . shape
 
       # forward :: Operation a -> Operation a
       def forward inp:
-          myin = self.parentLayers.getAt 0 . forward inp
-          myin # TODO
+          inA = self.parentLayerA . forward inp
+          inB = self.parentLayerB . forward inp
+          result = Operations.add inA inB
+          result
 
       # eval :: Operation a -> Operation a
       def eval inp:
-          myin = self.parentLayers.getAt 0 . eval inp
-          myin # TODO
+          inA = self.parentLayerA . eval inp
+          inB = self.parentLayerB . eval inp
+          result = Operations.add inA inB
+          result
 
       # trainableVariables :: List Variable a
       def trainableVariables:
-          self.parentLayers.getAt 0 . trainableVariables
+          vars = self.parentLayerA.trainableVariables + self.parentLayerB.trainableVariables
+          vars # TODO uniq
 
       def outputType:
-          self.parentLayers.getAt 0 . outputType
+          self.parentLayerA . outputType
 
 class Marge:
       Merge
 
-      def add layers:
-          0 # TODO check outputType and shape
-          name = getNextName "Add"
-          AddLayer name layers
+      def add layerA layerB:
+        case layerA.shape == layerB.shape of
+          False: throw ("Shape mismatch " + layerA.shape.toText + " /= " + layerB.shape.toText)
+          True:
+            case layerA.outputType.typename == layerB.outputType.typename of
+              False: throw ("Output type mismatch " + layerA.outputType.toText + " /= " + layerB.outputType.toText)
+              True:
+                name = getNextName "Add"
+                AddLayer name layerA layerB

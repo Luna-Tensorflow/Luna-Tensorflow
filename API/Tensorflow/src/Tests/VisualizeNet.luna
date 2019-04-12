@@ -11,10 +11,9 @@ import Tensorflow.Types
 def testMerge:
     i =  Input.create FloatType [4, 1]
     d1 = Dense.create 4 i
-    a = Merge.add [i, d1]
+    a = Merge.add i d1
     d2 = Dense.create 1 a
 
-def sianko:
     opt = GradientDescentOptimizer.create 0.1
     loss = MeanErrors.meanSquareError
 

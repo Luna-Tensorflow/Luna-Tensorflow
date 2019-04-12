@@ -3,6 +3,8 @@ import Std.Foreign
 
 import Tensorflow.CWrappers.Helpers
 
+# TODO we want to add a def == to types that check typename equality
+
 class FloatType:
     def typename:
         "TF_FLOAT"
@@ -18,6 +20,8 @@ class FloatType:
         None
     def num:
         1
+    def toText:
+        self.typename
 
 class DoubleType:
     def typename:
@@ -34,6 +38,8 @@ class DoubleType:
         None
     def num:
         2
+    def toText:
+        self.typename
 
 class Int8Type:
     def typename:
@@ -50,6 +56,8 @@ class Int8Type:
         None
     def num:
         6
+    def toText:
+        self.typename
 
 class Int16Type:
     def typename:
@@ -66,6 +74,8 @@ class Int16Type:
         None
     def num:
         5
+    def toText:
+        self.typename
 
 class Int32Type:
     def typename:
@@ -82,6 +92,8 @@ class Int32Type:
         None
     def num:
         3
+    def toText:
+        self.typename
 
 class Int64Type:
     def typename:
@@ -98,6 +110,8 @@ class Int64Type:
         None
     def num:
         9
+    def toText:
+        self.typename
 
 class UInt8Type:
     def typename:
@@ -114,6 +128,8 @@ class UInt8Type:
         None
     def num:
         4
+    def toText:
+        self.typename
 
 class UInt16Type:
     def typename:
@@ -130,6 +146,8 @@ class UInt16Type:
         None
     def num:
         17
+    def toText:
+        self.typename
 
 class UInt32Type:
     def typename:
@@ -146,6 +164,8 @@ class UInt32Type:
         None
     def num:
         22
+    def toText:
+        self.typename
 
 class UInt64Type:
     def typename:
@@ -162,6 +182,8 @@ class UInt64Type:
         None
     def num:
         23
+    def toText:
+        self.typename
 
 class BoolType:
     def typename:
@@ -180,6 +202,8 @@ class BoolType:
         None
     def num:
         10
+    def toText:
+        self.typename
 
 class StringType:
     def typename:
@@ -197,3 +221,5 @@ class StringType:
         callHandlingError "free_pointer" None [val'.toCArg]
     def num:
         7
+    def toText:
+        self.typename
