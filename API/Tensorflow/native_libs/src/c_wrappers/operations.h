@@ -28,7 +28,7 @@ TFL_API void** eval_graph_with_placeholders(GraphSession* graph, const char** ph
 		size_t ph_count, State* state, const char **outError);
 
 TFL_API State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
-	size_t foldCount, const char **outError);
+	size_t foldCount, uint32_t epochs, const char **outError);
 
 TFL_API Output* make_variable(const char* name, Tensor* val, const char **outError);
 TFL_API Output* make_sequence(Output* sideefect, Output* value, const char **outError);

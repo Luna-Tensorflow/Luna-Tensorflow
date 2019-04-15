@@ -124,10 +124,11 @@ class TFGraph:
     # Arguments: 
     # `placeholderNames` :: List Text
     # `placeholderVals` :: List List Tensor a
+    # `epochs` :: Int
     # `initialState` :: State
-    # foldEval :: List Text -> List List Tensor a -> State -> State
-    def foldEval placeholderNames placeholderVals initialState:
-        wrapper = self.wrapper.foldEval placeholderNames placeholderVals initialState
+    # foldEval :: List Text -> List List Tensor a -> Int -> State -> State
+    def foldEval placeholderNames placeholderVals epochs initialState:
+        wrapper = self.wrapper.foldEval placeholderNames placeholderVals epochs initialState
         State wrapper
 
 # TFGraph building methods.

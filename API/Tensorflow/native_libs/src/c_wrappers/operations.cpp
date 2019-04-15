@@ -336,20 +336,22 @@ void** eval_graph_with_placeholders(GraphSession *graph,
 }
 
 State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
-                         size_t fold_count, const char **outError){
+                         size_t inputs_count, uint32_t epochs, const char **outError){
     return TRANSLATE_EXCEPTION(outError) {
-        FFILOG(graph, ph_names, ph_count, ph_values, initial, fold_count);
+        FFILOG(graph, ph_names, ph_count, ph_values, initial, fold_count, epochs);
 
         std::map<std::string, std::shared_ptr<Tensor>> substitutions;
         std::shared_ptr<State> state = LifetimeManager::instance().accessOwned(initial);
 
-        for(size_t epoch=0; epoch < fold_count; ++epoch)
-        {
-            for(size_t ph = 0; ph < ph_count; ++ ph)
-                substitutions.emplace(std::string(ph_names[ph]),
-                                      LifetimeManager::instance().accessOwned(ph_values[epoch * ph_count + ph]));
-            state = graph->eval(substitutions, state)->result_state;
-            substitutions.clear();
+        for (uint32_t epoch = 0; epoch < epochs; ++epoch) {
+            for (size_t input_index = 0; input_index < inputs_count; ++input_index) {
+                for (size_t ph = 0; ph < ph_count; ++ph) {
+                    substitutions.emplace(std::string(ph_names[ph]),
+                                          LifetimeManager::instance().accessOwned(ph_values[input_index * ph_count + ph]));
+                }
+                state = graph->eval(substitutions, state)->result_state;
+                substitutions.clear();
+            }
         }
 
         return LifetimeManager::instance().addOwnership(state);

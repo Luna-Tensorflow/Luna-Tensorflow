@@ -58,11 +58,11 @@ class Tensor a:
         dims = self.dims
         flat = self.toFlatList
 
-        # Internal.
-        # Arguments:
-        # dims :: List Int
-        # list :: List a
-        # toNested :: List Int -> List a -> JSON
+        None # Internal.
+        None # Arguments:
+        None # dims :: List Int
+        None # list :: List a
+        None # toNested :: List Int -> List a -> JSON
         def toNested dims list:
             case dims of
                 Empty:
