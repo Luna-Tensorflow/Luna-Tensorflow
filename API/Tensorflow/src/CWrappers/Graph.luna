@@ -60,7 +60,7 @@ class GraphWrapper:
         (statewrapper, retwrappers)
 
     def foldEval placeholderNames placeholderVals initialState:
-        placeholderVals' = placeholderVals.each id
+        placeholderVals' = placeholderVals.each (vals: vals.each id)
         initialState' = initialState
 
         phCount = placeholderNames . length
