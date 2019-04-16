@@ -335,6 +335,52 @@ void** eval_graph_with_placeholders(GraphSession *graph,
     };
 }
 
+namespace {
+    double to_double(std::shared_ptr<Tensor> tensor, int64_t index) {
+        switch(tensor->getType()) {
+            case TF_FLOAT:
+                return static_cast<double>(tensor->at<TF_FLOAT>(index));
+            case TF_DOUBLE:
+                return tensor->at<TF_DOUBLE>(index);
+            default:
+                throw std::runtime_error("Loss type not supported by loss history");
+        }
+    }
+}
+
+void** train(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
+                 size_t inputs_count, uint32_t epochs, const char **outError){
+    return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(graph, ph_names, ph_count, ph_values, initial, fold_count, epochs);
+
+        std::map<std::string, std::shared_ptr<Tensor>> substitutions;
+        std::shared_ptr<State> state = LifetimeManager::instance().accessOwned(initial);
+
+        void **ret = static_cast<void**>(malloc(2 * sizeof(void*))); // needs to be freed by caller
+        auto loss_history = static_cast<double*>(malloc(epochs * sizeof(double))); // needgs to be freed by caller
+        ret[1] = loss_history;
+
+        for (uint32_t epoch = 0; epoch < epochs; ++epoch) {
+            double running_loss = 0;
+            for (size_t input_index = 0; input_index < inputs_count; ++input_index) {
+                for (size_t ph = 0; ph < ph_count; ++ph) {
+                    substitutions.emplace(std::string(ph_names[ph]),
+                                          LifetimeManager::instance().accessOwned(ph_values[input_index * ph_count + ph]));
+                }
+                std::shared_ptr<EvaluationResult> eval_result = graph->eval(substitutions, state);
+                running_loss += to_double(eval_result->outputs[0], 0);
+                state = eval_result->result_state;
+                substitutions.clear();
+            }
+            loss_history[epoch] = running_loss / epochs;
+        }
+
+        ret[0] = static_cast<void*>(LifetimeManager::instance().addOwnership(state));
+
+        return ret;
+    };
+}
+
 State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
                          size_t inputs_count, uint32_t epochs, const char **outError){
     return TRANSLATE_EXCEPTION(outError) {

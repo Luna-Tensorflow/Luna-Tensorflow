@@ -1,5 +1,8 @@
 import Tensorflow.Graph
 import Tensorflow.Operations
+import Tensorflow.CFunctions.Model
+import Std.Foreign
+import Std.Foreign.C.Value
 
 class Model:
       evalgraph :: TFGraph
@@ -19,16 +22,17 @@ class Model:
           (res, state') = self.evalgraph.evalSubsts self.state [("x", x)]
           res
 
-      # Trains model on given inputs and outputs.
+      # Trains model on given inputs and outputs. Returns loss history and the trained model.
       # Arguments: 
       # `xs` :: List Tensor a
       # `ys` :: List Tensor b
       # `epochs` :: Int
-      # train :: List Tensor a -> List Tensor b -> Int -> Model # TODO also consider real time visualization of loss in GUI
+      # train :: List Tensor a -> List Tensor b -> Int -> (List Real, Model) # TODO also consider real time visualization of loss in GUI
       def train xs ys epochs:
-          0 # TODO we'd prefer to use batched fold that runs in C++ directly
-          state' =  self.traingraph.foldEval ["x","y"] (xs.zipWith (x: y: [x,y]) ys) epochs self.state # (xs.zip ys).foldLeft self.state ((x,y): state: (self.traingraph.evalSubsts state [("x", x), ("y", y)]).second)
-          Model self.evalgraph self.traingraph self.vars state'
+          placeholderNames = ["x","y"]
+          placeholderVals = xs.zipWith (x: y: [x,y]) ys
+
+          ModelFunctions.train self placeholderNames placeholderVals epochs
 
       # Saving trained model's weights into file.
       # `filename` :: Text

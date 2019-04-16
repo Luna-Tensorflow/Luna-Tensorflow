@@ -53,7 +53,7 @@ def exampleClassificationRMSProp:
     model = Models.make i d3 opt loss
 
     print "Training"
-    fitted = model.train x y 10
+    (_, fitted) = model.train x y 10
 
     print "Evaluation"
     predY = testX . each (tx: fitted.evaluate tx . head . get)
@@ -83,7 +83,9 @@ def exampleClassificationGradientDescent:
     model = Models.make i d2 opt loss
 
     print "Training"
-    fitted = model.train x y 10
+    (history, fitted) = model.train x y 10
+
+    print $ "Loss history: " + history.toText
 
     print "Saving"
     fitted.saveWeights "classification.tf"
