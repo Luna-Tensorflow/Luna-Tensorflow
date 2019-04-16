@@ -14,25 +14,25 @@ class Variables:
     # Arguments: 
     # `name` :: Text
     # `defaultValue` :: Tensor a
-    # make :: Text -> Tensor a -> Operation a
+    # make :: Text -> Tensor a -> TFOutput a
     def make name defaultValue:
         wrapper = makeVariableWrapper name defaultValue
         TFOutput wrapper
 
     # Assigns given value to existing variable.
     # Arguments: 
-    # `var` :: Operation a
-    # `val` :: Operation b
-    # assign :: Operation a -> Operation b -> Operation a
+    # `var` :: TFOutput a
+    # `val` :: TFOutput b
+    # assign :: TFOutput a -> TFOutput b -> TFOutput a
     def assign var val:
         assignOp = assignGen "" var val var.wrapper.typetag False False
         assignOp
 
     # Returns the same output as its second argument, but augmented so that the side-effects of the first argument are executed if the second argument is computed.
     # Arguments: 
-    # `sideeffect` :: Operation a
-    # `value` :: Operation b
-    # sequence :: Operation a -> Operation b -> Operation b
+    # `sideeffect` :: TFOutput a
+    # `value` :: TFOutput b
+    # sequence :: TFOutput a -> TFOutput b -> TFOutput b
     def sequence sideeffect value:
         seqWrapper = makeSequence sideeffect value
         TFOutput seqWrapper

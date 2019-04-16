@@ -6,7 +6,7 @@ import Tensorflow.Types
 import Tensorflow.Variables
 import Std.Foreign.C.Value
 
-# Returns sequence between two TFOperations. It has the same output as its second argument, but augmented so that the side-effects of the first argument are executed if the second argument is computed.
+# Returns sequence between two TFOutputs. It has the same output as its second argument, but augmented so that the side-effects of the first argument are executed if the second argument is computed.
 # Arguments: 
 # a :: TFOutput a
 # b :: TFOutput a

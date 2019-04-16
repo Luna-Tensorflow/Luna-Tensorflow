@@ -6,6 +6,7 @@ import Tensorflow.Graph
 import Tensorflow.GeneratedOps
 import Tensorflow.Tensor
 
+# Optimizer that implements the Adam algorithm.
 class Adam:
       beta1Power :: Real
       beta2Power :: Real
@@ -15,20 +16,33 @@ class Adam:
       epsilon :: Real
       useNesterov :: Bool
 
+      # Returns Adam Optimizer in Text type.
+      # `return` :: Text
+      # toText :: Text
       def toText:
           "Adam beta1Power=" + self.beta1Power.toText + " beta2Power=" + self.beta2Power.toText + " lr=" + self.lr.toText +
                   " beta1=" + self.lr.toText + " beta2=" + self.beta2.toText + " epsilon=" + self.epsilon.toText
 
+      # Returns Adam Optimizer in JSON type.
+      # `return` :: JSON
+      # toJSON :: JSON
       def toJSON:
-          0 # TODO maybe some JSON format?
           self.toText.toJSON
 
-      # makeOptimizingGraph :: Operation a -> Operation a -> (Operation a -> Operation a -> Operation b) -> List Variable -> TFGraph
+      # Function to update variables in TFGraph based on expected output, real output and loss function according to the Adam.
+      # Arguments:
+      # `yTrue` :: TFOutput a
+      # `yPred` :: TFOutput a
+      # `loss` :: TFOutput a -> TFOutput a -> TFOutput b
+      # `variables` :: List Variable 
+      # `return` :: TFGraph
+      # makeOptimizingGraph :: TFOutput a -> TFOutput a -> (TFOutput a -> TFOutput a -> TFOutput b) -> List Variable -> TFGraph
       def makeOptimizingGraph yTrue yPred loss variables:
           err = loss yTrue yPred
           grads = Gradients.make [err] variables []
           varsAndGrads = variables.zip grads
 
+          # Internal.
           def makeAndApplyAdam ((v, g), i):
               beta1Power = Operations.constFromScalar v.typetag self.beta1Power
               beta2Power = Operations.constFromScalar v.typetag self.beta2Power
@@ -46,8 +60,20 @@ class Adam:
 
           TFGraphMaker.makeFromOutput errWithSideEffect
 
+# Adam Optimizer constructing and usage.
 class AdamOptimizer:
     AdamOptimizer
 
+    # Adam Oprimizer constructor.
+    # Arguments:
+    # `beta1Power` :: Real
+    # `beta2Power` :: Real
+    # `lr` :: Real
+    # `beta1` :: Real
+    # `beta2` :: Real
+    # `epsilon` :: Real
+    # `useNesterov :: Bool
+    # `return` :: Adam
+    # create :: Real -> Real -> Real -> Real -> Real -> Bool -> Adam
     def create beta1Power beta2Power lr beta1 beta2 epsilon useNesterov:
         Adam beta1Power beta2Power lr beta1 beta2 epsilon useNesterov

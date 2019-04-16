@@ -4,23 +4,35 @@ import Tensorflow.Operations
 import Tensorflow.CWrappers.Helpers
 import Tensorflow.GeneratedOps
 
-# TODO this type parameter is temporary, due to lack of interfaces
+# Dropout consists in randomly setting a fraction rate of input units to 0 at each update during training time, which helps prevent overfitting. The units that are kept are scaled by 1 / (1 - rate), so that their sum is unchanged at training time and inference time.
 class DropoutLayer layerT:
     name :: Text
     rate :: Real
     parentLayer :: layerT # :: Layer # TODO no interfaces
 
+    # Returns Dropout layer in Text type.
+    # `return` :: Text
+    # toText :: Text
     def toText:
         self.name + self.shape.toText
 
+    # Returns Dropout layer in JSON type.
+    # `return` :: JSON
+    # toJSON :: JSON
     def toJSON:
         self.toText.toJSON
 
+    # Returns shape after processing by this layer. It inherits parent's shape.
+    # `return` :: List Int
     # shape :: List Int
     def shape:
         self.parentLayer.shape
 
-    # forward :: Operation a -> Operation a
+    # Computes output on this layer after feeding with data from previous one.
+    # Arguments:
+    # `inp` :: TFOutput a
+    # `return` :: TFOutput a
+    # forward :: TFOutput a -> TFOutput a
     def forward inp:
         myin = self.parentLayer.forward inp
 
@@ -34,21 +46,36 @@ class DropoutLayer layerT:
         out = (myin * mask) / keepProb
         out
 
-    # eval :: Operation a -> Operation a
+    # Helper function to run evaluation of model.
+    # Arguments:
+    # `inp` :: TFOutput a
+    # `return` :: TFOutput a
+    # eval :: TFOutput a -> TFOutput a
     def eval inp:
         myin = self.parentLayer.eval inp
         myin
 
+    # Returns variables to train, up to this layer. This layer has no new variables and inherits parent's variables.
+    # `return` :: List Variable a
     # trainableVariables :: List Variable a
     def trainableVariables:
         self.parentLayer.trainableVariables
 
+    # Returns type of output in this layer.
+    # `return` :: TypeTag
+    # outputType :: TypeTag
     def outputType:
         self.parentLayer.outputType
 
+# Dropout layer creation and usage.
 class Dropout:
     Dropout
 
+    # Dropout layer constructor.
+    # Arguments:
+    # `rate` :: Real
+    # `parent` :: Layer
+    # `return` :: Layer
     # dropout :: Real -> Layer -> Layer
     def create rate parent:
         name = getNextName "Dropout"

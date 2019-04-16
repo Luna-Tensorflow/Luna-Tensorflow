@@ -8,18 +8,20 @@ class Losses:
 
     # Categorical cross-entropy loss function.
     # Arguments:
-    # `yTrue` :: TFOperation
-    # `yPred` :: TFOperation
-    # categoricalCrossentropy :: TFOperation -> TFOperation -> TFOperation
+    # `yTrue` :: TFOutput
+    # `yPred` :: TFOutput
+    # `return` :: TFOutput
+    # categoricalCrossentropy :: TFOutput -> TFOutput -> TFOutput
     def categoricalCrossentropy yTrue yPred:
         out = Operations.neg (Operations.sum (yTrue * (Operations.log yPred)) [0])
         out
 
     # Binary cross-entropy loss function.
     # Arguments:
-    # `yTrue` :: TFOperation
-    # `yPred` :: TFOperation
-    # binaryCrossentropy :: TFOperation -> TFOperation -> TFOperation
+    # `yTrue` :: TFOutput
+    # `yPred` :: TFOutput
+    # `return` :: TFOutput
+    # binaryCrossentropy :: TFOutput -> TFOutput -> TFOutput
     def binaryCrossentropy yTrue yPred:
         t = Tensor.fromList1d FloatType [1.0]
         ones = Operations.makeConst t
