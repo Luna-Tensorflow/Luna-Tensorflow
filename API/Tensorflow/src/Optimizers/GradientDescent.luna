@@ -34,7 +34,6 @@ class GradientDescent:
           grads = Gradients.make [err] variables []
           varsAndGrads = variables.zip grads
 
-          # Internal.
           def makeAndApplyGradientDescent (v, g):
               lr = Operations.constFromScalar v.typetag self.lr
               applyGradientDescentGen "" v lr g v.typetag False

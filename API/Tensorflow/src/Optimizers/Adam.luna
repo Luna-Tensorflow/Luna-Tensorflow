@@ -42,7 +42,6 @@ class Adam:
           grads = Gradients.make [err] variables []
           varsAndGrads = variables.zip grads
 
-          # Internal.
           def makeAndApplyAdam ((v, g), i):
               beta1Power = Operations.constFromScalar v.typetag self.beta1Power
               beta2Power = Operations.constFromScalar v.typetag self.beta2Power

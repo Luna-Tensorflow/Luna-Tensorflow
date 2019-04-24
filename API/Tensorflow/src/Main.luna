@@ -25,12 +25,12 @@ def transposeTensor t:
 
 def main:
     print "hello"
-    testMain
-    vartest
-    lowlevelNetExample
-    exampleClassificationGradientDescent
-    exampleClassificationRMSProp
-    exampleConvolutional
-    tensorTest
-    tensorSerializationTest
+    0 #testMain
+    0 #vartest
+    0 #lowlevelNetExample
+    0 #exampleClassificationGradientDescent
+    0 #exampleClassificationRMSProp
+    0 #exampleConvolutional
+    0 #tensorTest
+    0 #tensorSerializationTest
     tensorFromPngTest

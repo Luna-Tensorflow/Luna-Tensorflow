@@ -2,4 +2,5 @@ import Tensorflow.Tensor
 
 def tensorFromPngTest:
     tensor = Tensors.fromPng "logo.png"
+    print ("Sizes: " + tensor.toText)
     print (tensor.toJSON)

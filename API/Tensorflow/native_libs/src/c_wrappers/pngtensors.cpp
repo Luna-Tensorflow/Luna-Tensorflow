@@ -21,7 +21,7 @@ TFL_API Tensor* read_tensor_from_png(const char* filename, const char** outError
         png::image <png::rgb_pixel> image(filename);
 
         int64_t width = image.get_width(), height = image.get_height();
-        auto data = std::make_shared<float[]>(width*height*3*sizeof(float));
+        auto data = static_cast<float*>(malloc(width*height*3*sizeof(float)));
 
         for(int w=0; w<width; ++w) {
             for(int h=0; h<height; ++h) {
@@ -32,8 +32,9 @@ TFL_API Tensor* read_tensor_from_png(const char* filename, const char** outError
             }
         }
         int64_t dims[] = {width, height, 3};
-        std::shared_ptr<Tensor> retval = std::make_shared<Tensor>(data.get(), dims, 3, TF_FLOAT);
+        std::shared_ptr<Tensor> retval = std::make_shared<Tensor>(data, dims, 3, TF_FLOAT);
+        free(data);
 
-        FFILOGANDRETURN(LifetimeManager::instance().addOwnership(std::move(retval)));
+        return LifetimeManager::instance().addOwnership(std::move(retval));
     };
 }
