@@ -122,3 +122,10 @@ def loadTensorsWrapper filename count:
     managed = returnedArr.toList.each (ManagedPointer None . fromPointer releaseMethod)
     callHandlingError "free_pointer" None [returnedPtr.toCArg]
     managed
+
+def fromPngWrapper filename:
+    returnedPtr = CString.with filename fnamecstr:
+            callHandlingError "read_tensor_from_png" (Pointer None) [fnamecstr.toCArg]
+
+    managed = ManagedPointer None . fromPointer releaseMethod returnedPtr
+    TensorWrapper managed FloatType

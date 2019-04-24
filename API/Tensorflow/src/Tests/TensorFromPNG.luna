@@ -1,0 +1,5 @@
+import Tensorflow.Tensor
+
+def tensorFromPngTest:
+    tensor = Tensors.fromPng "logo.png"
+    print (tensor.toJSON)

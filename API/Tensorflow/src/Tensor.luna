@@ -204,3 +204,12 @@ class Tensors:
     def load filename typetag:
         [ptr] = loadTensorsWrapper filename 1
         Tensor (TensorWrapper ptr typetag)
+
+    # Loads tensor from PNG file in RGB format
+    # Arguments:
+    # `filename` :: Text
+    # fromPng :: Text -> Tensor
+    def fromPng filename:
+        wrapper = fromPngWrapper filename
+        res = Tensor wrapper
+        res
