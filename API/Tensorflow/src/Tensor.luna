@@ -219,3 +219,25 @@ class Tensors:
         wrapper = fromPngWrapper filename
         res = Tensor wrapper
         res
+
+    # Converts a Dataframes Table consisting of only float values into a 2D float tensor
+    # Arguments:
+    # `table` :: Dataframes.Table.Table
+    # fromTable :: Table -> Tensor FloatType
+    def fromTable table:
+        lst = table.toList . each (col: col.toList)
+        t = Tensors.fromList2d FloatType lst
+        t
+
+    # Converts a Dataframes Table into a list of 1d tensors, each tensor representing a row from the table
+    # Arguments:
+    # `table` :: Dataframes.Table.Table
+    # fromTableRows :: Table -> List (Tensor FloatType)
+    def fromTableRows table:
+        t1 = Tensors.fromTable table
+        t2 = Tensors.transpose t1
+        lst' = Tensors.to2dList t2
+        cols = table.columnNames.length
+        shape = [cols, 1]
+        samples = lst'.each(l: Tensors.fromList FloatType shape l)
+        samples
