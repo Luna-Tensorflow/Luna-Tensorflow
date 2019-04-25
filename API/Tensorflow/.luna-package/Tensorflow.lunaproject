@@ -1,0 +1,65 @@
+modulesSettings:
+  src/Operations.luna:
+    typeRepToVisMap: []
+    currentBreadcrumb: ''
+    breadcrumbsSettings:
+    - - items: []
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
+          lastInverse: 0
+  src/Main.luna:
+    typeRepToVisMap: []
+    currentBreadcrumb: main
+    breadcrumbsSettings:
+    - - items:
+        - main
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[-1440.0,-960.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[1440.0,960.0,0.0,1.0]]'
+          lastInverse: 2
+  src/Tests/TensorTest.luna:
+    typeRepToVisMap: []
+    currentBreadcrumb: ''
+    breadcrumbsSettings:
+    - - items: []
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
+          lastInverse: 0
+    - - items:
+        - tensorTest
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[0.24717741935483872,0.0,0.0,0.0],[0.0,0.24717741935483872,0.0,0.0],[0.0,0.0,1.0,0.0],[-540.2258064516129,-316.38709677419354,0.0,1.0]]'
+          screenToLogical: ! '[[4.045676998368679,0.0,0.0,0.0],[0.0,4.045676998368679,0.0,0.0],[0.0,0.0,1.0,0.0],[2185.57911908646,1280.0,0.0,1.0]]'
+          lastInverse: 0
+  src/Test.luna:
+    typeRepToVisMap:
+    - - tag: TCons
+        contents:
+        - Tensor
+        - - tag: TCons
+            contents:
+            - FloatType
+            - []
+      - - ! 'ProjectVisualizer: tensor: tensor'
+        - tensor/tensor.html
+    currentBreadcrumb: testTensorVis
+    breadcrumbsSettings:
+    - - items: []
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[-2819.0,53.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[2819.0,-53.0,0.0,1.0]]'
+          lastInverse: 0
+    - - items:
+        - testBool
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[-960.0,-1440.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[960.0,1440.0,0.0,1.0]]'
+          lastInverse: 2
+    - - items:
+        - testTensorVis
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[-372.0,-106.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[372.0,106.0,0.0,1.0]]'
+          lastInverse: 0

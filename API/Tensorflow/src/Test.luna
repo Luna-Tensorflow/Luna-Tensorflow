@@ -8,180 +8,180 @@ import Tensorflow.Gradient
 import Tensorflow.Types
 import Tensorflow.GeneratedOps
 
-«0»def step func (x, y) [a, b]:
-    «11»func x y a b
+def step func (x, y) [a, b]:
+    func x y a b
 
-«1»def gradientDescent lr x y a b:
-    «12»meanSqErr = (a * x + b - y) * (a * x + b - y)
+def gradientDescent lr x y a b:
+    meanSqErr = (a * x + b - y) * (a * x + b - y)
 
-    «13»[a + (Operations.partial meanSqErr a) * lr, b + (Operations.partial meanSqErr b) * lr]
+    [a + (Operations.partial meanSqErr a) * lr, b + (Operations.partial meanSqErr b) * lr]
 
-«2»def testRegression:
-    «14»print "Regression"
-    «15»xtensors = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].each (x: «16»Tensors.fromList1d FloatType [x.toReal])
-    «17»ytensors = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].each (x: «18»Tensors.fromList1d FloatType [x.toReal])
+def testRegression:
+    print "Regression"
+    xtensors = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].each (x: Tensors.fromList1d FloatType [x.toReal])
+    ytensors = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].each (x: Tensors.fromList1d FloatType [x.toReal])
 
-    «19»train = xtensors . zip ytensors
+    train = xtensors . zip ytensors
 
-    «20»lifted = lift5 gradientDescent
+    lifted = lift5 gradientDescent
 
-    «21»zero = Tensors.fromList1d FloatType [0.0]
-    «22»lr = Tensors.fromList1d FloatType [(0.0001 . negate)]
+    zero = Tensors.fromList1d FloatType [0.0]
+    lr = Tensors.fromList1d FloatType [(0.0001 . negate)]
 
-    «23»t0 = Time.now
-    «24»[a, b] = train . fold [zero, zero] (step (lifted lr))
-    «25»t1 = Time.now
+    t0 = Time.now
+    [a, b] = train . fold [zero, zero] (step (lifted lr))
+    t1 = Time.now
 
-    «26»print a.toJSON
-    «27»print b.toJSON
-    «28»print ("Took " + (t1.diff t0).toText + " ms")
-    «29»if ((a.toJSON.toText == "[12.209929466247559]").and $ b.toJSON.toText == "[-0.22048871219158173]").not then throw $ "Regression fail: expected a = [12.209929466247559], b = [-0.22048871219158173], got a = " + a.toJSON.toText + ", b = " + b.toJSON.toText else None
-    «30»print "Regression OK"
-    «31»print ""
-    «32»print ""
+    print a.toJSON
+    print b.toJSON
+    print ("Took " + (t1.diff t0).toText + " ms")
+    if ((a.toJSON.toText == "[12.209929466247559]").and $ b.toJSON.toText == "[-0.22048871219158173]").not then throw $ "Regression fail: expected a = [12.209929466247559], b = [-0.22048871219158173], got a = " + a.toJSON.toText + ", b = " + b.toJSON.toText else None
+    print "Regression OK"
+    print ""
+    print ""
     None
 
-«3»def testGradients:
-    «33»print "Gradients"
-    «34»a = Operations.constFromScalar FloatType 3.0
-    «35»b = Operations.constFromScalar FloatType 3.0
-    «36»q = Operations.constFromScalar FloatType 2.0
-    «37»p = Operations.constFromScalar FloatType 2.0.negate
-    «38»c = a * b
-    «39»d = c * a
-    «40»e = a + b
-    «41»gs = Gradients.make [d, e] [a, b] [p, q]
-    «42»result = gs.toJSON
-    «43»print result
-    «44»if (result == [34.0.negate, 16.0.negate].toJSON).not then throw $ "Gradients error: expected [-34,-16], got " + result.toText else None
-    «45»print "Gradients OK"
-    «46»print ""
-    «47»print ""
+def testGradients:
+    print "Gradients"
+    a = Operations.constFromScalar FloatType 3.0
+    b = Operations.constFromScalar FloatType 3.0
+    q = Operations.constFromScalar FloatType 2.0
+    p = Operations.constFromScalar FloatType 2.0.negate
+    c = a * b
+    d = c * a
+    e = a + b
+    gs = Gradients.make [d, e] [a, b] [p, q]
+    result = gs.toJSON
+    print result
+    if (result == [34.0.negate, 16.0.negate].toJSON).not then throw $ "Gradients error: expected [-34,-16], got " + result.toText else None
+    print "Gradients OK"
+    print ""
+    print ""
     None
 
-«4»def testUInt8:
-    «48»print "UInt8"
-    «49»a = Operations.constFromScalar UInt8Type 250
-    «50»b = Operations.constFromScalar UInt8Type 10
-    «51»c = Operations.add a b
-    «52»print a.toJSON
-    «53»print "+"
-    «54»print b.toJSON
-    «55»print "="
-    «56»cVal = c.toJSON
-    «57»print cVal
-    «58»if (cVal.toText == "4").not then throw $ "UInt8 error: expected 4, got " + cVal.toText else None
-    «59»print "UInt8 OK"
-    «60»print ""
-    «61»print ""
+def testUInt8:
+    print "UInt8"
+    a = Operations.constFromScalar UInt8Type 250
+    b = Operations.constFromScalar UInt8Type 10
+    c = Operations.add a b
+    print a.toJSON
+    print "+"
+    print b.toJSON
+    print "="
+    cVal = c.toJSON
+    print cVal
+    if (cVal.toText == "4").not then throw $ "UInt8 error: expected 4, got " + cVal.toText else None
+    print "UInt8 OK"
+    print ""
+    print ""
 
-«5»def testBool:
-    «62»print "Bool"
-    «63»a = Operations.constFromScalar BoolType True
-    «64»aVal = a.toJSON
-    «65»print aVal
-    «66»if (aVal.toText == "true").not then throw $ "Bool error: expected true, got " + aVal.toText else None
-    «67»print "Bool OK"
-    «68»print ""
-    «69»print ""
+def testBool:
+    print "Bool"
+    a = Operations.constFromScalar BoolType True
+    aVal = a.toJSON
+    print aVal
+    if (aVal.toText == "true").not then throw $ "Bool error: expected true, got " + aVal.toText else None
+    print "Bool OK"
+    print ""
+    print ""
 
-«6»def testMultidimensionalTensors:
-    «70»print "Multidimensional tensors"
-    «71»aTensor = Tensors.fromList Int64Type [2, 3] [1, 2, 3, 4, 5, 6]
-    «72»aJSON = aTensor.toJSON
-    «73»print aJSON
-    «74»if (aJSON.toText == "[[1,2,3],[4,5,6]]").not then throw $ "Multidimensional tensor error: expected [[1,2,3],[4,5,6]], got " + aJSON.toText else None
+def testMultidimensionalTensors:
+    print "Multidimensional tensors"
+    aTensor = Tensors.fromList Int64Type [2, 3] [1, 2, 3, 4, 5, 6]
+    aJSON = aTensor.toJSON
+    print aJSON
+    if (aJSON.toText == "[[1,2,3],[4,5,6]]").not then throw $ "Multidimensional tensor error: expected [[1,2,3],[4,5,6]], got " + aJSON.toText else None
 
-    «75»aTensor12 = aTensor.at [1, 2]
-    «76»print aTensor12
-    «77»if (aTensor12 == 6).not then throw "Multidimensional tensor error: expected 6, got " + aTensor12.toText else None
+    aTensor12 = aTensor.at [1, 2]
+    print aTensor12
+    if (aTensor12 == 6).not then throw "Multidimensional tensor error: expected 6, got " + aTensor12.toText else None
 
-    «78»bTensor = Tensors.fromList Int64Type [2, 3] [9, 8, 7, 7, 8, 9]
-    «79»bJSON = bTensor.toJSON
-    «80»print bJSON
-    «81»if (bJSON.toText == "[[9,8,7],[7,8,9]]").not then throw $ "Multidimensional tensor error: expected [[9,8,7],[7,8,9]], got " + bJSON.toText else None
+    bTensor = Tensors.fromList Int64Type [2, 3] [9, 8, 7, 7, 8, 9]
+    bJSON = bTensor.toJSON
+    print bJSON
+    if (bJSON.toText == "[[9,8,7],[7,8,9]]").not then throw $ "Multidimensional tensor error: expected [[9,8,7],[7,8,9]], got " + bJSON.toText else None
 
-    «82»a = Operations.makeConst aTensor
-    «83»b = Operations.makeConst bTensor
-    «84»c = a + b
-    «85»cVal = c.eval
-    «86»print cVal.dims
-    «87»if (cVal.dims == [2, 3]).not then throw $ "Multidimensional tensor error: expected [2, 3], got " + cVal.dims.toText else None
+    a = Operations.makeConst aTensor
+    b = Operations.makeConst bTensor
+    c = a + b
+    cVal = c.eval
+    print cVal.dims
+    if (cVal.dims == [2, 3]).not then throw $ "Multidimensional tensor error: expected [2, 3], got " + cVal.dims.toText else None
 
-    «88»cJSON = cVal.toJSON
-    «89»print cJSON
-    «90»if (cJSON.toText == "[[10,10,10],[11,13,15]]").not then throw $ "Multidimensional tensor error: expected [[10,10,10],[11,13,15]], got " + cJSON.toText else None
+    cJSON = cVal.toJSON
+    print cJSON
+    if (cJSON.toText == "[[10,10,10],[11,13,15]]").not then throw $ "Multidimensional tensor error: expected [[10,10,10],[11,13,15]], got " + cJSON.toText else None
 
-    «91»print "Multidimensional tensor OK"
-    «92»print ""
-    «93»print ""
+    print "Multidimensional tensor OK"
+    print ""
+    print ""
 
-«7»def testString:
-    «94»print "String"
-    «95»a = Operations.constFromScalar StringType "test"
-    «96»aJSON = a.toJSON
-    «97»print aJSON
-    «98»if (aJSON.toText == '"test"').not then throw $ 'String error: expected "test", got "' + aJSON.toText + '"' else None
+def testString:
+    print "String"
+    a = Operations.constFromScalar StringType "test"
+    aJSON = a.toJSON
+    print aJSON
+    if (aJSON.toText == '"test"').not then throw $ 'String error: expected "test", got "' + aJSON.toText + '"' else None
 
-    «99»b = Operations.add a a
-    «100»bJSON = b.toJSON
-    «101»print bJSON
-    «102»if (bJSON.toText == '"testtest"').not then throw $ 'String error: expected "testtest", got "' + bJSON.toText + '"' else None
+    b = Operations.add a a
+    bJSON = b.toJSON
+    print bJSON
+    if (bJSON.toText == '"testtest"').not then throw $ 'String error: expected "testtest", got "' + bJSON.toText + '"' else None
 
-    «103»print "String OK"
-    «104»print ""
-    «105»print ""
+    print "String OK"
+    print ""
+    print ""
 
-«8»def testMultiOutputOp:
-    «106»print "MultiOutputOp"
-    «107»aTensor = Tensors.fromList FloatType [4, 3] (1.upto 12 . map (x: x.toReal))
+def testMultiOutputOp:
+    print "MultiOutputOp"
+    aTensor = Tensors.fromList FloatType [4, 3] (1.upto 12 . map (x: x.toReal))
 
-    «108»a = Operations.makeConst aTensor
+    a = Operations.makeConst aTensor
 
-    «109»[q, r] = Operations.qr a
-    «110»b = Operations.matMul q r
+    [q, r] = Operations.qr a
+    b = Operations.matMul q r
 
-    «111»bJSON = b.toJSON
+    bJSON = b.toJSON
 
-    «112»print $ "a = " + a.toJSON.toText
-    «113»print $ "q * r = " + bJSON.toText
+    print $ "a = " + a.toJSON.toText
+    print $ "q * r = " + bJSON.toText
 
-    «114»expectedbText = '[[0.9999996423721313,1.9999982118606567,2.9999983310699463],[3.999999761581421,4.999999523162842,5.999999523162842],[6.999999523162842,7.999999523162842,9],[10,10.999999046325684,11.999998092651367]]'
-    «115»if (bJSON.toText == expectedbText).not then throw $ 'MultiOutputOp error: expected ' + expectedbText + ', got ' + bJSON.toText else None
+    expectedbText = '[[0.9999996423721313,1.9999982118606567,2.9999983310699463],[3.999999761581421,4.999999523162842,5.999999523162842],[6.999999523162842,7.999999523162842,9],[10,10.999999046325684,11.999998092651367]]'
+    if (bJSON.toText == expectedbText).not then throw $ 'MultiOutputOp error: expected ' + expectedbText + ', got ' + bJSON.toText else None
 
-    «116»print "MultiOutputOp OK"
-    «117»print ""
-    «118»print ""
+    print "MultiOutputOp OK"
+    print ""
+    print ""
 
-«9»def testAttrs:
-    «119»print "Attrs"
-    «120»aTensor = Tensors.fromList1d FloatType [1.0, 2.0, 3.0]
+def testAttrs:
+    print "Attrs"
+    aTensor = Tensors.fromList1d FloatType [1.0, 2.0, 3.0]
 
-    «121»a = constGen "testAttrs_a" aTensor FloatType
-    «122»aJSON = a.toJSON
+    a = constGen "testAttrs_a" aTensor FloatType
+    aJSON = a.toJSON
 
-    «123»if (aJSON.toText == '[1,2,3]').not then throw $ 'Attrs error: expected [1,2,3], got ' + aJSON.toText else None
+    if (aJSON.toText == '[1,2,3]').not then throw $ 'Attrs error: expected [1,2,3], got ' + aJSON.toText else None
 
-    «124»aIdentity = debugIdentityGen "testAttrs_aIdentity" a FloatType "" "InputTensorName" [] False
+    aIdentity = debugIdentityGen "testAttrs_aIdentity" a FloatType "" "InputTensorName" [] False
 
-    «125»aIdentityJSON = aIdentity.toJSON
-    «126»if (aIdentityJSON == aJSON).not then throw $ 'Attrs error: expected [1,2,3], got ' + aIdentityJSON.toText else None
+    aIdentityJSON = aIdentity.toJSON
+    if (aIdentityJSON == aJSON).not then throw $ 'Attrs error: expected [1,2,3], got ' + aIdentityJSON.toText else None
 
-    «127»print "Attrs OK"
-    «128»print ""
-    «129»print ""
+    print "Attrs OK"
+    print ""
+    print ""
 
-«138»def testTensorVis:
-    «139»tensor = Tensors.fromList2d FloatType [[0.0, 0.5, 1.0], [0.2, 0.3, 0.6], [0.7, 0.8, 0.9]]
+def testTensorVis:
+    tensor = Tensors.fromList2d FloatType [[0.0, 0.5, 1.0], [0.2, 0.3, 0.6], [0.7, 0.8, 0.9]]
+    t2 = Tensors.random FloatType [4,80,80] 0.0 1.0
+    t3 = Tensors.random FloatType [20,30,3] 0.0 1.0
 
-«10»def testMain:
-    «130»testRegression
-    «131»testUInt8
-    «132»testBool
-    «133»testString
-    «134»testGradients
-    «135»testMultidimensionalTensors
-    «136»testMultiOutputOp
-    «137»testAttrs
-
-### META {"metas":[{"marker":48,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1920,"_vector2_x":0}}}},{"marker":49,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1920,"_vector2_x":320}}}},{"marker":50,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2240,"_vector2_x":320}}}},{"marker":51,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1920,"_vector2_x":640}}}},{"marker":52,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2240,"_vector2_x":640}}}},{"marker":53,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1920,"_vector2_x":1600}}}},{"marker":54,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":640}}}},{"marker":55,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1920,"_vector2_x":1920}}}},{"marker":56,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1920,"_vector2_x":960}}}},{"marker":57,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2240,"_vector2_x":1280}}}},{"marker":58,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1920,"_vector2_x":1280}}}},{"marker":59,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1920,"_vector2_x":2240}}}},{"marker":60,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1920,"_vector2_x":2560}}}},{"marker":61,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1920,"_vector2_x":2880}}}},{"marker":62,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":0}}}},{"marker":63,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":320}}}},{"marker":64,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":640}}}},{"marker":65,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":960}}}},{"marker":66,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":960}}}},{"marker":67,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":1280}}}},{"marker":68,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":1600}}}},{"marker":69,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":1920}}}},{"marker":11,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":119,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":0}}}},{"marker":120,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":320}}}},{"marker":121,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":640}}}},{"marker":122,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":1280}}}},{"marker":123,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":1600}}}},{"marker":124,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1920,"_vector2_x":960}}}},{"marker":125,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1920,"_vector2_x":1280}}}},{"marker":126,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1920,"_vector2_x":1600}}}},{"marker":127,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":1920}}}},{"marker":128,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":2240}}}},{"marker":129,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":2560}}}},{"marker":33,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":0}}}},{"marker":34,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":320}}}},{"marker":35,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":320}}}},{"marker":36,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2240,"_vector2_x":960}}}},{"marker":37,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1920,"_vector2_x":960}}}},{"marker":38,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":640}}}},{"marker":39,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":960}}}},{"marker":40,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":960}}}},{"marker":41,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":1280}}}},{"marker":42,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":1600}}}},{"marker":43,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":1920}}}},{"marker":44,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":1920}}}},{"marker":45,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":2240}}}},{"marker":46,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":2560}}}},{"marker":47,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":2880}}}},{"marker":70,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":0}}}},{"marker":71,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3200,"_vector2_x":320}}}},{"marker":72,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3520,"_vector2_x":640}}}},{"marker":73,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3520,"_vector2_x":960}}}},{"marker":74,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3520,"_vector2_x":960}}}},{"marker":75,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3200,"_vector2_x":640}}}},{"marker":76,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3200,"_vector2_x":960}}}},{"marker":77,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3200,"_vector2_x":960}}}},{"marker":78,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":320}}}},{"marker":79,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":640}}}},{"marker":80,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":960}}}},{"marker":81,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2880,"_vector2_x":960}}}},{"marker":82,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3840,"_vector2_x":640}}}},{"marker":83,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3840,"_vector2_x":640}}}},{"marker":84,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3840,"_vector2_x":960}}}},{"marker":85,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3840,"_vector2_x":1280}}}},{"marker":86,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":4160,"_vector2_x":1600}}}},{"marker":87,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":4480,"_vector2_x":1600}}}},{"marker":88,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3840,"_vector2_x":1600}}}},{"marker":89,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":4160,"_vector2_x":1920}}}},{"marker":90,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3840,"_vector2_x":1920}}}},{"marker":91,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3840,"_vector2_x":2240}}}},{"marker":92,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3840,"_vector2_x":2560}}}},{"marker":93,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3840,"_vector2_x":2880}}}},{"marker":14,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":0}}}},{"marker":15,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":320}}}},{"marker":16,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":17,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2880,"_vector2_x":320}}}},{"marker":18,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":19,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":640}}}},{"marker":20,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3200,"_vector2_x":640}}}},{"marker":21,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2880,"_vector2_x":640}}}},{"marker":22,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3200,"_vector2_x":640}}}},{"marker":23,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2880,"_vector2_x":1600}}}},{"marker":24,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":960}}}},{"marker":25,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":1600}}}},{"marker":26,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":1280}}}},{"marker":27,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":3200,"_vector2_x":1280}}}},{"marker":28,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":1920}}}},{"marker":29,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2880,"_vector2_x":1280}}}},{"marker":30,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":2240}}}},{"marker":31,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":2560}}}},{"marker":32,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":2880}}}},{"marker":94,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":0}}}},{"marker":95,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":320}}}},{"marker":96,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":640}}}},{"marker":97,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1920,"_vector2_x":960}}}},{"marker":98,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1600,"_vector2_x":960}}}},{"marker":99,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2240,"_vector2_x":640}}}},{"marker":100,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2240,"_vector2_x":960}}}},{"marker":101,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2240,"_vector2_x":1280}}}},{"marker":102,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2560,"_vector2_x":1280}}}},{"marker":103,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2240,"_vector2_x":1600}}}},{"marker":104,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2240,"_vector2_x":1920}}}},{"marker":105,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":2240,"_vector2_x":2240}}}},{"marker":130,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":0}}}},{"marker":131,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":320}}}},{"marker":132,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":640}}}},{"marker":133,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":960}}}},{"marker":134,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":1280}}}},{"marker":135,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":1600}}}},{"marker":136,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":1920}}}},{"marker":137,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":2240}}}},{"marker":106,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":0}}}},{"marker":107,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":320}}}},{"marker":108,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":640}}}},{"marker":109,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":960}}}},{"marker":110,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":1280}}}},{"marker":111,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":1600}}}},{"marker":112,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":960}}}},{"marker":113,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":1920}}}},{"marker":114,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":1600}}}},{"marker":115,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":1280,"_vector2_x":1920}}}},{"marker":116,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":2240}}}},{"marker":117,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":2560}}}},{"marker":118,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":2880}}}},{"marker":139,"meta":{"_displayResult":true,"_selectedVisualizer":["ProjectVisualizer: tensor: tensor","tensor/tensor.html"],"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":12,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":13,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":320}}}}]}
+def testMain:
+    testRegression
+    testUInt8
+    testBool
+    testString
+    testGradients
+    testMultidimensionalTensors
+    testMultiOutputOp
+    testAttrs
