@@ -171,6 +171,17 @@ class Tensors:
         wrapper = createConstTensorWrapper typetag x.dims 1
         Tensor wrapper
 
+    # Transposes a tensor (TODO better description)
+    # Arguments:
+    # `t` :: Tensor
+    # transpose :: Tensor a -> Tensor a
+    def transpose t:
+        c = Operations.makeConst t
+        perm = Operations.constFromList Int64Type [1,0]
+        transposed = transposeGen "" c perm c.typetag perm.typetag
+        t' = transposed.eval
+        t'
+
     # Converts tensor to 2D list, but only if it's of expected shape.
     # Arguments: 
     # `tensor` :: Tensor 

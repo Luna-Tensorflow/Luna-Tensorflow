@@ -17,12 +17,6 @@ import Tensorflow.Test
 
 import Dataframes.Table
 
-def transposeTensor t:
-    c = Operations.makeConst t
-    perm = Operations.constFromList Int64Type [1,0]
-    transposed = transposeGen "" c perm c.typetag perm.typetag
-    t' = transposed.eval
-    t'
 
 def main:
     print "hello"
