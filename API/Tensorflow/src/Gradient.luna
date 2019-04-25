@@ -4,9 +4,16 @@ import Tensorflow.Operations
 
 import Tensorflow.CWrappers.Helpers
 
+# Gradient methods.
 class Gradients:
     Gradients
 
+    # Constructs symbolic derivatives of sum of ys w.r.t. x in xs, where dxs are initial gradients.
+    # Arguments: 
+    # `ys` :: TFOutput
+    # `xs` :: TFOutput
+    # `dxs` :: TFOutput - initial gradients.
+    # make :: TFOutput -> TFOutput -> TFOutput -> TFOutput
     def make ys xs dxs:
         None # TODO check if argument types match
         ys' = ys.each id

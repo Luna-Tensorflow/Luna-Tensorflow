@@ -5,7 +5,7 @@ import Tensorflow.Variables
 import Tensorflow.Layers.Activation
 import Tensorflow.CWrappers.Helpers
 
-# TODO these type parameters are temporary
+# This layer implements the operation: outputs = inputs * kernel + bias where kernel is a weights matrix created by the layer, and bias is a bias vector created by the layer.
 class DenseLayer varT layerT:
       name :: Text
       nOutputs :: Int
@@ -13,9 +13,15 @@ class DenseLayer varT layerT:
       biases :: varT # :: Variable a
       parentLayer :: layerT # :: Layer # TODO no interfaces
 
+      # Returns Dense layer in Text type.
+      # `return` :: Text
+      # toText :: Text
       def toText:
           self.name + self.shape.toText
 
+      # Returns Dropout layer in JSON type.
+      # `return` :: JSON
+      # toJSON :: JSON
       def toJSON:
           name = self.name
           shape = self.shape
@@ -23,34 +29,55 @@ class DenseLayer varT layerT:
           type = "Dense"
           JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type
 
+      # Returns shape after processing by this layer.
+      # `return` :: List Int
       # shape :: List Int
       def shape:
           [self.nOutputs, 1]
 
-      # forward :: Operation a -> Operation a
+      # Computes output on this layer after feeding with data from previous one.
+      # Arguments:
+      # `inp` :: TFOutput a
+      # `return` :: TFOutput a
+      # forward :: TFOutput a -> TFOutput a
       def forward inp:
           in = self.parentLayer.forward inp
           prod = Operations.matMul self.weights in
           result = Operations.add prod self.biases
           result
 
-      # eval :: Operation a -> Operation a
+      # Helper function to run evaluation of model.
+      # Arguments:
+      # `inp` :: TFOutput a
+      # `return` :: TFOutput a
+      # eval :: TFOutput a -> TFOutput a
       def eval inp:
           in = self.parentLayer.eval inp
           prod = Operations.matMul self.weights in
           result = Operations.add prod self.biases
           result
 
+      # Returns variables to train, up to this layer.
+      # `return` :: List Variable a
       # trainableVariables :: List Variable a
       def trainableVariables:
           [self.weights, self.biases] + self.parentLayer.trainableVariables
 
+      # Returns type of output in this layer.
+      # `return` :: TypeTag
+      # outputType :: TypeTag
       def outputType:
           self.parentLayer.outputType
 
+# Dense layer creation and usage.
 class Dense:
     Dense
 
+    # Dense layer constructor.
+    # Arguments:
+    # `nOutputs` :: Int
+    # `parent` :: Layer
+    # `return` :: Layer
     # create :: Int -> Layer -> Layer
     def create nOutputs parent:
         nInputs = case parent.shape of
@@ -69,7 +96,13 @@ class Dense:
         d = DenseLayer name nOutputs w b parent
         d
 
-    # createWithActivation :: Int -> (Operation a -> Operation a) -> Layer -> Layer
+    # Dense with activation layer function constructor.
+    # Arguments:
+    # `nOutputs` :: Int
+    # `activationFunction` :: TFOutput a -> TFOutput a
+    # `parent` :: Layer
+    # `return` :: Layer
+    # createWithActivation :: Int -> (TFOutput a -> TFOutput a) -> Layer -> Layer
     def createWithActivation nOutputs activationFunction parent:
         d = self.create nOutputs parent
         name = getNextName "Activation"

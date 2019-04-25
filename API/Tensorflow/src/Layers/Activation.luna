@@ -3,15 +3,21 @@ import Tensorflow.Types
 import Tensorflow.Operations
 import Tensorflow.CWrappers.Helpers
 
-# TODO this type parameter is temporary, due to lack of interfaces
+# This layer implements the operation: output = activation(input)
 class ActivationLayer layerT:
     name :: Text
-    activationFunction :: Operation a -> Operation a
+    activationFunction :: TFOutput a -> TFOutput a
     parentLayer :: layerT # :: Layer # TODO no interfaces
 
+    # Returns Activation layer in Text type.
+    # `return` :: Text
+    # toText :: Text
     def toText:
         self.name + self.shape.toText
 
+    # Returns Activation layer in JSON type.
+    # `return` :: JSON
+    # toJSON :: JSON
     def toJSON:
         name = self.name
         shape = self.shape
@@ -19,25 +25,40 @@ class ActivationLayer layerT:
         type = "Activation"
         JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type
 
+    # Returns shape after processing by this layer. It inherits parent's shape.
+    # `return` :: List Int
     # shape :: List Int
     def shape:
-        self.parentLayer.shape # activation function inherits parent's shape
+        self.parentLayer.shape
 
-    # forward :: Operation a -> Operation a
+    # Computes output on this layer after feeding with data from previous one.
+    # Arguments:
+    # `inp` :: TFOutput a
+    # `return` :: TFOutput a
+    # forward :: TFOutput a -> TFOutput a
     def forward inp:
         myin = self.parentLayer.forward inp
         out = self.activationFunction myin
         out
 
-    # eval :: Operation a -> Operation a
+    # Helper function to run evaluation of model.
+    # Arguments:
+    # `inp` :: TFOutput a
+    # `return` :: TFOutput a
+    # eval :: TFOutput a -> TFOutput a
     def eval inp:
         myin = self.parentLayer.eval inp
         out = self.activationFunction myin
         out
 
+    # Returns variables to train, up to this layer. This layer has no new variables and inherits parent's variables.
+    # `return` :: List Variable a
     # trainableVariables :: List Variable a
     def trainableVariables:
         self.parentLayer.trainableVariables
 
+    # Returns type of output in this layer.
+    # `return` :: TypeTag
+    # outputType :: TypeTag
     def outputType:
         self.parentLayer.outputType

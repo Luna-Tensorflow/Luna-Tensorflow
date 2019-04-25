@@ -6,40 +6,53 @@ import Tensorflow.Operations
 import Tensorflow.GeneratedOps
 import Std.Foreign.C.Value
 
+# Methods to create and operate on variables.
 class Variables:
     Variables
 
-    # make :: Text -> Tensor a -> Operation a
+    # Creates variable of given name and tensor value.
+    # Arguments: 
+    # `name` :: Text
+    # `defaultValue` :: Tensor a
+    # make :: Text -> Tensor a -> TFOutput a
     def make name defaultValue:
         wrapper = makeVariableWrapper name defaultValue
         TFOutput wrapper
 
-    # assign :: Operation a -> Operation b -> Operation a
+    # Assigns given value to existing variable.
+    # Arguments: 
+    # `var` :: TFOutput a
+    # `val` :: TFOutput b
+    # assign :: TFOutput a -> TFOutput b -> TFOutput a
     def assign var val:
         assignOp = assignGen "" var val var.wrapper.typetag False False
         assignOp
 
-    # returns the same output as its second argument, but augmented so that the side-effects of the first argument are executed if the second argument is computed
-    # sequence :: Operation a -> Operation b -> Operation b
+    # Returns the same output as its second argument, but augmented so that the side-effects of the first argument are executed if the second argument is computed.
+    # Arguments: 
+    # `sideeffect` :: TFOutput a
+    # `value` :: TFOutput b
+    # sequence :: TFOutput a -> TFOutput b -> TFOutput b
     def sequence sideeffect value:
         seqWrapper = makeSequence sideeffect value
         TFOutput seqWrapper
 
-    # classical uncurry function
+    # Internal.
     def uncurry f (a, b):
         f a b
 
-    # classical curry function
+    # Internal.
     def curry f a b:
         f (a, b)
 
-    # applies function f on each element of the list and passes sideefects to accumulator
+    # Applies function f on each element of the list and passes sideefects to accumulator.
+    # Arguments: initial, f, list.
     def sequence' initial f list:
         list . foldLeft initial (elem: (f elem) >> )
 
-    # this is an operation that is meant to have no value, it may be used to build graphs that consist of only side effects
-    # for now it's implemented as a constant, but it should be rewritten so that no TF operations can be done on it besides providing it as a first argument of apply and output to compute in a graph
-    # Operation ()
+    # This is an operation that is meant to have no value, it may be used to build graphs that consist of only side effects.
+    # For now it's implemented as a constant, but it should be rewritten so that no TF operations can be done on it besides providing it as a first argument of apply and output to compute in a graph.
+    # unitOp :: ()
     def unitOp:
         op = constFromScalar FloatType 1.0
         op

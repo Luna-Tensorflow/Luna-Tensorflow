@@ -2,6 +2,7 @@ import Tensorflow.Tests.TensorTest
 import Tensorflow.Tests.TensorSerialization
 import Tensorflow.Tests.Variables
 import Tensorflow.Tests.VisualizeNet
+import Tensorflow.Tests.TensorFromPNG
 
 import Tensorflow.Examples.LowlevelNet
 import Tensorflow.Examples.Classification
@@ -25,12 +26,5 @@ def transposeTensor t:
 
 def main:
     print "hello"
-    0 # testMain
-    0 # vartest
-    0 # lowlevelNetExample
-    0 # exampleClassificationGradientDescent
-    0 # exampleClassificationRMSProp
-    0 # exampleConvolutional
-    0 # tensorTest
-    0 # tensorSerializationTest
+    tensorFromPngTest
     testMerge

@@ -5,14 +5,21 @@ import Tensorflow.Variables
 import Tensorflow.Layers.Activation
 import Tensorflow.CWrappers.Helpers
 
+# Reshapes a layer. Given resultDims, this layer returns a new layer that has the same values as previous layer with given shape. If one component of shape is the special value -1, the size of that dimension is computed so that the total size remains constant. In particular, a shape of [-1] flattens into 1-D. At most one component of shape can be -1.
 class ReshapeLayer layerT:
       name :: Text
       resultDims :: List Int
       parentLayer :: layerT # :: Layer
 
+      # Returns Reshape layer in Text type.
+      # `return` :: Text
+      # toText :: Text
       def toText:
           self.name + self.shape.toText
 
+      # Returns Reshape layer in JSON type.
+      # `return` :: JSON
+      # toJSON :: JSON
       def toJSON:
           name = self.name
           shape = self.shape
@@ -20,32 +27,53 @@ class ReshapeLayer layerT:
           type = "Reshape"
           JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type
 
+      # Returns shape after processing by this layer.
+      # `return` :: List Int
       # shape :: List Int
       def shape:
           resultDims
 
-      # forward :: Operation a -> Operation a
+      # Computes output on this layer after feeding with data from previous one.
+      # Arguments:
+      # `inp` :: TFOutput a
+      # `return` :: TFOutput a
+      # forward :: TFOutput a -> TFOutput a
       def forward inp:
           myin = self.parentLayer.forward inp
           reshaped = Operations.reshape myin self.resultDims
           reshaped
 
-      # eval :: Operation a -> Operation a
+      # Helper function to run evaluation of model.
+      # Arguments:
+      # `inp` :: TFOutput a
+      # `return` :: TFOutput a
+      # eval :: TFOutput a -> TFOutput a
       def eval inp:
           myin = self.parentLayer.eval inp
           reshaped = Operations.reshape myin self.resultDims
           reshaped
 
+      # Returns variables to train, up to this layer. This layer has no new variables and inherits parent's variables.
+      # `return` :: List Variable a
       # trainableVariables :: List Variable a
       def trainableVariables:
           self.parentLayer.trainableVariables
 
+      # Returns type of output in this layer.
+      # `return` :: TypeTag
+      # outputType :: TypeTag
       def outputType:
           self.parentLayer.outputType
 
+# Reshape layer creation and usage.
 class Reshape:
     Reshape
 
+    # Reshape layer constructor.
+    # Arguments:
+    # `newdims :: List Int
+    # `parent` :: Layer
+    # `return` :: Layer
     # create :: List Int -> Layer -> Layer
     def create newdims parent:
         nNegOnes = newdims . filter (e: e == -1) . length
@@ -60,7 +88,10 @@ class Reshape:
                     r = ReshapeLayer name ndims parent
                     r
 
-
+    # Reshape layer that flatten previous layer to 1D vector.
+    # Arguments:
+    # `parent` :: Layer
+    # `return` :: Layer
     # flatten :: Layer -> Layer
     def flatten parent:
         r = reshape [-1] parent
