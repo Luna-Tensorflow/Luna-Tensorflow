@@ -149,9 +149,13 @@
 
     function renderRGB(data) {
         var stat = findMinMax(data);
+        var scale = 1;
+        if (stat.max > 1 && stat.max <= 255) {
+            scale = 255;
+        }
         function rgbColor(v) {
             function toHex(x) {
-                var hex = Math.round(255 * (x - stat.min) / (stat.max - stat.min)).toString(16);
+                var hex = Math.round(255 * x / scale).toString(16);
                 if (hex.length < 2) {
                     hex = "0" + hex;
                 }
