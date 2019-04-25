@@ -3,6 +3,11 @@
 Tensor::Tensor(const void* vect, int64_t len, TF_DataType type) : Tensor(vect, &len, 1, type) {
 }
 
+Tensor::Tensor(const int64_t *dims, int num_dims, TF_DataType type) : type(type) {
+    flattenedLen = static_cast<size_t>(std::accumulate(dims, dims + num_dims, 1, std::multiplies<>()));
+    underlying = TF_AllocateTensor(type, dims, num_dims, flattenedLen * TF_DataTypeSize(type));
+}
+
 Tensor::Tensor(const void *data, const int64_t *dims, int num_dims, TF_DataType type) : type(type) {
     flattenedLen = static_cast<size_t>(std::accumulate(dims, dims + num_dims, 1, std::multiplies<>()));
     if (type != TF_STRING) {
