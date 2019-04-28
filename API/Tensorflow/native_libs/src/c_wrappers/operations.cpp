@@ -368,27 +368,41 @@ namespace {
 }
 
 void** train(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
-                 size_t inputs_count, uint32_t epochs, uint32_t validation_samples, const char **outError){
+                 size_t inputs_count, uint32_t epochs, uint32_t validation_samples, uint32_t early_stop,
+                 const char **outError){
     return TRANSLATE_EXCEPTION(outError) {
         FFILOG(graph, ph_names, ph_count, ph_values, initial, fold_count, epochs);
 
         std::map<std::string, std::shared_ptr<Tensor>> substitutions;
         std::shared_ptr<State> state = LifetimeManager::instance().accessOwned(initial);
+        std::vector<double> loss_history;
 
-        void **ret = static_cast<void**>(malloc(2 * sizeof(void*))); // needs to be freed by caller
-        auto loss_history = static_cast<double*>(malloc(epochs * sizeof(double))); // needs to be freed by caller
-        ret[1] = loss_history;
+        void **ret = static_cast<void**>(malloc(3 * sizeof(void*))); // needs to be freed by caller
+        auto actual_epochs = static_cast<uint32_t*>(malloc(sizeof(uint32_t))); // needs to be freed by caller
+        ret[2] = actual_epochs;
 
-        for (uint32_t epoch = 0; epoch < epochs; ++epoch) {
+        uint32_t epochs_without_improvement = 0;
+
+        for (*actual_epochs = 0; *actual_epochs < epochs && (epochs_without_improvement < early_stop || early_stop == 0); ++*actual_epochs) {
             double training_loss = iterate_over_inputs(graph, ph_names, ph_values, ph_count, state, validation_samples,
                     inputs_count, true);
             if (validation_samples == 0) {
-                loss_history[epoch] = training_loss;
+                loss_history.push_back(training_loss);
             } else {
-                loss_history[epoch] = iterate_over_inputs(graph, ph_names, ph_values, ph_count, state, 0,
-                        validation_samples, false);
+                loss_history.push_back(iterate_over_inputs(graph, ph_names, ph_values, ph_count, state, 0,
+                        validation_samples, false));
+            }
+            if (early_stop > 0 && *actual_epochs > 0) {
+                if (loss_history[*actual_epochs] < loss_history[*actual_epochs - 1]) {
+                    epochs_without_improvement = 0;
+                } else {
+                    ++epochs_without_improvement;
+                }
             }
         }
+
+        ret[1] = malloc(*actual_epochs * sizeof(double)); // needs to be freed by caller
+        memcpy(ret[1], loss_history.data(), *actual_epochs * sizeof(double));
 
         ret[0] = static_cast<void*>(LifetimeManager::instance().addOwnership(state));
 

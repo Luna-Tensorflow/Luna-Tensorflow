@@ -28,8 +28,9 @@ class Model:
       # `ys` :: List Tensor b
       # `epochs` :: Int
       # `validation` :: Validation a b
-      # train :: List Tensor a -> List Tensor b -> Int -> Validation a b -> (List Real, Model) # TODO also consider real time visualization of loss in GUI
-      def train xs ys epochs validation:
+      # `earlyStop`:: Int
+      # train :: List Tensor a -> List Tensor b -> Int -> Validation a b -> Int -> (List Real, Model) # TODO also consider real time visualization of loss in GUI
+      def train xs ys epochs validation earlyStop:
           separateValidationVals = case validation of
               NoValidation: []
               ValidationFraction _: []
@@ -43,7 +44,7 @@ class Model:
               ValidationFraction p: (p * xs.length.toReal) . round 0 . floor
               ValidationSet vxs _: vxs.length
 
-          ModelFunctions.train self placeholderNames placeholderVals epochs validationSamples
+          ModelFunctions.train self placeholderNames placeholderVals epochs validationSamples earlyStop
 
       # Saving trained model's weights into file.
       # `filename` :: Text
