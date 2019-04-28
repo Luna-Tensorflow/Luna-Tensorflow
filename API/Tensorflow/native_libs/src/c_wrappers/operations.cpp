@@ -346,10 +346,29 @@ namespace {
                 throw std::runtime_error("Loss type not supported by loss history");
         }
     }
+
+    double iterate_over_inputs(GraphSession* graph, const char** ph_names, Tensor** ph_values, uint32_t ph_count,
+            std::shared_ptr<State>& state, uint32_t start_index, uint32_t end_index, bool apply_side_effects = true) {
+        std::map<std::string, std::shared_ptr<Tensor>> substitutions;
+        double running_loss = 0;
+        for (uint32_t input_index = start_index; input_index < end_index; ++input_index) {
+            for (size_t ph = 0; ph < ph_count; ++ph) {
+                substitutions.emplace(std::string(ph_names[ph]),
+                                      LifetimeManager::instance().accessOwned(ph_values[input_index * ph_count + ph]));
+            }
+            std::shared_ptr<EvaluationResult> eval_result = graph->eval(substitutions, state, apply_side_effects);
+            running_loss += to_double(eval_result->outputs[0], 0);
+            if (apply_side_effects) {
+                state = eval_result->result_state;
+            }
+            substitutions.clear();
+        }
+        return running_loss / (end_index - start_index);
+    }
 }
 
 void** train(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
-                 size_t inputs_count, uint32_t epochs, const char **outError){
+                 size_t inputs_count, uint32_t epochs, uint32_t validation_samples, const char **outError){
     return TRANSLATE_EXCEPTION(outError) {
         FFILOG(graph, ph_names, ph_count, ph_values, initial, fold_count, epochs);
 
@@ -357,22 +376,18 @@ void** train(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor
         std::shared_ptr<State> state = LifetimeManager::instance().accessOwned(initial);
 
         void **ret = static_cast<void**>(malloc(2 * sizeof(void*))); // needs to be freed by caller
-        auto loss_history = static_cast<double*>(malloc(epochs * sizeof(double))); // needgs to be freed by caller
+        auto loss_history = static_cast<double*>(malloc(epochs * sizeof(double))); // needs to be freed by caller
         ret[1] = loss_history;
 
         for (uint32_t epoch = 0; epoch < epochs; ++epoch) {
-            double running_loss = 0;
-            for (size_t input_index = 0; input_index < inputs_count; ++input_index) {
-                for (size_t ph = 0; ph < ph_count; ++ph) {
-                    substitutions.emplace(std::string(ph_names[ph]),
-                                          LifetimeManager::instance().accessOwned(ph_values[input_index * ph_count + ph]));
-                }
-                std::shared_ptr<EvaluationResult> eval_result = graph->eval(substitutions, state);
-                running_loss += to_double(eval_result->outputs[0], 0);
-                state = eval_result->result_state;
-                substitutions.clear();
+            double training_loss = iterate_over_inputs(graph, ph_names, ph_values, ph_count, state, validation_samples,
+                    inputs_count, true);
+            if (validation_samples == 0) {
+                loss_history[epoch] = training_loss;
+            } else {
+                loss_history[epoch] = iterate_over_inputs(graph, ph_names, ph_values, ph_count, state, 0,
+                        validation_samples, false);
             }
-            loss_history[epoch] = running_loss / epochs;
         }
 
         ret[0] = static_cast<void*>(LifetimeManager::instance().addOwnership(state));

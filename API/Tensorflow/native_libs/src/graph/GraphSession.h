@@ -47,7 +47,7 @@ private:
 	void initialize_variables(const std::shared_ptr<State>& state) const; // this function is const as it doesnt modify the graph, despite modifying the mutable state, but it's used inside of eval which itself is rightfully const
  	std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> read_variables() const; // TODO mark what's been updated
 
- 	std::vector<std::shared_ptr<Tensor>> eval_one_step(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions) const;
+ 	std::vector<std::shared_ptr<Tensor>> eval_one_step(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions, bool apply_side_effects) const;
 
 public:
 	GraphSession();
@@ -60,7 +60,7 @@ public:
 
 
 	std::shared_ptr<EvaluationResult> eval(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions,
-		const std::shared_ptr<State>& state = State::make_empty()) const;
+		const std::shared_ptr<State>& state = State::make_empty(), bool apply_side_effects = true) const;
 
 	std::shared_ptr<EvaluationResult> eval(const std::shared_ptr<State>& state = State::make_empty()) const;
 

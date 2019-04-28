@@ -27,12 +27,23 @@ class Model:
       # `xs` :: List Tensor a
       # `ys` :: List Tensor b
       # `epochs` :: Int
-      # train :: List Tensor a -> List Tensor b -> Int -> (List Real, Model) # TODO also consider real time visualization of loss in GUI
-      def train xs ys epochs:
-          placeholderNames = ["x","y"]
-          placeholderVals = xs.zipWith (x: y: [x,y]) ys
+      # `validation` :: Validation a b
+      # train :: List Tensor a -> List Tensor b -> Int -> Validation a b -> (List Real, Model) # TODO also consider real time visualization of loss in GUI
+      def train xs ys epochs validation:
+          separateValidationVals = case validation of
+              NoValidation: []
+              ValidationFraction _: []
+              ValidationSet vxs vys: vxs.zipWith (x: y: [x, y]) vys
 
-          ModelFunctions.train self placeholderNames placeholderVals epochs
+          placeholderNames = ["x","y"]
+          placeholderVals = separateValidationVals + (xs.zipWith (x: y: [x,y]) ys)
+
+          validationSamples = case validation of
+              NoValidation: 0
+              ValidationFraction p: (p * xs.length.toReal) . round 0 . floor
+              ValidationSet vxs _: vxs.length
+
+          ModelFunctions.train self placeholderNames placeholderVals epochs validationSamples
 
       # Saving trained model's weights into file.
       # `filename` :: Text
@@ -76,3 +87,8 @@ class Models:
         vars = output.trainableVariables
 
         Model evalgraph traingraph vars initialState
+
+class Validation a b:
+    NoValidation
+    ValidationFraction Real
+    ValidationSet (List (Tensor a)) (List (Tensor b))

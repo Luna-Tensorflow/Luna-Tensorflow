@@ -7,7 +7,7 @@ import Tensorflow.Graph
 import Tensorflow.Model
 
 class ModelFunctions:
-    def train model placeholderNames placeholderVals epochs:
+    def train model placeholderNames placeholderVals epochs validationSamples:
         placeholderVals' = placeholderVals.each (vals: vals.each id)
         model' = model
 
@@ -27,7 +27,8 @@ class ModelFunctions:
 
         returnedPtr = callHandlingError "train" (Pointer (Pointer None)) [model'.traingraph.wrapper.toCArg, subsNameArr . toCArg,
               (CInt64.fromInt phCount).toCArg, substsArr.toCArg,  model'.state.wrapper.toCArg,
-              (CInt64.fromInt evalCount).toCArg, (CUInt32.fromInt epochs).toCArg]
+              (CInt64.fromInt evalCount).toCArg, (CUInt32.fromInt epochs).toCArg,
+              (CUInt32.fromInt validationSamples).toCArg]
 
         returnedArr = Array (Pointer (Pointer None)) . make 2 returnedPtr
         newStatePtr = returnedArr.readAt 0
