@@ -1,0 +1,17 @@
+import Std.Base
+import Std.Time
+
+import Tensorflow.Lift
+import Tensorflow.Operations
+import Tensorflow.Tensor
+import Tensorflow.Gradient
+import Tensorflow.Types
+
+def testTensorVis:
+    tensor = Tensors.fromList2d FloatType [[0.0, 0.5, 1.0], [0.2, 0.3, 0.6], [0.7, 0.8, 0.9]]
+    t2 = Tensors.random FloatType [4,80,80] 0.0 1.0
+    t3 = Tensors.random FloatType [20,30,3] 0.0 1.0
+    tp = Tensors.fromPng "logo.png"
+
+def testOpVis:
+    a = Operations.constFromScalar FloatType 3.0

@@ -31,7 +31,7 @@ class TFOutput:
     # Returns TFOutput in JSON form.
     # toJSON :: JSON
     def toJSON:
-        self.eval.toJSON
+        catch (self.eval.toJSON) (.toJSON)
 
     # Returns addition with other TFOutput.
     # Arguments:
