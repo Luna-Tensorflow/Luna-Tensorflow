@@ -95,7 +95,16 @@ class Operations:
     # `tensor` :: Tensor a
     # makeConst :: Tensor a -> TFOutput a
     def makeConst tensor:
-        wrapper = makeConstWrapper tensor
+        wrapper = makeConstWrapper tensor ""
+        TFOutput wrapper
+
+    # Creates a const TFOutput from a given tensor with a given name
+    # Arguments:
+    # `name` :: Text
+    # `tensor` :: Tensor
+    # namedConst :: Text -> Tensor -> TFOutput
+    def namedConst name tensor:
+        wrapper = makeConstWrapper tensor name
         TFOutput wrapper
 
     # Creates const TFOutput from list of given type.
@@ -114,6 +123,14 @@ class Operations:
     # constFromScalar :: a -> Tensor a
     def constFromScalar typetag x:
         self.makeConst $ Tensors.fromList typetag [] [x]
+
+    # Creates const TFOutput from scalar of given type.
+    # Arguments: 
+    # `typetag` :: TypeTag
+    # `x` :: a
+    # constFromScalar :: a -> Tensor a
+    def namedConstFromScalar name typetag x:
+        self.namedConst name $ Tensors.fromList typetag [] [x]
 
     # Creates from pointer TFOutput of given type.
     # Arguments: 

@@ -20,5 +20,7 @@ import Dataframes.Table
 
 def main:
     print "hello"
+    testMultiOutputOp
+    testGradients
     tensorFromPngTest
     testMerge

@@ -43,10 +43,10 @@ def testRegression:
 
 def testGradients:
     print "Gradients"
-    a = Operations.constFromScalar FloatType 3.0
-    b = Operations.constFromScalar FloatType 3.0
-    q = Operations.constFromScalar FloatType 2.0
-    p = Operations.constFromScalar FloatType 2.0.negate
+    a = Operations.namedConstFromScalar "a" FloatType 3.0
+    b = Operations.namedConstFromScalar "b" FloatType 3.0
+    q = Operations.namedConstFromScalar "q" FloatType 2.0
+    p = Operations.namedConstFromScalar "p" FloatType 2.0.negate
     c = a * b
     d = c * a
     e = a + b

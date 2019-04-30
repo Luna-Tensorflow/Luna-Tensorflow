@@ -201,26 +201,28 @@ Output *make_op_placeholder(const char* name, TF_DataType type, const char **out
     };
 }
 
-Output *make_op_const(Tensor *tensor, const char **outError) {
+Output *make_op_const(const char* name, Tensor *tensor, const char **outError) {
 	return TRANSLATE_EXCEPTION(outError) {
-		FFILOG(tensor);
+		FFILOG(name, tensor);
 		auto tensor_owned = LifetimeManager::instance().accessOwned(tensor);
 		return get_first_and_free(make_op_helper("Const", {}, {std::make_shared<AttrTensor>("value", *tensor_owned),
-											std::make_shared<AttrType>("dtype", tensor_owned->getType())}, 1, ""));
+											std::make_shared<AttrType>("dtype", tensor_owned->getType())}, 1, name));
 	};
 }
 
 size_t operation_hashcode(Output *op, const char **outError) {
     return TRANSLATE_EXCEPTION(outError) {
         FFILOG(op);
-        return op->hashcode();
+        auto ptr = LifetimeManager::instance().accessOwned(op);
+        return ptr->hashcode();
     };
 }
 
 Tensor *eval_op(Output *op, const char **outError) {
     return TRANSLATE_EXCEPTION(outError) {
         FFILOG(op);
-        return LifetimeManager::instance().addOwnership(op->eval());
+        auto ptr = LifetimeManager::instance().accessOwned(op);
+        return LifetimeManager::instance().addOwnership(ptr->eval());
     };
 }
 

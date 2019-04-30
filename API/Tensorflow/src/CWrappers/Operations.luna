@@ -72,9 +72,10 @@ def batchEvalSubstitutions list substitutions:
 
     retval
 
-def makeConstWrapper tensor:
+def makeConstWrapper tensor name:
     tensor' = tensor
-    out = callHandlingError "make_op_const" (Pointer None) [tensor'.ptr.toCArg]
+    out = CString.with name nameCStr:
+            callHandlingError "make_op_const" (Pointer None) [nameCStr.toCArg, tensor'.ptr.toCArg]
     managedOut = ManagedPointer None . fromPointer releaseMethod out
     OutputWrapper managedOut tensor'.wrapper.typetag
 

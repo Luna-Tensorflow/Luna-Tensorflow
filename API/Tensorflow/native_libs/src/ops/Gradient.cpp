@@ -1,4 +1,5 @@
 #include "Gradient.h"
+#include "Operation.h"
 #include <utility>
 
 Gradient::Gradient(std::vector<std::shared_ptr<Output>> ys, std::vector<std::shared_ptr<Output>> xs,
@@ -26,6 +27,13 @@ Gradient::Gradient(std::vector<std::shared_ptr<Output>> ys, std::vector<std::sha
 std::vector<std::shared_ptr<Output>> Gradient::add_gradients(std::vector<std::shared_ptr<Output>> ys,
                                                           std::vector<std::shared_ptr<Output>> xs,
                                                           std::vector<std::shared_ptr<Output>> dxs) {
+    for (auto& x : xs) {
+        auto op = std::dynamic_pointer_cast<Operation>(x->get_binder());
+        if (op && op->get_operation_name() == "Const" && !op->has_custom_chosen_name()) {
+            throw std::runtime_error("Due to internal implementation, when differentiating wrt. to Consts they are required to be named. Please use namedConst to make your constants named if you really want to differentiate wrt. them");
+        }
+    }
+
     // TODO it would be good to use make_shared instead, but constructor is private
     auto gradient = std::shared_ptr<Gradient>(new Gradient(std::move(ys), std::move(xs), std::move(dxs)));
 
