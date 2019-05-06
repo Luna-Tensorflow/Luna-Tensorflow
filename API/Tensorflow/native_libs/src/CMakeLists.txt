@@ -64,6 +64,6 @@ endif(MSVC)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ../../../..)
 
-target_link_libraries(${PROJECT_NAME} tensorflow ${PNG_LIBRARY})
+target_link_libraries(${PROJECT_NAME} tensorflow ${PNG_LIBRARY} ${ZLIB_LIBRARY})
 
 ###################
