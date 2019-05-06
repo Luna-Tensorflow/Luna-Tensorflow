@@ -123,6 +123,22 @@ def loadTensorsWrapper filename count:
     callHandlingError "free_pointer" None [returnedPtr.toCArg]
     managed
 
+def fromPngDirWrappers dirname:
+    returnedPtr = CString.with dirname dirnamecstr:
+            callHandlingError "read_tensor_arr_from_png_directory" (Pointer (Pointer None)) [dirnamecstr.toCArg]
+
+    countC = CString.with dirname dirnamecstr:
+            callHandlingError "png_files_in_directory_count" CInt32 [dirnamecstr.toCArg]
+
+    count = countC.toInt
+    returnedArr = Array (Pointer None) . make count returnedPtr
+
+    managed = returnedArr.toList.each (ManagedPointer None . fromPointer releaseMethod)
+    callHandlingError "free_pointer" None [returnedPtr.toCArg]
+    managed
+
+
+
 def fromPngWrapper filename:
     returnedPtr = CString.with filename fnamecstr:
             callHandlingError "read_tensor_from_png" (Pointer None) [fnamecstr.toCArg]

@@ -3,6 +3,7 @@ import Tensorflow.CWrappers.Tensor
 import Std.Foreign
 import Std.Foreign.C.Value
 
+import Tensorflow.Types
 import Tensorflow.CWrappers.Helpers
 
 # Internal.
@@ -219,6 +220,15 @@ class Tensors:
         wrapper = fromPngWrapper filename
         res = Tensor wrapper
         res
+
+    # Loads all PNG files in RGB format in specified directory
+    # Arguments:
+    # `filename` :: Text
+    # fromPng :: Text -> List (Tensor FloatType)
+    def fromPngDir dirname:
+        wrappers = (fromPngDirWrappers dirname) . each (x: TensorWrapper x FloatType)
+        wrappers . each(x: Tensor x)
+
 
     # Converts a Dataframes Table consisting of only float values into a 2D float tensor
     # Arguments:
