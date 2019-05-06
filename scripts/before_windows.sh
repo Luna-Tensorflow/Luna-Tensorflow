@@ -1,11 +1,14 @@
 set -xe
 echo "Running Windows build"
-curl -sS -o libpng.exe --insecure "https://netcologne.dl.sourceforge.net/project/gnuwin32/libpng/1.2.37/libpng-1.2.37-setup.exe"
-mv libpng.exe C:/ProgramData/chocolatey/bin
 dir C:/ProgramData/chocolatey/bin/
 dir C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin
 export TF_USE_LOCAL_LIBRARY=1
-libpng /silent
+mkdir libpng
+cd libpng
+curl -sS -o libpng.7z --insecure https://netix.dl.sourceforge.net/project/libpng/libpng16/1.6.37/lpng1637.7z
+7z x libpng.7z -y
+dir
+cd ..
 mkdir tensorflow # download TF dependency, TODO downloading protobufs
 cd tensorflow
 curl -sS -o libtf.zip --insecure https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.12.0.zip
