@@ -9,7 +9,9 @@ curl -sS -o libpng.7z --insecure https://netix.dl.sourceforge.net/project/libpng
 7z x libpng.7z -y
 dir
 cd lpng1637
-./install-sh
+./configure
+make check
+make install
 cd ../..
 mkdir tensorflow # download TF dependency, TODO downloading protobufs
 cd tensorflow
