@@ -9,7 +9,7 @@ curl -sS -o libpng.7z --insecure https://netix.dl.sourceforge.net/project/libpng
 7z x libpng.7z -y
 dir
 cd lpng1637
-./configure
+./configure --disable-dependency-tracking
 make check
 make install
 cd ../..
