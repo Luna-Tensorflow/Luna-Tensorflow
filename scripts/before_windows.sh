@@ -13,8 +13,10 @@ cd "zlib-1.2.11"
 ./configure
 cmake -G "MinGW Makefiles" -DCMAKE_SH=CMAKE_SH-NOTFOUND .
 cmake --build .
+dir
 cd ../..
-
+export ZLIB_LIBRARY="C:/Users/travis/build/Luna-Tensorflow/Luna-Tensorflow/zlib/zlib-1.2.11"
+export ZLIB_INCLUDE_DIR="C:/Users/travis/build/Luna-Tensorflow/Luna-Tensorflow/zlib/zlib-1.2.11"
 #libpng build
 mkdir libpng
 cd libpng
