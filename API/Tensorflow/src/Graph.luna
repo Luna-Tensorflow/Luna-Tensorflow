@@ -38,6 +38,10 @@ class State:
         wrapper = self.wrapper.update values
         State wrapper
 
+    def toJSON:
+        "TODO: better JSON"
+        "State".toJSON
+
 # State operations methods.
 class StateOps:
     StateOps

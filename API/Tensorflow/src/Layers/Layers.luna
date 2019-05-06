@@ -1,0 +1,16 @@
+import Tensorflow.Operations
+import Tensorflow.Graph
+
+class Layers:
+      Layers
+
+      def eval layer state input:
+          inp = Operations.makeConst input
+          out = layer.eval inp
+          graph = TFGraphMaker.makeFromOutput out
+          (res, state') = graph.eval state
+          res.getAt 0
+
+      def evalFromModel layer model input:
+          res = Layers.eval layer model.state input
+          res

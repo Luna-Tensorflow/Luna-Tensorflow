@@ -73,5 +73,5 @@ class Activation:
       # create :: (TFOutput -> TFOutput) -> Layer -> Layer
       def create activationFunction parent:
           name = getNextName "Activation"
-          a = ActivationLayer name activationFunction d
+          a = ActivationLayer name activationFunction parent
           a
