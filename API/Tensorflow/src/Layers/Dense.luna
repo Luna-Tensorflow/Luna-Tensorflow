@@ -105,6 +105,5 @@ class Dense:
     # createWithActivation :: Int -> (TFOutput a -> TFOutput a) -> Layer -> Layer
     def createWithActivation nOutputs activationFunction parent:
         d = self.create nOutputs parent
-        name = getNextName "Activation"
-        a = ActivationLayer name activationFunction d
+        a = Activation.create activationFunction d
         a

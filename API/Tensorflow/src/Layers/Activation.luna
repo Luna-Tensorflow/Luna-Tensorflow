@@ -62,3 +62,16 @@ class ActivationLayer layerT:
     # outputType :: TypeTag
     def outputType:
         self.parentLayer.outputType
+
+class Activation:
+      Activation
+
+      # Creates a layer that applies given function to its input and returns the result as output
+      # activationFunction :: TFOutput -> TFOutput
+      # parent :: Layer
+      # `return` :: Layer
+      # create :: (TFOutput -> TFOutput) -> Layer -> Layer
+      def create activationFunction parent:
+          name = getNextName "Activation"
+          a = ActivationLayer name activationFunction d
+          a
