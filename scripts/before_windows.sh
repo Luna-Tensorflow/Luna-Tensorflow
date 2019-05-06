@@ -8,7 +8,9 @@ cd libpng
 curl -sS -o libpng.7z --insecure https://netix.dl.sourceforge.net/project/libpng/libpng16/1.6.37/lpng1637.7z
 7z x libpng.7z -y
 dir
-cd ..
+cd lpng1637
+./install-sh
+cd ../..
 mkdir tensorflow # download TF dependency, TODO downloading protobufs
 cd tensorflow
 curl -sS -o libtf.zip --insecure https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.12.0.zip
