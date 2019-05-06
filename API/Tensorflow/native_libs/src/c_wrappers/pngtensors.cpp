@@ -14,10 +14,6 @@
 #include "../helpers/LifeTimeManager.h"
 #include "../helpers/error.h"
 
-#include <filesystem>
-
-namespace fs = std::filesystem;
-
 //namespace
 //{
     Tensor* read_tensor_from_png_noerror(const char* filename) {
@@ -50,38 +46,10 @@ TFL_API Tensor* read_tensor_from_png(const char* filename, const char** outError
 }
 
 TFL_API int png_files_in_directory_count(const char* path, const char** outError) {
-    return TRANSLATE_EXCEPTION(outError) {
-    std::cerr<<"TU"<<std::endl;
-        std::string dir(path);
-        std::cerr<<"TU "<<dir<<std::endl;
-        auto it = fs::directory_iterator(dir, fs::directory_options::skip_permission_denied);
-        std::cerr<<"TU"<<std::endl;
-
-        LOGANDRETURN(std::count_if(fs::begin(it), fs::end(it), [](auto& entry)
-        {
-            std::cerr<<"TU"<<std::endl;
-            return (entry.path().extension() == ".png") || (entry.path().extension() == ".PNG");
-        }), std::string(path));
-    };
+    return 0;
 }
 
 TFL_API Tensor** read_tensor_arr_from_png_directory(const char* path, const char** outError)
 {
-    return TRANSLATE_EXCEPTION(outError) {
-        std::string dir(path);
-        int count = png_files_in_directory_count(path, outError);
-        int idx = 0;
-        std::cerr<<count<<std::endl;
-
-        auto tensors = static_cast<Tensor**>(malloc(count*sizeof(Tensor*)));
-
-        for(const auto& entry : fs::directory_iterator(dir))
-        {
-            if(entry.path().extension() == ".png" || entry.path().extension() == ".PNG")
-            {
-                tensors[idx++] = read_tensor_from_png_noerror(entry.path().extension().c_str());
-            }
-        }
-        LOGANDRETURN(tensors, dir);
-    };
+    return nullptr;
 }
