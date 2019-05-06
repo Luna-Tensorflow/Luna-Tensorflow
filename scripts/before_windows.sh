@@ -23,8 +23,8 @@ curl -sS -o libpng.7z --insecure "https://netix.dl.sourceforge.net/project/libpn
 dir
 cd lpng1637
 ./configure --disable-dependency-tracking
-cmake -G "MinGW Makefiles" -DCMAKE_SH=CMAKE_SH-NOTFOUND -DZLIB_LIBRARY="C:/Users/travis/build/Luna-Tensorflow/Luna-Tensorflow/zlib/zlib-1.2.11" -DZLIB_INCLUDE_DIR="C:/Users/travis/build/Luna-Tensorflow/Luna-Tensorflow/zlib/zlib-1.2.11" .
-cmake --build -DZLIB_LIBRARY="C:/Users/travis/build/Luna-Tensorflow/Luna-Tensorflow/zlib/zlib-1.2.11" -DZLIB_INCLUDE_DIR="C:/Users/travis/build/Luna-Tensorflow/Luna-Tensorflow/zlib/zlib-1.2.11" .
+cmake -G "MinGW Makefiles" -DCMAKE_SH=CMAKE_SH-NOTFOUND -DZLIB_LIBRARY="C:/Users/travis/build/Luna-Tensorflow/Luna-Tensorflow/zlib/zlib-1.2.11/libzlibstatic.a" -DZLIB_INCLUDE_DIR="C:/Users/travis/build/Luna-Tensorflow/Luna-Tensorflow/zlib/zlib-1.2.11" .
+cmake --build .
 cd ../..
 
 # tensorflow download
