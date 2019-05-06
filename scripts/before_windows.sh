@@ -26,6 +26,9 @@ cd lpng1637
 cmake -G "MinGW Makefiles" -DCMAKE_SH=CMAKE_SH-NOTFOUND -DZLIB_LIBRARY="C:/Users/travis/build/Luna-Tensorflow/Luna-Tensorflow/zlib/zlib-1.2.11/libzlibstatic.a" -DZLIB_INCLUDE_DIR="C:/Users/travis/build/Luna-Tensorflow/Luna-Tensorflow/zlib/zlib-1.2.11" .
 cmake --build .
 dir
+cp libpng16.dll libpng.dll
+cp libpng16.dll.a libpng.dll.a
+cp libpng16.a libpng.a
 cd ../..
 
 # tensorflow download
@@ -48,5 +51,5 @@ mkdir release/native_libs/windows/
 cd build
 echo "Will generate makefiles"
 cp -v ../libpng/lpng1637/*.h ../API/Tensorflow/native_libs/src/png/
-cmake -G "MinGW Makefiles" -DCMAKE_SH=CMAKE_SH-NOTFOUND ../API/Tensorflow/native_libs/src/
+cmake -G "MinGW Makefiles" -DCMAKE_SH=CMAKE_SH-NOTFOUND -LC:/Users/travis/build/Luna-Tensorflow/Luna-Tensorflow/libpng/lpng1637 ../API/Tensorflow/native_libs/src/
 cd ..
