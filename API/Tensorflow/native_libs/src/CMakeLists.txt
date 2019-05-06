@@ -56,9 +56,13 @@ else(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
 endif(MSVC)
 
+find_package(ZLIB REQUIRED)
+find_package(PNG REQUIRED)
+
 # Includes path: project root
+include_directories(${PNG_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC ../../../..)
 
-target_link_libraries(${PROJECT_NAME} tensorflow png)
+target_link_libraries(${PROJECT_NAME} tensorflow ${PNG_LIBRARY})
 
 ###################
