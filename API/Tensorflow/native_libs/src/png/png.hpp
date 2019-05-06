@@ -31,7 +31,7 @@
 #ifndef PNGPP_PNG_HPP_INCLUDED
 #define PNGPP_PNG_HPP_INCLUDED
 
-#include <png.h>
+#include "png.h"
 
 #include "config.hpp"
 #include "types.hpp"
