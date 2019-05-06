@@ -19,8 +19,8 @@ import Dataframes.Table
 
 
 def main:
-    print "hello"
-    testMultiOutputOp
-    testGradients
-    tensorFromPngTest
-    testMerge
+   fromPngDir1 = Tensors.fromPngDir "."
+   print (fromPngDir1 . toText)
+   fromPng1 = Tensors.fromPng "flag.png"
+   toText1 = fromPng1 . toText
+   None
