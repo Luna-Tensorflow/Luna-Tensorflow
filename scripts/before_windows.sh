@@ -10,8 +10,8 @@ curl -sS -o libpng.7z --insecure https://netix.dl.sourceforge.net/project/libpng
 dir
 cd lpng1637
 ./configure --disable-dependency-tracking
-make check
-make install
+cmake -G "MinGW Makefiles" -DCMAKE_SH=CMAKE_SH-NOTFOUND .
+cmake --build .
 cd ../..
 mkdir tensorflow # download TF dependency, TODO downloading protobufs
 cd tensorflow
