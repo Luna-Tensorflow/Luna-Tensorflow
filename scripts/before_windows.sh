@@ -5,7 +5,7 @@ mv libpng.exe C:/ProgramData/chocolatey/bin
 dir C:/ProgramData/chocolatey/bin/
 dir C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin
 export TF_USE_LOCAL_LIBRARY=1
-libpng /s
+libpng /silent
 mkdir tensorflow # download TF dependency, TODO downloading protobufs
 cd tensorflow
 curl -sS -o libtf.zip --insecure https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-1.12.0.zip
