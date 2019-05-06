@@ -24,8 +24,8 @@ dir
 cd lpng1637
 ./configure --disable-dependency-tracking
 cmake -G "MinGW Makefiles" -DCMAKE_SH=CMAKE_SH-NOTFOUND -DZLIB_LIBRARY="C:/Users/travis/build/Luna-Tensorflow/Luna-Tensorflow/zlib/zlib-1.2.11/libzlibstatic.a" -DZLIB_INCLUDE_DIR="C:/Users/travis/build/Luna-Tensorflow/Luna-Tensorflow/zlib/zlib-1.2.11" .
-dir
 cmake --build .
+dir
 cd ../..
 
 # tensorflow download
@@ -47,5 +47,6 @@ mkdir release/native_libs/windows/
 #cd ..
 cd build
 echo "Will generate makefiles"
-cmake -G "MinGW Makefiles" -DCMAKE_SH=CMAKE_SH-NOTFOUND -I../libpng/lpng1637/ ../API/Tensorflow/native_libs/src/
+cp ../libpng/lpng1637/*.h ../API/Tensorflow/native_libs/src/png
+cmake -G "MinGW Makefiles" -DCMAKE_SH=CMAKE_SH-NOTFOUND ../API/Tensorflow/native_libs/src/
 cd ..
