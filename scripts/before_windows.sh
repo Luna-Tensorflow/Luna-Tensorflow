@@ -5,7 +5,6 @@ mv libpng.exe C:/ProgramData/chocolatey/bin
 dir C:/ProgramData/chocolatey/bin/
 dir C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin
 export TF_USE_LOCAL_LIBRARY=1
-libpng /?
 libpng /s
 mkdir tensorflow # download TF dependency, TODO downloading protobufs
 cd tensorflow
