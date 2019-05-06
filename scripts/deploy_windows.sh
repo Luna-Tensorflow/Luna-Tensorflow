@@ -1,6 +1,6 @@
 echo "Deploying (Windows)"
 set -xe
-
+cp -v libpng/lpng1637/libpng16.a build/libpng.a
 cd build
 cmake --build .
 cd ../release/

@@ -47,6 +47,6 @@ mkdir release/native_libs/windows/
 #cd ..
 cd build
 echo "Will generate makefiles"
-cp ../libpng/lpng1637/*.h ../API/Tensorflow/native_libs/src/png/
+cp -v ../libpng/lpng1637/*.h ../API/Tensorflow/native_libs/src/png/
 cmake -G "MinGW Makefiles" -DCMAKE_SH=CMAKE_SH-NOTFOUND ../API/Tensorflow/native_libs/src/
 cd ..
