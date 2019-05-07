@@ -16,9 +16,6 @@ class Conv1d:
     def _fitkern size ksize stride:
         ((size - ksize + 1).toReal / (stride.toReal)).ceiling
 
-    def sianko parent:
-        parent
-
     # Conv1d layer constructor.
     # Arguments:
     # `kernelW` :: Int
@@ -38,8 +35,6 @@ class Conv1d:
 
         reshape1 = Reshape.create newShape1 parent
         conv = Conv2d.create [1, kernelW] outChannels (1, stride) paddingType reshape1
-        conv
-    def sianko:
         reshape2 = Reshape.create [-1, outChannels] conv        
         reshape2
 

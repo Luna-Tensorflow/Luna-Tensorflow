@@ -90,9 +90,6 @@ class Conv2d:
     def _fitkern size ksize stride:
         ((size - ksize + 1).toReal / (stride.toReal)).ceiling
 
-    def sianko parent:
-        parent
-
     # Conv2D layer constructor.
     # Arguments:
     # `[kernelHeight, kernelWidth]` :: List Int
