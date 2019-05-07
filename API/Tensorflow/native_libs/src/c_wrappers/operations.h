@@ -29,10 +29,10 @@ TFL_API void** eval_graph_with_placeholders(GraphSession* graph, const char** ph
 
 // returns the new state and loss history
 TFL_API void** train(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
-	size_t foldCount, uint32_t epochs, uint32_t validation_samples, uint32_t early_stop, const char **outError);
+	size_t inputs_count, uint32_t epochs, uint32_t validation_samples, uint32_t early_stop, const char **outError);
 
 TFL_API State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
-                         size_t foldCount, uint32_t epochs, const char **outError);
+                         size_t inputs_count, uint32_t epochs, const char **outError);
 
 TFL_API Output* make_variable(const char* name, Tensor* val, const char **outError);
 TFL_API Output* make_sequence(Output* sideefect, Output* value, const char **outError);

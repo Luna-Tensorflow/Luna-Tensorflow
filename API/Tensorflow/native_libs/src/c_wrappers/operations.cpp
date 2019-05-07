@@ -371,7 +371,7 @@ void** train(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor
                  size_t inputs_count, uint32_t epochs, uint32_t validation_samples, uint32_t early_stop,
                  const char **outError){
     return TRANSLATE_EXCEPTION(outError) {
-        FFILOG(graph, ph_names, ph_count, ph_values, initial, fold_count, epochs);
+        FFILOG(graph, ph_names, ph_count, ph_values, initial, inputs_count, epochs, validation_samples, early_stop);
 
         std::map<std::string, std::shared_ptr<Tensor>> substitutions;
         std::shared_ptr<State> state = LifetimeManager::instance().accessOwned(initial);
@@ -413,7 +413,7 @@ void** train(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor
 State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
                          size_t inputs_count, uint32_t epochs, const char **outError){
     return TRANSLATE_EXCEPTION(outError) {
-        FFILOG(graph, ph_names, ph_count, ph_values, initial, fold_count, epochs);
+        FFILOG(graph, ph_names, ph_count, ph_values, initial, inputs_count, epochs);
 
         std::map<std::string, std::shared_ptr<Tensor>> substitutions;
         std::shared_ptr<State> state = LifetimeManager::instance().accessOwned(initial);
