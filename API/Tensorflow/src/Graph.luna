@@ -3,6 +3,7 @@ import Tensorflow.CWrappers.State
 
 import Tensorflow.Operations
 import Tensorflow.Tensor
+import Tensorflow.Patches
 
 # Structure that contains variables values. 
 class State:
@@ -90,9 +91,9 @@ class StateOps:
         State w
 
 # Structure that contains tensorflow Graph and evaluates choosen outputs.
-class TFGraph:
+class TFGraph a:
     wrapper :: GraphWrapper
-    outputs :: List (TFOutput)
+    outputs :: List (TFOutput a)
 
     # Internal.
     # ptr :: ManagedPointer None
@@ -114,7 +115,7 @@ class TFGraph:
     def evalSubsts state substs:
         (statewrapper, tensorwrappers) = self.wrapper.evalSubsts (self.outputs.length) substs state
 
-        tensors = (tensorwrappers . zip ((self . outputs) . map (x: x.typetag))) . each ((wrp, tag): Tensor (wrp tag))
+        tensors = (Patches.zip tensorwrappers ((self . outputs) . map (x: x.typetag))) . each ((wrp, tag): Tensor (wrp tag))
         newstate = State statewrapper
 
         (tensors, newstate)

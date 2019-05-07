@@ -15,8 +15,8 @@ def >> a b:
     a.>> b
 
 # not sure if we want separate classes for each op type or one class for all?
-class TFOutput:
-    wrapper :: OutputWrapper
+class TFOutput a:
+    wrapper :: OutputWrapper a
 
     # Internal.
     # ptr :: ManagedPointer None

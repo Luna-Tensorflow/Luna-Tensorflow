@@ -4,6 +4,7 @@ import Tensorflow.Types
 import Tensorflow.Gradient
 import Tensorflow.Graph
 import Tensorflow.GeneratedOps
+import Tensorflow.Patches
 
 # Optimizer that implements the Gradient Descent algorithm. 
 class GradientDescent:
@@ -32,7 +33,7 @@ class GradientDescent:
       def makeOptimizingGraph yTrue yPred loss variables:
           err = loss yTrue yPred
           grads = Gradients.make [err] variables []
-          varsAndGrads = variables.zip grads
+          varsAndGrads = Patches.zip variables grads
 
           def makeAndApplyGradientDescent (v, g):
               lr = Operations.constFromScalar v.typetag self.lr

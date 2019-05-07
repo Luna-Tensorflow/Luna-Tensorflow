@@ -1,4 +1,43 @@
 modulesSettings:
+  src/TestVisual.luna:
+    typeRepToVisMap:
+    - - tag: TCons
+        contents:
+        - TFOutput
+        - []
+      - - ! 'ProjectVisualizer: tensor: tensor'
+        - tensor/tensor.html
+    - - tag: TCons
+        contents:
+        - Tensor
+        - - tag: TCons
+            contents:
+            - FloatType
+            - []
+      - - ! 'ProjectVisualizer: tensor: tensor'
+        - tensor/tensor.html
+    - - tag: TCons
+        contents:
+        - TFOutput
+        - - tag: TCons
+            contents:
+            - FloatType
+            - []
+      - - ! 'ProjectVisualizer: tensor: tensor'
+        - tensor/tensor.html
+    currentBreadcrumb: testModelVis
+    breadcrumbsSettings:
+    - - items: []
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[-320.0,0.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[320.0,0.0,0.0,1.0]]'
+          lastInverse: 2
+    - - items:
+        - testModelVis
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.158931656758612,0.0,0.0,0.0],[0.0,1.158931656758612,0.0,0.0],[0.0,0.0,1.0,0.0],[-7304.7609657220855,-313.8441159575136,0.0,1.0]]'
+          screenToLogical: ! '[[0.8628636504734678,0.0,0.0,0.0],[0.0,0.8628636504734678,0.0,0.0],[0.0,0.0,1.0,0.0],[6303.012712719053,270.80467957471853,0.0,1.0]]'
+          lastInverse: 0
   src/Operations.luna:
     typeRepToVisMap: []
     currentBreadcrumb: ''
@@ -71,4 +110,22 @@ modulesSettings:
       - breadcrumbCameraSettings:
           logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[-372.0,-106.0,0.0,1.0]]'
           screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[372.0,106.0,0.0,1.0]]'
+          lastInverse: 0
+  src/Types.luna:
+    typeRepToVisMap:
+    - - tag: TCons
+        contents:
+        - Tensor
+        - - tag: TCons
+            contents:
+            - FloatType
+            - []
+      - - ! 'ProjectVisualizer: tensor: tensor'
+        - tensor/tensor.html
+    currentBreadcrumb: ''
+    breadcrumbsSettings:
+    - - items: []
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
           lastInverse: 0

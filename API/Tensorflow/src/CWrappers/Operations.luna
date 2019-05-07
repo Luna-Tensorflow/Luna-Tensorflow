@@ -4,6 +4,7 @@ import Tensorflow.Tensor
 import Tensorflow.Operations
 import Tensorflow.CWrappers.Tensor
 import Tensorflow.Types
+import Tensorflow.Patches
 
 import Tensorflow.CWrappers.Helpers
 
@@ -119,7 +120,6 @@ def outputWrapperFromPtr typetag ptr:
     managedOutputPtr = ManagedPointer None . fromPointer releaseMethod ptr
     OutputWrapper managedOutputPtr typetag
 
-
 def makeOutputWrappers name inputs outputTypetags attrList chosenName:
     inputs' = inputs.each id
     attrList' = attrList
@@ -127,15 +127,18 @@ def makeOutputWrappers name inputs outputTypetags attrList chosenName:
 
     count = inputs'.length
     inputsCArr = Pointer (Pointer None) . mallocElems count
-    indexed = 0 . upto (count - 1) . zip inputs'
+    "indexed = 0 . upto (count - 1) . zip inputs'"
+    indexed = Patches.zip (0 . upto (count - 1)) inputs'
     indexed . each (idx, input):
-        inputsCArr . moveElems idx . write input.ptr.ptr
+        ptr = input.ptr.ptr
+        inputsCArr . moveElems idx . write (PointerVal None ptr)
 
     outsPtr = CString.with name nameCStr: CString.with chosenName chosenNameCStr:
             callHandlingError "make_op" (Pointer (Pointer None)) [nameCStr.toCArg, inputsCArr.toCArg, CInt32.fromInt inputs'.length . toCArg, CInt32.fromInt noutputs . toCArg, attrList'.toCArg, chosenNameCStr.toCArg]
 
     outsArr = Array (Pointer None) . make noutputs outsPtr
-    typedOuts = outputTypetags.zip outsArr.toList
+    "typedOuts = outputTypetags.zip outsArr.toList"
+    typedOuts = Patches.zip outputTypetags outsArr.toList
     outs = typedOuts.each (typetag, output): outputWrapperFromPtr typetag output
 
     inputsCArr.free

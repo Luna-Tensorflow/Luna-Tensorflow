@@ -4,10 +4,11 @@ import Tensorflow.Operations
 import Tensorflow.CWrappers.Helpers
 
 # This layer implements the operation: output = activation(input)
-class ActivationLayer layerT:
+class ActivationLayer a layerT:
     name :: Text
-    activationFunction :: TFOutput a -> TFOutput a
+    activationFunction :: (TFOutput a) -> (TFOutput a)
     parentLayer :: layerT # :: Layer # TODO no interfaces
+    outputType :: a # this type is forced in construction to unify activationFunction type
 
     # Returns Activation layer in Text type.
     # `return` :: Text
@@ -60,8 +61,8 @@ class ActivationLayer layerT:
     # Returns type of output in this layer.
     # `return` :: TypeTag
     # outputType :: TypeTag
-    def outputType:
-        self.parentLayer.outputType
+    # def outputType:
+    #     self.parentLayer.outputType
 
 class Activation:
       Activation
@@ -73,5 +74,5 @@ class Activation:
       # create :: (TFOutput -> TFOutput) -> Layer -> Layer
       def create activationFunction parent:
           name = getNextName "Activation"
-          a = ActivationLayer name activationFunction parent
+          a = ActivationLayer name activationFunction parent parent.outputType
           a

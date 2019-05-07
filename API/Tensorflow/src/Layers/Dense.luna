@@ -6,11 +6,11 @@ import Tensorflow.Layers.Activation
 import Tensorflow.CWrappers.Helpers
 
 # This layer implements the operation: outputs = inputs * kernel + bias where kernel is a weights matrix created by the layer, and bias is a bias vector created by the layer.
-class DenseLayer varT layerT:
+class DenseLayer a layerT:
       name :: Text
       nOutputs :: Int
-      weights :: varT # :: Variable a
-      biases :: varT # :: Variable a
+      weights :: TFOutput a
+      biases :: TFOutput a
       parentLayer :: layerT # :: Layer # TODO no interfaces
 
       # Returns Dense layer in Text type.
