@@ -1,7 +1,3 @@
-//
-// Created by mateusz on 24.04.19.
-//
-
 #ifndef TFL_PNGTENSORS_H
 #define TFL_PNGTENSORS_H
 
