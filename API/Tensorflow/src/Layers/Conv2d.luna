@@ -4,18 +4,7 @@ import Tensorflow.Operations
 import Tensorflow.Variables
 import Tensorflow.Layers.Activation
 import Tensorflow.CWrappers.Helpers
-
-# Internal.
-class PaddingType:
-    Valid
-    Same
-
-    def toText: case (self) of
-        Valid: "VALID"
-        Same: "SAME"
-
-    def toJSON:
-        self.toText.toJSON
+import Tensorflow.Padding
 
 # This layer creates a convolution kernel that is convolved (actually cross-correlated) with the previous layer output to produce next layer input.
 class Conv2dLayer varT layerT:
@@ -100,6 +89,9 @@ class Conv2d:
     # Internal.
     def _fitkern size ksize stride:
         ((size - ksize + 1).toReal / (stride.toReal)).ceiling
+
+    def sianko parent:
+        parent
 
     # Conv2D layer constructor.
     # Arguments:

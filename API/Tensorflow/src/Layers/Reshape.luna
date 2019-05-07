@@ -31,7 +31,7 @@ class ReshapeLayer layerT:
       # `return` :: List Int
       # shape :: List Int
       def shape:
-          resultDims
+          self.resultDims
 
       # Computes output on this layer after feeding with data from previous one.
       # Arguments:
