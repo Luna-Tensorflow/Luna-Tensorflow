@@ -1,5 +1,8 @@
+# Internal.
 class LayersHelper:
-      # removes duplicate variables from list (ie. having the same names), the order may not be preserved
+      # Removes duplicate variables from list (ie. having the same names), the order may not be preserved.
+      # `list` :: List Variable
+      # `return` :: List Variable
       # uniqueLayers :: List Variable -> List Variable
       def uniqueVariables list:
           grouped = list.groupBy (l: l.wrapper.opName)

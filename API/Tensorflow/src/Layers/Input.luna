@@ -28,6 +28,7 @@ class InputLayer a:
       # Computes output on this layer, simply returns same input.
       # Arguments:
       # `inp` :: TFOutput a
+      # `return` :: TFOutput a
       # forward :: TFOutput a -> TFOutput a
       def forward inp:
           inp
@@ -35,16 +36,19 @@ class InputLayer a:
       # Helper function to run evaluation of model.
       # Arguments:
       # `inp` :: TFOutput a
+      # `return` :: TFOutput a
       # eval :: TFOutput a -> TFOutput a
       def eval inp:
           inp
 
       # Returns variables to train, up to this layer, which is empty List.
+      # `return` :: List Variable a
       # trainableVariables :: List Variable a
       def trainableVariables:
           []
 
       # Returns type of output in this layer.
+      # `return` :: TypeTag
       # outputType :: TypeTag
       def outputType:
           self.typetag

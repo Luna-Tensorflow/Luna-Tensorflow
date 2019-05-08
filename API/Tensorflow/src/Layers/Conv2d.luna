@@ -6,7 +6,7 @@ import Tensorflow.Layers.Activation
 import Tensorflow.CWrappers.Helpers
 import Tensorflow.Padding
 
-# This layer creates a convolution kernel that is convolved (actually cross-correlated) with the previous layer output to produce next layer input.
+# This layer creates internally a 2D convolution kernel of given parameters that is cross-correlated with the previous layer (of shape 3D - specified input channes, or 2D - unspecified input channels) and using this kernel computes 3D output (with given number of channels and padding algorithm type) for next layer. 
 class Conv2dLayer varT layerT:
     name :: Text
     kernelWeights :: varT
