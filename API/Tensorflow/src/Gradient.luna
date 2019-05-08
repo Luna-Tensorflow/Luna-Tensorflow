@@ -21,9 +21,9 @@ class Gradients:
         dxs' = dxs.each id
         typetag = ys.head.get.wrapper.typetag
 
-        dysRet = Array (Pointer None) . with (ys'.map y: y.ptr.ptr) ysArr:
-            Array (Pointer None) . with (xs'.map x: x.ptr.ptr) xsArr:
-                dxsPtr = if dxs'.isEmpty then nullPtr else if dxs'.length == ys.length then Array (Pointer None) . fromList (dxs'.map dx: dx.ptr.ptr) . ptr . ptr else throw "gradients: dxs must be empty or of the same size as ys"
+        dysRet = Array (Pointer None) . with (ys'.map y: PointerVal None y.ptr.ptr) ysArr:
+            Array (Pointer None) . with (xs'.map x: PointerVal None x.ptr.ptr) xsArr:
+                dxsPtr = if dxs'.isEmpty then nullPtr else if dxs'.length == ys.length then Array (Pointer None) . fromList (dxs'.map dx: PointerVal None dx.ptr.ptr) . ptr . ptr else throw "gradients: dxs must be empty or of the same size as ys"
 
                 dysPtr = callHandlingError "add_gradients" (Pointer (Pointer None)) [ysArr.toCArg, CInt64.fromInt ys'.length . toCArg, xsArr.toCArg,
                         CInt64.fromInt xs'.length . toCArg, dxsPtr.toCArg]
