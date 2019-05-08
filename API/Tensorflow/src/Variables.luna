@@ -14,6 +14,7 @@ class Variables:
     # Arguments: 
     # `name` :: Text
     # `defaultValue` :: Tensor a
+    # `return` :: TFOutput a
     # make :: Text -> Tensor a -> TFOutput a
     def make name defaultValue:
         wrapper = makeVariableWrapper name defaultValue
@@ -23,6 +24,7 @@ class Variables:
     # Arguments: 
     # `var` :: TFOutput a
     # `val` :: TFOutput b
+    # `return` :: TFOutput a
     # assign :: TFOutput a -> TFOutput b -> TFOutput a
     def assign var val:
         assignOp = assignGen "" var val var.wrapper.typetag False False
@@ -32,6 +34,7 @@ class Variables:
     # Arguments: 
     # `sideeffect` :: TFOutput a
     # `value` :: TFOutput b
+    # `return` :: TFOutput b
     # sequence :: TFOutput a -> TFOutput b -> TFOutput b
     def sequence sideeffect value:
         seqWrapper = makeSequence sideeffect value
@@ -46,12 +49,17 @@ class Variables:
         f (a, b)
 
     # Applies function f on each element of the list and passes sideefects to accumulator.
-    # Arguments: initial, f, list.
+    # Arguments: 
+    # `initial` :: TFOutput a
+    # `f` :: TFOutput a -> TFOutput b 
+    # `list` :: List (TFOutput b)
+    # `return` :: TFOutput b
+    # sequence :: TFOutput a -> (TFOutput a -> TFOutput b) -> List (TFOutput b) -> TFOutput b
     def sequence' initial f list:
         list . foldLeft initial (elem: (f elem) >> )
 
-    # This is an operation that is meant to have no value, it may be used to build graphs that consist of only side effects.
-    # For now it's implemented as a constant, but it should be rewritten so that no TF operations can be done on it besides providing it as a first argument of apply and output to compute in a graph.
+    # This is an operation that is meant to have no value, it may be used to build graphs that consist of only side effects. For now it's implemented as a constant, but it should be rewritten so that no TF operations can be done on it besides providing it as a first argument of apply and output to compute in a graph.
+    # `return` :: ()
     # unitOp :: ()
     def unitOp:
         op = constFromScalar FloatType 1.0
