@@ -142,7 +142,7 @@ class Tensors:
     # `dims` :: List Int
     # zeros :: Typetag a -> List Int -> Tensor a
     def zeros typetag dims:
-        wrapper = createConstTensorWrapper typetag dims 0
+        wrapper = createConstTensorWrapper typetag dims (typetag.fromReal 0.0)
         Tensor wrapper
 
     # Creates const tensor of zeros with given type and shape of given tensor.
@@ -151,7 +151,7 @@ class Tensors:
     # `x` :: Tensor a
     # zerosLike :: Typetag a -> Tensor a -> Tensor a
     def zerosLike typetag x:
-        wrapper = createConstTensorWrapper typetag x.dims 0
+        wrapper = createConstTensorWrapper typetag x.dims (typetag.fromReal 0.0)
         Tensor wrapper
 
     # Creates const tensor of ones with given type and dimensions.
@@ -160,7 +160,7 @@ class Tensors:
     # `dims` :: List Int
     # ones :: Typetag a -> List Int -> Tensor a
     def ones typetag dims:
-        wrapper = createConstTensorWrapper typetag dims 1
+        wrapper = createConstTensorWrapper typetag dims (typetag.fromReal 1.0)
         Tensor wrapper
 
     # Creates const tensor of ones with given type and shape of given tensor.
@@ -169,7 +169,7 @@ class Tensors:
     # `x` :: Tensor a
     # onesLike :: Typetag a -> Tensor a -> Tensor a
     def onesLike typetag x:
-        wrapper = createConstTensorWrapper typetag x.dims 1
+        wrapper = createConstTensorWrapper typetag x.dims (typetag.fromReal 1.0)
         Tensor wrapper
 
     # Transposes a tensor (TODO better description)

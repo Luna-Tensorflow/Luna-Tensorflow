@@ -62,7 +62,7 @@ class DropoutLayer layerT:
 
     # Returns variables to train, up to this layer. This layer has no new variables and inherits parent's variables.
     # `return` :: List Variable a
-    # trainableVariables :: List TFOutputTypeErased
+    # trainableVariables :: List (TFOutput ErasedType)
     def trainableVariables:
         self.parentLayer.trainableVariables
 

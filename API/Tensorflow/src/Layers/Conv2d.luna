@@ -18,9 +18,9 @@ class PaddingType:
         self.toText.toJSON
 
 # This layer creates a convolution kernel that is convolved (actually cross-correlated) with the previous layer output to produce next layer input.
-class Conv2dLayer varT layerT:
+class Conv2dLayer a layerT:
     name :: Text
-    kernelWeights :: varT # TODO types
+    kernelWeights :: TFOutput a
     outHeight :: Int
     outWidth :: Int
     outChannels :: Int
@@ -34,7 +34,7 @@ class Conv2dLayer varT layerT:
     # `return` :: Text
     # toText :: Text
     def toText:
-        self.name + self.shape.toText + " (TODO more info?)"
+        self.name + self.shape.toText
 
     # Returns Conv2D layer in JSON type.
     # `return` :: JSON
@@ -123,7 +123,7 @@ class Conv2d:
         name = getNextName "Conv2D"
         vartype = parent.outputType
 
-        winit = Tensors.random vartype [kernelHeight, kernelWidth, inChannels, outChannels] 0.0 1.0
+        winit = Tensors.random vartype [kernelHeight, kernelWidth, inChannels, outChannels] (vartype.fromReal 0.0) (vartype.fromReal 1.0)
         w = Variables.make (name + "w") winit
 
         c = Conv2dLayer name w outHeight outWidth outChannels kernelHeight kernelWidth (strideY, strideX) paddingType parent

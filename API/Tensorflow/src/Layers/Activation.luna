@@ -54,7 +54,7 @@ class ActivationLayer a layerT:
 
     # Returns variables to train, up to this layer. This layer has no new variables and inherits parent's variables.
     # `return` :: List Variable a
-    # trainableVariables :: List TFOutputTypeErased
+    # trainableVariables :: List (TFOutput ErasedType)
     def trainableVariables:
         self.parentLayer.trainableVariables
 
@@ -68,10 +68,10 @@ class Activation:
       Activation
 
       # Creates a layer that applies given function to its input and returns the result as output
-      # activationFunction :: TFOutput -> TFOutput
-      # parent :: Layer
-      # `return` :: Layer
-      # create :: (TFOutput -> TFOutput) -> Layer -> Layer
+      # activationFunction :: TFOutput a -> TFOutput a
+      # parent :: Layer a
+      # `return` :: Layer a
+      # create :: (TFOutput a -> TFOutput a) -> Layer a -> Layer a
       def create activationFunction parent:
           name = getNextName "Activation"
           a = ActivationLayer name activationFunction parent parent.outputType
