@@ -1,6 +1,9 @@
+# Internal.
 class LayersHelper:
       # Removes duplicate variables from list (ie. having the same names), the order may not be preserved.
       # The list should contain only TFOutputs that represent variables, otherwise behaviour is undefined.
+      # `list` :: List (TFOutput ErasedType)
+      # `return` :: List (TFOutput ErasedType)
       # uniqueLayers :: List (TFOutput ErasedType) -> List (TFOutput ErasedType)
       def uniqueVariables list:
           grouped = list.groupBy (l: l.wrapper.opName)

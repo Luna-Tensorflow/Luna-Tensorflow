@@ -13,6 +13,8 @@ class State:
     # Arguments: 
     # `typetag` :: TypeTag
     # `names` :: List Text
+    # `return` :: List Tensor
+    # values :: TypeTag -> List Text -> List Tensor
     def values typetag names:
         wrappers = self.wrapper.values names
         wrappers . each(x: Tensor (x typetag))
@@ -21,6 +23,8 @@ class State:
     # Arguments:
     # `typetag` :: TypeTag
     # `name` :: Text
+    # `return` :: Tensor
+    # value :: TypeTag -> Text -> Tensor
     def value typetag name:
         wrapper = self.wrapper.value name
         Tensor (wrapper typetag)
@@ -29,12 +33,16 @@ class State:
     # Arguments:
     # `name` :: Text
     # `value` :: TFOutput
+    # `return` :: State
+    # updateOne :: Text -> TFOutput -> State
     def updateOne name value:
         self.update [(name, value)]
 
     # Updates given values.
     # Arguments: 
     # `values` :: List Tuple2 Text Tensor
+    # `return` :: State
+    # update :: List Tuple2 Text Tensor -> State
     def update values:
         wrapper = self.wrapper.update values
         State wrapper
@@ -48,6 +56,7 @@ class StateOps:
     StateOps
 
     # Creates empty state.
+    # `return` :: State
     # makeEmpty :: State
     def makeEmpty:
         wrapper = emptyState
@@ -57,6 +66,7 @@ class StateOps:
     # Arguments: 
     # `state` :: State 
     # `values` :: List Tuple2 Text Tensor
+    # `return` :: State
     # alter :: State -> List Tuple2 Text Tensor -> State
     def alter state values:
         newstate = state . update values
@@ -67,6 +77,7 @@ class StateOps:
     # `state` :: State
     # `varname` :: Text
     # `value` :: Tensor
+    # `return` :: State
     # setVariableValue :: State -> Text -> Tensor -> State
     def setVariableValue state varname value:
         newstate = state . updateOne varname value
@@ -77,6 +88,7 @@ class StateOps:
     # `fname` :: Text
     # `vars` :: List (TFOutput ErasedType)
     # `state` :: State
+    # `return` :: ()
     # saveVariables :: Text -> List Variable -> State -> ()
     def saveVariables fname vars state:
         saveVarsFromStateWrapper fname vars state.wrapper
@@ -85,6 +97,7 @@ class StateOps:
     # `fname` :: Text
     # `vars` :: List (TFOutput ErasedType) 
     # `state` :: State
+    # `return` :: State
     # loadVariables :: Text -> List Variable -> State -> State
     def loadVariables fname vars state:
         w = loadVarsToStateWrapper fname vars state.wrapper
@@ -97,13 +110,13 @@ class TFGraph a:
     typetag :: a
 
     # Internal.
-    # ptr :: ManagedPointer None
     def ptr:
         self.wrapper.ptr
 
     # Evaluates TFGraph on given state.
     # Arguments:
     # `state` :: State
+    # `return` :: (List Tensor a, State)
     # eval :: State -> (List Tensor a, State)
     def eval state:
         self.evalSubsts state []
@@ -112,6 +125,7 @@ class TFGraph a:
     # Arguments: 
     # `state` :: State
     # `substs` :: List Tuple2 Text (Tensor a)
+    # `return` :: (List Tensor a, State)
     # evalSubsts :: State -> List Tuple2 Text (Tensor a) -> (List Tensor a, State)
     def evalSubsts state substs:
         (statewrapper, tensorwrappers) = self.wrapper.evalSubsts (self.outputs.length) substs state
@@ -122,6 +136,7 @@ class TFGraph a:
         (tensors, newstate)
 
     # Returns TFGraph in JSON type.
+    # `return` :: JSON
     # toJSON :: JSON
     def toJSON:
         self.eval.toJSON
@@ -131,6 +146,7 @@ class TFGraph a:
     # `placeholderNames` :: List Text
     # `placeholderVals` :: List List Tensor a
     # `initialState` :: State
+    # `return` :: State
     # foldEval :: List Text -> List List Tensor a -> State -> State
     def foldEval placeholderNames placeholderVals initialState:
         wrapper = self.wrapper.foldEval placeholderNames placeholderVals initialState
@@ -143,6 +159,7 @@ class TFGraphMaker:
     # Creates graph from list of outputs.
     # Arguments: 
     # `outputList` :: List TFOutput
+    # `return` :: TFGraph
     # makeGraphFromOutputList :: List TFOutput -> TFGraph
     def makeFromOutputList outputList:
         wrapper = makeGraphWrapperFromOutputList outputList
@@ -151,6 +168,7 @@ class TFGraphMaker:
     # Creates graph from single output.
     # Arguments: 
     # `output` :: TFOutput
+    # `return` :: TFGraph
     # makeGraphFromOutput :: TFOutput-> TFGraph
     def makeFromOutput output:
         self.makeFromOutputList [output]

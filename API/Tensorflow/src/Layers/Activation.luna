@@ -64,6 +64,7 @@ class ActivationLayer a layerT:
     # def outputType:
     #     self.parentLayer.outputType
 
+# Activation layer creation and usage.
 class Activation:
       Activation
 

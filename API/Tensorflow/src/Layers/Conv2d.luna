@@ -4,6 +4,8 @@ import Tensorflow.Operations
 import Tensorflow.Variables
 import Tensorflow.Layers.Activation
 import Tensorflow.CWrappers.Helpers
+import Tensorflow.Padding
+
 
 # Internal.
 class PaddingType:

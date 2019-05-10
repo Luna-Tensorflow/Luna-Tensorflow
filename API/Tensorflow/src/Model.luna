@@ -10,12 +10,15 @@ class Model a layerT:
       # outLayer is only used for toJSON so might be removed if we change that
 
       # Returns Model in JSON type.
+      # `return` :: JSON
+      # toJSON :: JSON
       def toJSON:
           self.outLayer.toJSON
 
       # Predicts model's output on given input.
       # Arguments: 
       # x :: Tensor a
+      # `return` :: Tensor b
       # evaluate :: Tensor a -> Tensor b
       def evaluate x:
           (res, state') = self.evalgraph.evalSubsts self.state [("x", x)]
@@ -25,6 +28,7 @@ class Model a layerT:
       # Arguments: 
       # `xs` :: List Tensor a
       # `ys` :: List Tensor b
+      # `return` :: Model
       # train :: List Tensor a -> List Tensor b -> Model # TODO also consider real time visualization of loss in GUI
       def train xs ys:
           0 # TODO we'd prefer to use batched fold that runs in C++ directly
@@ -33,12 +37,14 @@ class Model a layerT:
 
       # Saving trained model's weights into file.
       # `filename` :: Text
+      # `return` :: ()
       # saveWeights :: Text -> ()
       def saveWeights filename:
           StateOps.saveVariables filename self.vars self.state
 
       # Loading saved model's weights from file.
       # `filename` :: Text
+      # `return` :: Model
       # loadWeights :: Text -> Model
       def loadWeights filename:
           state' = StateOps.loadVariables filename self.vars StateOps.makeEmpty
@@ -53,8 +59,9 @@ class Models:
     # `input` :: List Tensor
     # `output` :: List Tensor
     # `optimizer` :: TF_Optimizer
-    # `loss` :: TF_Loss
-    # make :: List Tensor -> List Tensor -> TF_Optimizer -> TF_Loss -> Model 
+    # `loss` :: (TFOutput -> TFOutput)
+    # `return` :: Model
+    # make :: List Tensor -> List Tensor -> TF_Optimizer -> (TFOutput -> TFOutput) -> Model 
     def make input output optimizer loss:
         inputPlaceholder = Operations.makePlaceholder input.typetag "x"
         yPredTrain = output.forward inputPlaceholder
