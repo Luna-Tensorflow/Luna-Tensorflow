@@ -54,7 +54,7 @@ class ActivationLayer a layerT:
 
     # Returns variables to train, up to this layer. This layer has no new variables and inherits parent's variables.
     # `return` :: List Variable a
-    # trainableVariables :: List Variable a
+    # trainableVariables :: List TFOutputTypeErased
     def trainableVariables:
         self.parentLayer.trainableVariables
 

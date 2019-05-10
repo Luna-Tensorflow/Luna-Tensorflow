@@ -27,9 +27,9 @@ class GradientDescent:
       # `yTrue` :: TFOutput a
       # `yPred` :: TFOutput a
       # `loss` :: TFOutput a -> TFOutput a -> TFOutput b
-      # `variables` :: List Variable 
+      # `variables` :: List (TFOutput ErasedType)
       # `return` :: TFGraph
-      # makeOptimizingGraph :: TFOutput a -> TFOutput a -> (TFOutput a -> TFOutput a -> TFOutput b) -> List Variable -> TFGraph
+      # makeOptimizingGraph :: TFOutput a -> TFOutput a -> (TFOutput a -> TFOutput a -> TFOutput b) -> List (TFOutput ErasedType) -> TFGraph
       def makeOptimizingGraph yTrue yPred loss variables:
           err = loss yTrue yPred
           grads = Gradients.make [err] variables []

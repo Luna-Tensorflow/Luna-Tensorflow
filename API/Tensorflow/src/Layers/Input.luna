@@ -40,7 +40,7 @@ class InputLayer a:
           inp
 
       # Returns variables to train, up to this layer, which is empty List.
-      # trainableVariables :: List Variable a
+      # trainableVariables :: List TFOutputTypeErased
       def trainableVariables:
           []
 

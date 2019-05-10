@@ -20,7 +20,7 @@ class PaddingType:
 # This layer creates a convolution kernel that is convolved (actually cross-correlated) with the previous layer output to produce next layer input.
 class Conv2dLayer varT layerT:
     name :: Text
-    kernelWeights :: varT
+    kernelWeights :: varT # TODO types
     outHeight :: Int
     outWidth :: Int
     outChannels :: Int
@@ -85,7 +85,7 @@ class Conv2dLayer varT layerT:
     # `return` :: List Variable a
     # trainableVariables :: List Variable a
     def trainableVariables:
-        Prepend self.kernelWeights self.parentLayer.trainableVariables
+        Prepend self.kernelWeights.eraseType self.parentLayer.trainableVariables
 
     # Returns type of output in this layer.
     # `return` :: TypeTag

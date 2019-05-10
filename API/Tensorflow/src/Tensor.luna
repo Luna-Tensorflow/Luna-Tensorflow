@@ -77,6 +77,9 @@ class Tensor a:
     def toText:
         "Tensor " + (self.dims.toText)
 
+    def typetag:
+        self.wrapper.typetag
+
 # Creating tensors and operations on them.
 class Tensors:
     Tensors
@@ -84,11 +87,9 @@ class Tensors:
     # Creates tensor of given type from pointer to other tensor.
     # Arguments: 
     # `typetag` :: TypeTag
-    # `tensorPtr` :: Pointer None
-    # fromPtr :: TypeTag a -> Pointer None -> Tensor a
-    def fromPtr typetag tensorPtr:
-        managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
-
+    # `tensorPtr` :: ManagedPointer None
+    # fromPtr :: TypeTag a -> ManagedPointer None -> Tensor a
+    def fromPtr typetag managedTensorPtr:
         wrapper = TensorWrapper managedTensorPtr typetag
         Tensor wrapper
 

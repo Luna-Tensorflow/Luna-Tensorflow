@@ -3,7 +3,35 @@ import Std.Foreign
 
 import Tensorflow.CWrappers.Helpers
 
-# TODO we want to add a def == to types that check typename equality
+class TypeTagHelper:
+    # Converts a normal typetag into an erased version.
+    # eraseTypeTag :: a -> ErasedType
+    def eraseType typetag:
+        ErasedType typetag.typename typetag.num
+
+    # Checks whether two typetags are referring to the same type.
+    # May be used to check if some instance of a dynamic TypeTag is convertible to some concrete typetag.
+    # isTypeTagInstanceOf :: a -> b -> Bool
+    def isTypeTagInstanceOf t1 t2:
+        t1.num == t2.num
+
+class ErasedType:
+    typename :: Text
+    num :: Int
+
+    def toText:
+        "Erased(" + self.typename + ")"
+    def ctype:
+        throw "Erased types cannot be converted from/to actual values. To do so you have to manually cast to a concrete type (caused by .ctype)"
+    def fromC val:
+        throw "Erased types cannot be converted from/to actual values. To do so you have to manually cast to a concrete type (caused by .fromC)"
+    def toC val:
+        throw "Erased types cannot be converted from/to actual values. To do so you have to manually cast to a concrete type (caused by .toC)"
+    def cleanupLuna val:
+        throw "Erased types cannot be converted from/to actual values. To do so you have to manually cast to a concrete type (caused by .cleanupLuna)"
+      def cleanupC val:
+        throw "Erased types cannot be converted from/to actual values. To do so you have to manually cast to a concrete type (caused by .cleanupC)"
+        
 
 class FloatType:
     def typename:

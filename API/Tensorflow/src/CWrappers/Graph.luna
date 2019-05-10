@@ -12,6 +12,7 @@ import Tensorflow.CWrappers.Helpers
 
 class GraphWrapper a:
     ptr :: ManagedPointer None
+    typetag :: a
 
     def toCArg:
         self.ptr.toCArg
@@ -109,4 +110,4 @@ def makeGraphWrapperFromOutputList outputList:
 
     carr.free
 
-    GraphWrapper managedGraph
+    GraphWrapper managedGraph (outputList'.getAt 0).typetag

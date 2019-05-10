@@ -17,7 +17,7 @@ class Variables:
     # make :: Text -> Tensor a -> TFOutput a
     def make name defaultValue:
         wrapper = makeVariableWrapper name defaultValue
-        TFOutput wrapper
+        TFOutput wrapper defaultValue.typetag
 
     # Assigns given value to existing variable.
     # Arguments: 
@@ -25,7 +25,7 @@ class Variables:
     # `val` :: TFOutput b
     # assign :: TFOutput a -> TFOutput b -> TFOutput a
     def assign var val:
-        assignOp = assignGen "" var val var.wrapper.typetag False False
+        assignOp = assignGen "" var val var.typetag False False
         assignOp
 
     # Returns the same output as its second argument, but augmented so that the side-effects of the first argument are executed if the second argument is computed.
@@ -35,7 +35,7 @@ class Variables:
     # sequence :: TFOutput a -> TFOutput b -> TFOutput b
     def sequence sideeffect value:
         seqWrapper = makeSequence sideeffect value
-        TFOutput seqWrapper
+        TFOutput seqWrapper value.typetag
 
     # Internal.
     def uncurry f (a, b):

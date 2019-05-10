@@ -14,16 +14,16 @@ def unzip listpair: case listpair of
         (tailx, taily): ((Prepend x tailx), (Prepend y taily))
 
 
-class OutputWrapper a:
+class OutputWrapper:
     ptr :: ManagedPointer None
-    typetag :: a
 
     def toCArg:
         self.ptr.toCArg
 
     def eval:
         tensorPtr = callHandlingError "eval_op" (Pointer None) [self.toCArg]
-        Tensors.fromPtr self.typetag tensorPtr
+        managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
+        managedTensorPtr
 
     def opName:
         cstr = callHandlingError "get_operation_name" CString [self.toCArg]
@@ -80,7 +80,7 @@ def makeConstWrapper tensor name:
     out = CString.with name nameCStr:
             callHandlingError "make_op_const" (Pointer None) [nameCStr.toCArg, tensor'.ptr.toCArg]
     managedOut = ManagedPointer None . fromPointer releaseMethod out
-    OutputWrapper managedOut tensor'.wrapper.typetag
+    OutputWrapper managedOut
 
 def makePlaceholderWrapper typetag name:
     out = CString.with name nameCStr:
@@ -88,7 +88,7 @@ def makePlaceholderWrapper typetag name:
 
     managedOut = ManagedPointer None . fromPointer releaseMethod out
 
-    OutputWrapper managedOut typetag
+    OutputWrapper managedOut
 
 def makeBinaryOpWrapper name a b:
     None # TODO: add assert a.typetag == b.typetag
@@ -99,7 +99,7 @@ def makeBinaryOpWrapper name a b:
 
     managedOut = ManagedPointer None . fromPointer releaseMethod out
 
-    OutputWrapper managedOut a'.typetag
+    OutputWrapper managedOut
 
 def makeUnaryOpWrapper name a:
     a' = a
@@ -109,23 +109,23 @@ def makeUnaryOpWrapper name a:
 
     managedOut = ManagedPointer None . fromPointer releaseMethod out
 
-    OutputWrapper managedOut a'.typetag
+    OutputWrapper managedOut
 
 def makePartialDerivativeWrapper a b:
     a' = a
     b' = b
     out = callHandlingError "make_op_partial_derivative" (Pointer None) [a'.ptr.toCArg, b'.ptr.toCArg]
     managedOut = ManagedPointer None . fromPointer releaseMethod out
-    OutputWrapper managedOut a'.typetag
+    OutputWrapper managedOut
 
-def outputWrapperFromPtr typetag ptr:
+def outputWrapperFromPtr ptr:
     managedOutputPtr = ManagedPointer None . fromPointer releaseMethod ptr
-    OutputWrapper managedOutputPtr typetag
+    OutputWrapper managedOutputPtr
 
-def makeOutputWrappers name inputs outputTypetags attrList chosenName:
+# TODO remove outputTypetags
+def makeOutputWrappers name inputs noutputs attrList chosenName:
     inputs' = inputs.each id
     attrList' = attrList
-    noutputs = outputTypetags.length
 
     count = inputs'.length
     inputsCArr = Pointer (Pointer None) . mallocElems count
@@ -139,9 +139,7 @@ def makeOutputWrappers name inputs outputTypetags attrList chosenName:
             callHandlingError "make_op" (Pointer (Pointer None)) [nameCStr.toCArg, inputsCArr.toCArg, CInt32.fromInt inputs'.length . toCArg, CInt32.fromInt noutputs . toCArg, attrList'.toCArg, chosenNameCStr.toCArg]
 
     outsArr = Array (Pointer None) . make noutputs outsPtr
-    "typedOuts = outputTypetags.zip outsArr.toList"
-    typedOuts = Patches.zip outputTypetags outsArr.toList
-    outs = typedOuts.each (typetag, output): outputWrapperFromPtr typetag output
+    outs = outsArr.toList.each output: outputWrapperFromPtr output
 
     inputsCArr.free
 

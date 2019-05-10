@@ -75,7 +75,7 @@ class StateOps:
     # Saves given variables from state into file.
     # Arguments:
     # `fname` :: Text
-    # `vars` :: List Variable
+    # `vars` :: List (TFOutput ErasedType)
     # `state` :: State
     # saveVariables :: Text -> List Variable -> State -> ()
     def saveVariables fname vars state:
@@ -83,7 +83,7 @@ class StateOps:
 
     # Loads given variables from file into state.
     # `fname` :: Text
-    # `vars` :: List Variable
+    # `vars` :: List (TFOutput ErasedType) 
     # `state` :: State
     # loadVariables :: Text -> List Variable -> State -> State
     def loadVariables fname vars state:
@@ -92,8 +92,9 @@ class StateOps:
 
 # Structure that contains tensorflow Graph and evaluates choosen outputs.
 class TFGraph a:
-    wrapper :: GraphWrapper
+    wrapper :: GraphWrapper a
     outputs :: List (TFOutput a)
+    typetag :: a
 
     # Internal.
     # ptr :: ManagedPointer None
@@ -145,7 +146,7 @@ class TFGraphMaker:
     # makeGraphFromOutputList :: List TFOutput -> TFGraph
     def makeFromOutputList outputList:
         wrapper = makeGraphWrapperFromOutputList outputList
-        TFGraph wrapper outputList
+        TFGraph wrapper outputList (outputList.getAt 0).typetag
 
     # Creates graph from single output.
     # Arguments: 

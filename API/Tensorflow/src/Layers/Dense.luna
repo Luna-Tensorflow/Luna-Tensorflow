@@ -11,6 +11,7 @@ class DenseLayer a layerT:
       nOutputs :: Int
       weights :: TFOutput a
       biases :: TFOutput a
+      outputType :: a
       parentLayer :: layerT # :: Layer # TODO no interfaces
 
       # Returns Dense layer in Text type.
@@ -61,13 +62,7 @@ class DenseLayer a layerT:
       # `return` :: List Variable a
       # trainableVariables :: List Variable a
       def trainableVariables:
-          [self.weights, self.biases] + self.parentLayer.trainableVariables
-
-      # Returns type of output in this layer.
-      # `return` :: TypeTag
-      # outputType :: TypeTag
-      def outputType:
-          self.parentLayer.outputType
+          [self.weights.eraseType, self.biases.eraseType] + self.parentLayer.trainableVariables
 
 # Dense layer creation and usage.
 class Dense:
@@ -93,7 +88,7 @@ class Dense:
         w = Variables.make (name + "w") winit  # TODO defaultValue, TODO name scope to layer - need a mechanism for prefixes
         b = Variables.make (name + "b") binit # TODO j.w.
 
-        d = DenseLayer name nOutputs w b parent
+        d = DenseLayer name nOutputs w b parent.outputType parent
         d
 
     # Dense with activation layer function constructor.

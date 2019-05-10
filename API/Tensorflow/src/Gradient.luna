@@ -19,7 +19,7 @@ class Gradients:
         ys' = ys.each id
         xs' = xs.each id
         dxs' = dxs.each id
-        typetag = ys.head.get.wrapper.typetag
+        typetag = ys.head.get.typetag
 
         dysRet = Array (Pointer None) . with (ys'.map y: PointerVal None y.ptr.ptr) ysArr:
             Array (Pointer None) . with (xs'.map x: PointerVal None x.ptr.ptr) xsArr:

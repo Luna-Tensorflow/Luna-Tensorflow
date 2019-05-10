@@ -1,4 +1,19 @@
 modulesSettings:
+  src/Tensor.luna:
+    typeRepToVisMap: []
+    currentBreadcrumb: splitInPacksOf
+    breadcrumbsSettings:
+    - - items: []
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
+          lastInverse: 2
+    - - items:
+        - splitInPacksOf
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[-53.0,0.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[53.0,0.0,0.0,1.0]]'
+          lastInverse: 0
   src/TestVisual.luna:
     typeRepToVisMap:
     - - tag: TCons
@@ -35,8 +50,17 @@ modulesSettings:
     - - items:
         - testModelVis
       - breadcrumbCameraSettings:
-          logicalToScreen: ! '[[1.158931656758612,0.0,0.0,0.0],[0.0,1.158931656758612,0.0,0.0],[0.0,0.0,1.0,0.0],[-3594.7609657220855,-896.8441159575136,0.0,1.0]]'
-          screenToLogical: ! '[[0.8628636504734678,0.0,0.0,0.0],[0.0,0.8628636504734678,0.0,0.0],[0.0,0.0,1.0,0.0],[3101.788569462487,773.8541878007503,0.0,1.0]]'
+          logicalToScreen: ! '[[1.158931656758612,0.0,0.0,0.0],[0.0,1.158931656758612,0.0,0.0],[0.0,0.0,1.0,0.0],[-2163.7609657220855,-896.8441159575136,0.0,1.0]]'
+          screenToLogical: ! '[[0.8628636504734678,0.0,0.0,0.0],[0.0,0.8628636504734678,0.0,0.0],[0.0,0.0,1.0,0.0],[1867.0306856349548,773.8541878007503,0.0,1.0]]'
+          lastInverse: 0
+  src/Variables.luna:
+    typeRepToVisMap: []
+    currentBreadcrumb: ''
+    breadcrumbsSettings:
+    - - items: []
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
           lastInverse: 0
   src/Operations.luna:
     typeRepToVisMap: []
@@ -47,6 +71,12 @@ modulesSettings:
           logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
           screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
           lastInverse: 0
+    - - items:
+        - ! '>>'
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
+          lastInverse: 2
   src/Main.luna:
     typeRepToVisMap:
     - - tag: TCons
@@ -65,6 +95,30 @@ modulesSettings:
       - breadcrumbCameraSettings:
           logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[-108.0,-307.5,0.0,1.0]]'
           screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[108.0,307.5,0.0,1.0]]'
+          lastInverse: 0
+  src/FixTypes.luna:
+    typeRepToVisMap:
+    - - tag: TCons
+        contents:
+        - Tensor
+        - - tag: TCons
+            contents:
+            - FloatType
+            - []
+      - - ! 'ProjectVisualizer: tensor: tensor'
+        - tensor/tensor.html
+    currentBreadcrumb: testModelVis
+    breadcrumbsSettings:
+    - - items: []
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[0.0,0.0,0.0,1.0]]'
+          lastInverse: 0
+    - - items:
+        - testModelVis
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[-537.0,-110.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[537.0,110.0,0.0,1.0]]'
           lastInverse: 0
   src/Tests/TensorTest.luna:
     typeRepToVisMap: []
