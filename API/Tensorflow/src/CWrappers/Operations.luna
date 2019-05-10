@@ -82,6 +82,13 @@ def makeConstWrapper tensor name:
     managedOut = ManagedPointer None . fromPointer releaseMethod out
     OutputWrapper managedOut
 
+def makeConstFromRealWrapper real typetag name:
+    double = CDouble.fromReal real
+    out = CString.with name nameCStr:
+            callHandlingError "make_op_const_from_real" (Pointer None) [nameCStr.toCArg, CInt32.fromInt typetag.num . toCArg, double.toCArg]
+    managedOut = ManagedPointer None . fromPointer releaseMethod out
+    OutputWrapper managedOut
+
 def makePlaceholderWrapper typetag name:
     out = CString.with name nameCStr:
             callHandlingError "make_op_placeholder" (Pointer None) [nameCStr.toCArg, CInt32.fromInt typetag.num . toCArg]

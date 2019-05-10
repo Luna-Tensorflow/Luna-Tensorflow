@@ -23,9 +23,9 @@ def tensorTest:
     print t1.toJSON
     t2 = Tensors.zeros Int32Type [3, 3]
     print t2.toJSON
-    t3 = Tensors.onesLike Int32Type t2
+    t3 = Tensors.onesLike t2
     print t3.toJSON
-    t4 = Tensors.zerosLike Int32Type t1
+    t4 = Tensors.zerosLike t1
     print t4.toJSON
 
     

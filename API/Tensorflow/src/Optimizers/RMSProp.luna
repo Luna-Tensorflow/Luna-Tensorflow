@@ -44,7 +44,7 @@ class RMSProp:
               momentum = Operations.constFromScalar v.typetag self.momentum
               epsilon = Operations.constFromScalar v.typetag self.epsilon
 
-              zerosTensor = zerosLikeGen "" v v.typetag . eval
+              zerosTensor = Tensors.zerosLike v
               ms = Variables.make ("ms" + i.toText) zerosTensor
               mom = Variables.make ("mom" + i.toText) zerosTensor
               applyRMSPropGen "" v ms mom lr rho momentum epsilon g v.typetag False

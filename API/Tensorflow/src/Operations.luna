@@ -146,9 +146,19 @@ class Operations:
     # `typetag` :: TypeTag
     # `x` :: a
     # `return` :: TFOutput a
-    # constFromScalar :: a -> TFOutput a
+    # constFromScalar :: TypeTag -> a -> TFOutput a
     def constFromScalar typetag x:
         self.makeConst $ Tensors.fromList typetag [] [x]
+
+    # Creates a const TFOutput of a given type from a real value that is converted to that type.
+    # The difference from constFromScalar is that it still works when typetag is ErasedType.
+    # `typetag` :: TypeTag
+    # `x` :: Real
+    # `return` :: TFOutput a
+    # constFromScalar :: TypeTag -> Real -> TFOutput a
+    def constFromReal typetag x:
+        wrapper = makeConstFromRealWrapper x typetag ""
+        TFOutput wrapper typetag
 
     # Creates const TFOutput from scalar of given type.
     # Arguments: 

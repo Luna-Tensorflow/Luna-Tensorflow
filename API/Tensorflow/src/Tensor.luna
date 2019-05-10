@@ -165,9 +165,9 @@ class Tensors:
     # `x` :: Tensor a
     # `return` :: Tensor a
     # zerosLike :: Typetag a -> Tensor a -> Tensor a
-    def zerosLike typetag x:
-        wrapper = createConstTensorWrapper typetag x.dims (typetag.fromReal 0.0)
-        Tensor wrapper
+    def zerosLike x:
+        zerosTensor = zerosLikeGen "" x x.typetag . eval
+        zerosTensor
 
     # Creates const tensor of ones with given type and dimensions.
     # Arguments: 
@@ -181,13 +181,12 @@ class Tensors:
 
     # Creates const tensor of ones with given type and shape of given tensor.
     # Arguments: 
-    # `typetag` :: TypeTag
     # `x` :: Tensor a
     # `return` :: Tensor a
-    # onesLike :: Typetag a -> Tensor a -> Tensor a
-    def onesLike typetag x:
-        wrapper = createConstTensorWrapper typetag x.dims (typetag.fromReal 1.0)
-        Tensor wrapper
+    # onesLike :: Tensor a -> Tensor a
+    def onesLike x:
+        tensor = onesLikeGen "" x x.typetag . eval
+        tensor
 
     # Transposes a tensor (TODO better description)
     # Arguments:

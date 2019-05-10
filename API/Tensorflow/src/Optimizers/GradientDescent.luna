@@ -34,9 +34,9 @@ class GradientDescent:
           err = loss yTrue yPred
           grads = Gradients.make [err] variables []
           varsAndGrads = Patches.zip variables grads
-          lr = Operations.constFromScalar FloatType self.lr # TODO might consider making lr type changeable
 
           def makeAndApplyGradientDescent (v, g):
+              lr = Operations.constFromReal v.typetag self.lr
               applyGradientDescentGen "" v lr g v.typetag False
 
           errWithSideEffect = Variables.sequence' err makeAndApplyGradientDescent varsAndGrads

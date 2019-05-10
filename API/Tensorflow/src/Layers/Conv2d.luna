@@ -7,18 +7,6 @@ import Tensorflow.CWrappers.Helpers
 import Tensorflow.Padding
 
 
-# Internal.
-class PaddingType:
-    Valid
-    Same
-
-    def toText: case (self) of
-        Valid: "VALID"
-        Same: "SAME"
-
-    def toJSON:
-        self.toText.toJSON
-
 # This layer creates a convolution kernel that is convolved (actually cross-correlated) with the previous layer output to produce next layer input.
 class Conv2dLayer a layerT:
     name :: Text

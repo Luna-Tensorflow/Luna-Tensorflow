@@ -15,6 +15,7 @@ import Tensorflow.Layers.Dense
 import Tensorflow.Layers.Input
 import Tensorflow.Layers.Reshape
 import Tensorflow.Layers.Conv2d
+import Tensorflow.Padding
 import Tensorflow.Layers.Dropout
 import Tensorflow.Layers.Merge
 import Tensorflow.Layers.Layers
