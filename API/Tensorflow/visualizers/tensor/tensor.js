@@ -96,7 +96,11 @@
         var canvasSize = 200;
         ctx.fillStyle = '#BBCC00';
         var side = (canvasSize - 4) / Math.max(w,h);
-        ctx.fillRect(0,0,4 + h * side,4 + w * side);
+        // border :  ctx.fillRect(0,0,4 + h * side,4 + w * side);
+        ctx.fillRect(0,0,2,4 + w * side);
+        ctx.fillRect(2 + w * side,0,2,4 + w * side);
+        ctx.fillRect(0,0,4 + h * side,2);
+        ctx.fillRect(0,2 + h * side,4 + h * side,2);
         for (var x = 0; x < w; ++x) {
             for (var y = 0; y < h; ++y) {
                 var v = data[x][y];
@@ -173,11 +177,11 @@
 
         var r = rank(data);
         if (r > 3) {
-            return makeVis("Visualization of tensors of ranks higher than 3 are not supported right now");
+            return makeVis("Shape: [" + shape(data) + "]<br>Visualization of tensors of ranks higher than 3 are not supported right now.");
         }
         if (r == 3) {
-            // TODO 3d visualization - show multiple 2d images side by side
             if (shape(data)[2] == 3) {
+                // TODO allow to switch between RGB and normal stacked 3d vis
                 renderRGB(data);
             } else {
                 render3dStacked(data, blackAndWhiteMinMaxColoring);
