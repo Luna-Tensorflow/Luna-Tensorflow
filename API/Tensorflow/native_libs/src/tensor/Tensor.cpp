@@ -3,8 +3,13 @@
 Tensor::Tensor(const void* vect, int64_t len, TF_DataType type) : Tensor(vect, &len, 1, type) {
 }
 
+Tensor::Tensor(const int64_t *dims, int num_dims, TF_DataType type) : type(type) {
+    flattenedLen = static_cast<size_t>(std::accumulate(dims, dims + num_dims, 1, std::multiplies<>()));
+    underlying = TF_AllocateTensor(type, dims, num_dims, flattenedLen * TF_DataTypeSize(type));
+}
+
 Tensor::Tensor(const void *data, const int64_t *dims, int num_dims, TF_DataType type) : type(type) {
-    flattenedLen = static_cast<size_t>(std::accumulate(dims, dims + num_dims, 1, [](int64_t a, int64_t b){return a * b;}));
+    flattenedLen = static_cast<size_t>(std::accumulate(dims, dims + num_dims, 1, std::multiplies<>()));
     if (type != TF_STRING) {
         underlying = TF_AllocateTensor(type, dims, num_dims, flattenedLen * TF_DataTypeSize(type));
         memcpy(TF_TensorData(underlying), data, flattenedLen * TF_DataTypeSize(type));
@@ -64,7 +69,7 @@ std::vector<int64_t> Tensor::shape() const {
 
 size_t Tensor::flatSize() const {
     auto dims = shape();
-    return static_cast<size_t>(std::accumulate(dims.begin(), dims.end(), 1, [](int64_t a, int64_t b) { return a * b; }));
+    return static_cast<size_t>(std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<>()));
 }
 
 TF_Tensor* Tensor::get_underlying() const {

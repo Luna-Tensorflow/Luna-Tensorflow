@@ -5,12 +5,14 @@ import Tensorflow.Variables
 import Tensorflow.Layers.Activation
 import Tensorflow.CWrappers.Helpers
 
+
 # This layer implements the operation: outputs = inputs * kernel + bias where kernel is a weights matrix created by the layer, and bias is a bias vector created by the layer.
-class DenseLayer varT layerT:
+class DenseLayer a layerT:
       name :: Text
       nOutputs :: Int
-      weights :: varT # :: Variable a
-      biases :: varT # :: Variable a
+      weights :: TFOutput a
+      biases :: TFOutput a
+      outputType :: a
       parentLayer :: layerT # :: Layer # TODO no interfaces
 
       # Returns Dense layer in Text type.
@@ -23,7 +25,11 @@ class DenseLayer varT layerT:
       # `return` :: JSON
       # toJSON :: JSON
       def toJSON:
-          self.toText.toJSON
+          name = self.name
+          shape = self.shape
+          parents = [self.parentLayer]
+          type = "Dense"
+          JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type
 
       # Returns shape after processing by this layer.
       # `return` :: List Int
@@ -57,13 +63,7 @@ class DenseLayer varT layerT:
       # `return` :: List Variable a
       # trainableVariables :: List Variable a
       def trainableVariables:
-          [self.weights, self.biases] + self.parentLayer.trainableVariables
-
-      # Returns type of output in this layer.
-      # `return` :: TypeTag
-      # outputType :: TypeTag
-      def outputType:
-          self.parentLayer.outputType
+          [self.weights.eraseType, self.biases.eraseType] + self.parentLayer.trainableVariables
 
 # Dense layer creation and usage.
 class Dense:
@@ -84,12 +84,12 @@ class Dense:
 
         name = getNextName "Dense"
 
-        winit = Tensors.random vartype [nOutputs, nInputs] 0.0 1.0
-        binit = Tensors.random vartype [nOutputs, 1] 0.0 1.0
+        winit = Tensors.random vartype [nOutputs, nInputs] (vartype.fromReal 0.0) (vartype.fromReal 1.0)
+        binit = Tensors.random vartype [nOutputs, 1] (vartype.fromReal 0.0) (vartype.fromReal 1.0)
         w = Variables.make (name + "w") winit  # TODO defaultValue, TODO name scope to layer - need a mechanism for prefixes
         b = Variables.make (name + "b") binit # TODO j.w.
 
-        d = DenseLayer name nOutputs w b parent
+        d = DenseLayer name nOutputs w b parent.outputType parent
         d
 
     # Dense with activation layer function constructor.
@@ -101,6 +101,5 @@ class Dense:
     # createWithActivation :: Int -> (TFOutput a -> TFOutput a) -> Layer -> Layer
     def createWithActivation nOutputs activationFunction parent:
         d = self.create nOutputs parent
-        name = getNextName "Activation"
-        a = ActivationLayer name activationFunction d
+        a = Activation.create activationFunction d
         a

@@ -20,6 +20,8 @@ private:
 public:
     explicit Tensor(const void* vect, int64_t len, TF_DataType type);
 
+    explicit Tensor(const int64_t *dims, int num_dims, TF_DataType type);
+
     explicit Tensor(const void *data, const int64_t *dims, int num_dims, TF_DataType type);
 
     explicit Tensor(const void *data, const std::vector<int64_t> &dims, TF_DataType type);

@@ -1,0 +1,7 @@
+class Patches:
+    # Temporary patch of builtin zip which messes up types
+    def zip a b: case a of
+        Prepend x xs: case b of
+            Prepend y ys: Prepend (x,y) (Patches.zip xs ys)
+            _: Empty
+        _: Empty

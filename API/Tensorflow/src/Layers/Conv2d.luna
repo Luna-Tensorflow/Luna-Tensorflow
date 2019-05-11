@@ -4,20 +4,13 @@ import Tensorflow.Operations
 import Tensorflow.Variables
 import Tensorflow.Layers.Activation
 import Tensorflow.CWrappers.Helpers
+import Tensorflow.Padding
 
-# Internal.
-class PaddingType:
-    Valid
-    Same
-
-    def toText: case (self) of
-        Valid: "VALID"
-        Same: "SAME"
 
 # This layer creates a convolution kernel that is convolved (actually cross-correlated) with the previous layer output to produce next layer input.
-class Conv2dLayer varT layerT:
+class Conv2dLayer a layerT:
     name :: Text
-    kernelWeights :: varT
+    kernelWeights :: TFOutput a
     outHeight :: Int
     outWidth :: Int
     outChannels :: Int
@@ -31,13 +24,18 @@ class Conv2dLayer varT layerT:
     # `return` :: Text
     # toText :: Text
     def toText:
-        self.name + self.shape.toText + " (TODO more info?)"
+        self.name + self.shape.toText
 
     # Returns Conv2D layer in JSON type.
     # `return` :: JSON
     # toJSON :: JSON
     def toJSON:
-        self.toText.toJSON
+        name = self.name
+        shape = self.shape
+        parents = [self.parentLayer]
+        props = JSON.empty . insert "kernel" [self.kernelWidth, self.kernelHeight] . insert "stride" self.stride . insert "padding" self.paddingType . insert "out" [self.outHeight, self.outWidth, self.outChannels]
+        type = "Conv2d"
+        JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type . insert "properties" props
 
     # Returns shape after processing by this layer.
     # `return` :: List Int
@@ -77,7 +75,7 @@ class Conv2dLayer varT layerT:
     # `return` :: List Variable a
     # trainableVariables :: List Variable a
     def trainableVariables:
-        Prepend self.kernelWeights self.parentLayer.trainableVariables
+        Prepend self.kernelWeights.eraseType self.parentLayer.trainableVariables
 
     # Returns type of output in this layer.
     # `return` :: TypeTag
@@ -115,7 +113,7 @@ class Conv2d:
         name = getNextName "Conv2D"
         vartype = parent.outputType
 
-        winit = Tensors.random vartype [kernelHeight, kernelWidth, inChannels, outChannels] 0.0 1.0
+        winit = Tensors.random vartype [kernelHeight, kernelWidth, inChannels, outChannels] (vartype.fromReal 0.0) (vartype.fromReal 1.0)
         w = Variables.make (name + "w") winit
 
         c = Conv2dLayer name w outHeight outWidth outChannels kernelHeight kernelWidth (strideY, strideX) paddingType parent

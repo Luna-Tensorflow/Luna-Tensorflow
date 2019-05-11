@@ -21,13 +21,17 @@ class ReshapeLayer layerT:
       # `return` :: JSON
       # toJSON :: JSON
       def toJSON:
-          self.toText.toJSON
+          name = self.name
+          shape = self.shape
+          parents = [self.parentLayer]
+          type = "Reshape"
+          JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type
 
       # Returns shape after processing by this layer.
       # `return` :: List Int
       # shape :: List Int
       def shape:
-          resultDims
+          self.resultDims
 
       # Computes output on this layer after feeding with data from previous one.
       # Arguments:

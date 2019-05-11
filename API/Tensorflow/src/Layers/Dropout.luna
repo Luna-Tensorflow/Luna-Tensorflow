@@ -20,7 +20,12 @@ class DropoutLayer layerT:
     # `return` :: JSON
     # toJSON :: JSON
     def toJSON:
-        self.toText.toJSON
+        name = self.name
+        shape = self.shape
+        parents = [self.parentLayer]
+        props = JSON.empty . insert "rate" self.rate
+        type = "Dropout"
+        JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type . insert "properties" props
 
     # Returns shape after processing by this layer. It inherits parent's shape.
     # `return` :: List Int
@@ -57,7 +62,7 @@ class DropoutLayer layerT:
 
     # Returns variables to train, up to this layer. This layer has no new variables and inherits parent's variables.
     # `return` :: List Variable a
-    # trainableVariables :: List Variable a
+    # trainableVariables :: List (TFOutput ErasedType)
     def trainableVariables:
         self.parentLayer.trainableVariables
 

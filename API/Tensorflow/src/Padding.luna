@@ -1,0 +1,10 @@
+# The type of padding algorithm to use. 
+# "VALID" means no padding. 
+# "SAME" results in padding the input such that the output has the same length as the original input.
+class PaddingType:
+    Valid
+    Same
+
+    def toText: case (self) of
+        Valid: "VALID"
+        Same: "SAME"

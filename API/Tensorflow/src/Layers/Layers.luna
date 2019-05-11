@@ -1,0 +1,20 @@
+import Tensorflow.Operations
+import Tensorflow.Graph
+
+class Layers:
+      Layers
+
+      # Evaluates the model up to the provided layer using the provided state and input.
+      # eval :: Layer a -> State -> Tensor a -> Tensor a
+      def eval layer state input:
+          inp = Operations.makeConst input
+          out = layer.eval inp
+          graph = TFGraphMaker.makeFromOutput out
+          (res, state') = graph.eval state
+          res.getAt 0
+
+      # Evaluates the model up to the provided layer using state from a fitted model and provided input.
+      # evalFromModel :: Layer a -> Model -> Tensor a -> Tensor a
+      def evalFromModel layer model input:
+          res = Layers.eval layer model.state input
+          res

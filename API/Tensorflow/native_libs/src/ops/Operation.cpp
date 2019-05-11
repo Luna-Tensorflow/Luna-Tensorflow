@@ -7,9 +7,9 @@ Operation::Operation(std::string name, std::vector<std::shared_ptr<Output>> inpu
         : name(name), inputs(inputs), attrs(attrs), chosen_name(chosen_name) {
 
     hash = std::hash<std::string>()(name);
-    if (name == "Const") {
-        hash = hash_combine(hash, const_salter.next_salt());
-    }
+//    if (name == "Const") {
+//        hash = hash_combine(hash, const_salter.next_salt());
+//    }
     hash = hash_combine(hash, std::hash<std::string>()(chosen_name));
     for(auto &input : inputs) {
         hash = hash_combine(hash, input->hashcode());
@@ -20,6 +20,9 @@ Operation::Operation(std::string name, std::vector<std::shared_ptr<Output>> inpu
 
     if (this->chosen_name.empty()) {
         this->chosen_name = this->name + std::to_string(hash);
+        is_chosen_name_custom = false;
+    } else {
+        is_chosen_name_custom = true;
     }
 }
 

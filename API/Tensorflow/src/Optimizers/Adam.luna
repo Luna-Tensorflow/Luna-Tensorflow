@@ -42,16 +42,15 @@ class Adam:
           grads = Gradients.make [err] variables []
           varsAndGrads = variables.zip grads
 
-          # Internal.
           def makeAndApplyAdam ((v, g), i):
-              beta1Power = Operations.constFromScalar v.typetag self.beta1Power
-              beta2Power = Operations.constFromScalar v.typetag self.beta2Power
-              lr = Operations.constFromScalar v.typetag self.lr
-              beta1 = Operations.constFromScalar v.typetag self.beta1
-              beta2 = Operations.constFromScalar v.typetag self.beta2
-              epsilon = Operations.constFromScalar v.typetag self.epsilon
+              beta1Power = Operations.constFromReal v.typetag self.beta1Power
+              beta2Power = Operations.constFromReal v.typetag self.beta2Power
+              lr = Operations.constFromReal v.typetag self.lr
+              beta1 = Operations.constFromReal v.typetag self.beta1
+              beta2 = Operations.constFromReal v.typetag self.beta2
+              epsilon = Operations.constFromReal v.typetag self.epsilon
 
-              zerosTensor = zerosLikeGen "" v v.typetag . eval
+              zerosTensor = Tensors.zerosLike v
               m = Variables.make ("m" + i.toText) zerosTensor
               vAdam = Variables.make ("v" + i.toText) zerosTensor
               applyAdamGen "" v m vAdam beta1Power beta2Power lr beta1 beta2 epsilon g v.typetag False self.useNesterov

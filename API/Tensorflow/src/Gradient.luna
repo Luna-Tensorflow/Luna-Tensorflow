@@ -10,20 +10,21 @@ class Gradients:
 
     # Constructs symbolic derivatives of sum of ys w.r.t. x in xs, where dxs are initial gradients.
     # Arguments: 
-    # `ys` :: TFOutput
-    # `xs` :: TFOutput
-    # `dxs` :: TFOutput - initial gradients.
-    # make :: TFOutput -> TFOutput -> TFOutput -> TFOutput
+    # `ys` :: TFOutput a
+    # `xs` :: TFOutput a
+    # `dxs` :: TFOutput a - initial gradients.
+    # `return` :: TFOutput a
+    # make :: TFOutput a -> TFOutput a -> TFOutput a -> TFOutput a
     def make ys xs dxs:
         None # TODO check if argument types match
         ys' = ys.each id
         xs' = xs.each id
         dxs' = dxs.each id
-        typetag = ys.head.get.wrapper.typetag
+        typetag = ys.head.get.typetag
 
-        dysRet = Array (Pointer None) . with (ys'.map y: y.ptr.ptr) ysArr:
-            Array (Pointer None) . with (xs'.map x: x.ptr.ptr) xsArr:
-                dxsPtr = if dxs'.isEmpty then nullPtr else if dxs'.length == ys.length then Array (Pointer None) . fromList (dxs'.map dx: dx.ptr.ptr) . ptr . ptr else throw "gradients: dxs must be empty or of the same size as ys"
+        dysRet = Array (Pointer None) . with (ys'.map y: PointerVal None y.ptr.ptr) ysArr:
+            Array (Pointer None) . with (xs'.map x: PointerVal None x.ptr.ptr) xsArr:
+                dxsPtr = if dxs'.isEmpty then nullPtr else if dxs'.length == ys.length then Array (Pointer None) . fromList (dxs'.map dx: PointerVal None dx.ptr.ptr) . ptr . ptr else throw "gradients: dxs must be empty or of the same size as ys"
 
                 dysPtr = callHandlingError "add_gradients" (Pointer (Pointer None)) [ysArr.toCArg, CInt64.fromInt ys'.length . toCArg, xsArr.toCArg,
                         CInt64.fromInt xs'.length . toCArg, dxsPtr.toCArg]
