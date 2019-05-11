@@ -1,10 +1,19 @@
 # Internal.
 class LayersHelper:
       # Removes duplicate variables from list (ie. having the same names), the order may not be preserved.
-      # `list` :: List Variable
-      # `return` :: List Variable
-      # uniqueLayers :: List Variable -> List Variable
+      # The list should contain only TFOutputs that represent variables, otherwise behaviour is undefined.
+      # `list` :: List (TFOutput ErasedType)
+      # `return` :: List (TFOutput ErasedType)
+      # uniqueLayers :: List (TFOutput ErasedType) -> List (TFOutput ErasedType)
       def uniqueVariables list:
-          grouped = list.groupBy (l: l.wrapper.opName)
-          uniq = grouped.each ((name, instances): instances.getAt 0)
-          uniq
+          "This implementation should generally be faster but it's temporarily deprecated due to a suspected stdlib bug"
+          "grouped = list.groupBy (l: l.wrapper.opName)"
+          "uniq = grouped.each ((name, instances): instances.getAt 0)"
+          case list of
+               Empty:
+                  Empty
+               Prepend head tail:
+                  myName = head.wrapper.opName
+                  tailFiltered = tail.filter (v: (v.wrapper.opName == myName).not)
+                  tailUniq = self.uniqueVariables tailFiltered
+                  Prepend head tailUniq

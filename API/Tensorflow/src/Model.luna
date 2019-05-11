@@ -1,10 +1,10 @@
 import Tensorflow.Graph
 import Tensorflow.Operations
 
-class Model layerT:
-      evalgraph :: TFGraph
-      traingraph :: TFGraph
-      vars :: List TFOutput
+class Model a layerT:
+      evalgraph :: TFGraph a
+      traingraph :: TFGraph a
+      vars :: List (TFOutput ErasedType)
       state :: State
       outLayer :: layerT
       # outLayer is only used for toJSON so might be removed if we change that
@@ -77,6 +77,4 @@ class Models:
 
         initialState = StateOps.makeEmpty # TODO state initialization by layers
 
-        vars = output.trainableVariables
-
-        Model evalgraph traingraph vars initialState output
+        Model evalgraph traingraph variables initialState output

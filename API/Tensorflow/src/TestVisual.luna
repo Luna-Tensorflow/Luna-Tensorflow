@@ -1,3 +1,5 @@
+import Tensorflow.Graph
+import Tensorflow.Optimizers.GradientDescent
 import Std.Base
 import Std.Time
 
@@ -7,11 +9,46 @@ import Tensorflow.Tensor
 import Tensorflow.Gradient
 import Tensorflow.Types
 
-def testTensorVis:
-    tensor = Tensors.fromList2d FloatType [[0.0, 0.5, 1.0], [0.2, 0.3, 0.6], [0.7, 0.8, 0.9]]
-    t2 = Tensors.random FloatType [4,80,80] 0.0 1.0
-    t3 = Tensors.random FloatType [20,30,3] 0.0 1.0
-    tp = Tensors.fromPng "logo.png"
+import Tensorflow.Model
+import Tensorflow.Graph
+import Tensorflow.Layers.Dense
+import Tensorflow.Layers.Input
+import Tensorflow.Layers.Reshape
+import Tensorflow.Layers.Conv2d
+import Tensorflow.Padding
+import Tensorflow.Layers.Dropout
+import Tensorflow.Layers.Merge
+import Tensorflow.Layers.Layers
+import Tensorflow.Losses.MeanError
+import Tensorflow.Optimizers.Adam
 
-def testOpVis:
-    a = Operations.constFromScalar FloatType 3.0
+
+«0»def testTensorVis:
+    «2»tensor = Tensors.fromList2d FloatType [[0.0, 0.5, 1.0], [0.2, 0.3, 0.6], [0.7, 0.8, 0.9]]
+    «3»t2 = Tensors.random FloatType [4,80,80] 0.0 1.0
+    «4»t3 = Tensors.random FloatType [20,30,3] 0.0 1.0
+    «5»tp = Tensors.fromPng "logo.png"
+
+«1»def testOpVis:
+    «6»a = Operations.constFromScalar FloatType 3.0
+    
+«7»def testModelVis:
+    «10»idata = Tensors.fromList FloatType [4,1] [1.0,2.0,3.0,4.0]
+
+    «26»emptyState = StateOps.makeEmpty
+    «27»inp = Input.create FloatType [4,1]
+    «28»d1 = Dense.create 5 inp
+    «29»d2 = Dense.createWithActivation 16 (Operations.tanh) d1
+    «30»rs = Reshape.create [4,4] d2
+    «31»conv = Conv2d.create [2,2] 4 (1,1) Valid rs
+    «32»drop = Dropout.create 0.3 conv
+    «39»added = Merge.add conv drop
+    «34»yy = Tensors.random FloatType [3,3,4] 0.0 1.0
+        
+    «50»model = Models.make inp drop (GradientDescentOptimizer.create 0.2) (MeanErrors.meanSquareError)
+    «51»fitted = model.train [idata] [yy]
+        
+    «52»vis = Layers.eval added emptyState idata
+    «53»vis2 = Layers.evalFromModel d1 fitted idata
+
+### META {"metas":[{"marker":2,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":0}}}},{"marker":3,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":320}}}},{"marker":4,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":640}}}},{"marker":5,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":960}}}},{"marker":6,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":10,"meta":{"_displayResult":true,"_selectedVisualizer":["ProjectVisualizer: tensor: tensor","tensor/tensor.html"],"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":0}}}},{"marker":26,"meta":{"_displayResult":false,"_selectedVisualizer":["LunaVisualizer: base: json","base/json/json.html"],"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":4480}}}},{"marker":27,"meta":{"_displayResult":true,"_selectedVisualizer":["LunaVisualizer: base: json","base/json/json.html"],"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":4800}}}},{"marker":28,"meta":{"_displayResult":true,"_selectedVisualizer":["LunaVisualizer: base: json","base/json/json.html"],"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":5120}}}},{"marker":29,"meta":{"_displayResult":true,"_selectedVisualizer":["LunaVisualizer: base: json","base/json/json.html"],"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":5440}}}},{"marker":30,"meta":{"_displayResult":true,"_selectedVisualizer":["LunaVisualizer: base: json","base/json/json.html"],"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":5760}}}},{"marker":31,"meta":{"_displayResult":true,"_selectedVisualizer":["LunaVisualizer: base: json","base/json/json.html"],"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":6080}}}},{"marker":32,"meta":{"_displayResult":true,"_selectedVisualizer":["LunaVisualizer: base: json","base/json/json.html"],"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":6400}}}},{"marker":39,"meta":{"_displayResult":true,"_selectedVisualizer":["LunaVisualizer: base: json","base/json/json.html"],"_position":{"fromPosition":{"_vector2_y":640,"_vector2_x":6400}}}},{"marker":34,"meta":{"_displayResult":true,"_selectedVisualizer":["ProjectVisualizer: tensor: tensor","tensor/tensor.html"],"_position":{"fromPosition":{"_vector2_y":480,"_vector2_x":7008}}}},{"marker":50,"meta":{"_displayResult":true,"_selectedVisualizer":["LunaVisualizer: base: json","base/json/json.html"],"_position":{"fromPosition":{"_vector2_y":480,"_vector2_x":7328}}}},{"marker":51,"meta":{"_displayResult":true,"_selectedVisualizer":["LunaVisualizer: base: json","base/json/json.html"],"_position":{"fromPosition":{"_vector2_y":480,"_vector2_x":7648}}}},{"marker":52,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":800,"_vector2_x":6720}}}},{"marker":53,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":480,"_vector2_x":7968}}}}]}

@@ -4,10 +4,11 @@ import Tensorflow.Operations
 import Tensorflow.CWrappers.Helpers
 
 # This layer implements the operation: output = activation(input)
-class ActivationLayer layerT:
+class ActivationLayer a layerT:
     name :: Text
-    activationFunction :: TFOutput a -> TFOutput a
+    activationFunction :: (TFOutput a) -> (TFOutput a)
     parentLayer :: layerT # :: Layer # TODO no interfaces
+    outputType :: a # this type is forced in construction to unify activationFunction type
 
     # Returns Activation layer in Text type.
     # `return` :: Text
@@ -53,26 +54,26 @@ class ActivationLayer layerT:
 
     # Returns variables to train, up to this layer. This layer has no new variables and inherits parent's variables.
     # `return` :: List Variable a
-    # trainableVariables :: List Variable a
+    # trainableVariables :: List (TFOutput ErasedType)
     def trainableVariables:
         self.parentLayer.trainableVariables
 
     # Returns type of output in this layer.
     # `return` :: TypeTag
     # outputType :: TypeTag
-    def outputType:
-        self.parentLayer.outputType
+    # def outputType:
+    #     self.parentLayer.outputType
 
 # Activation layer creation and usage.
 class Activation:
       Activation
 
       # Creates a layer that applies given function to its input and returns the result as output
-      # activationFunction :: TFOutput -> TFOutput
-      # parent :: Layer
-      # `return` :: Layer
-      # create :: (TFOutput -> TFOutput) -> Layer -> Layer
+      # activationFunction :: TFOutput a -> TFOutput a
+      # parent :: Layer a
+      # `return` :: Layer a
+      # create :: (TFOutput a -> TFOutput a) -> Layer a -> Layer a
       def create activationFunction parent:
           name = getNextName "Activation"
-          a = ActivationLayer name activationFunction d
+          a = ActivationLayer name activationFunction parent parent.outputType
           a

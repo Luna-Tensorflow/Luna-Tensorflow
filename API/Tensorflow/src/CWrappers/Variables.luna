@@ -12,7 +12,7 @@ def makeSequence sideeffect value:
     ptr = callHandlingError "make_sequence" (Pointer None) [sideeffect'.wrapper.toCArg, value'.wrapper.toCArg]
     newValuePtr = ManagedPointer None . fromPointer releaseMethod ptr
 
-    wrapper = OutputWrapper newValuePtr value'.wrapper.typetag
+    wrapper = OutputWrapper newValuePtr
     wrapper
 
 def makeVariableWrapper name defaultValue:
@@ -22,5 +22,5 @@ def makeVariableWrapper name defaultValue:
             callHandlingError "make_variable" (Pointer None) [nameCStr.toCArg, defaultValue'.ptr.toCArg]
 
     outPtr = ManagedPointer None . fromPointer releaseMethod ptr
-    outWrapper = OutputWrapper outPtr (defaultValue'.wrapper.typetag)
+    outWrapper = OutputWrapper outPtr
     outWrapper

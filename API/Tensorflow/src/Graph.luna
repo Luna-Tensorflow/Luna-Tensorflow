@@ -3,6 +3,7 @@ import Tensorflow.CWrappers.State
 
 import Tensorflow.Operations
 import Tensorflow.Tensor
+import Tensorflow.Patches
 
 # Structure that contains variables values. 
 class State:
@@ -46,6 +47,10 @@ class State:
         wrapper = self.wrapper.update values
         State wrapper
 
+    def toJSON:
+        "TODO: better JSON"
+        "State".toJSON
+
 # State operations methods.
 class StateOps:
     StateOps
@@ -81,7 +86,7 @@ class StateOps:
     # Saves given variables from state into file.
     # Arguments:
     # `fname` :: Text
-    # `vars` :: List Variable
+    # `vars` :: List (TFOutput ErasedType)
     # `state` :: State
     # `return` :: ()
     # saveVariables :: Text -> List Variable -> State -> ()
@@ -90,7 +95,7 @@ class StateOps:
 
     # Loads given variables from file into state.
     # `fname` :: Text
-    # `vars` :: List Variable
+    # `vars` :: List (TFOutput ErasedType) 
     # `state` :: State
     # `return` :: State
     # loadVariables :: Text -> List Variable -> State -> State
@@ -99,9 +104,10 @@ class StateOps:
         State w
 
 # Structure that contains tensorflow Graph and evaluates choosen outputs.
-class TFGraph:
-    wrapper :: GraphWrapper
-    outputs :: List (TFOutput)
+class TFGraph a:
+    wrapper :: GraphWrapper a
+    outputs :: List (TFOutput a)
+    typetag :: a
 
     # Internal.
     def ptr:
@@ -124,7 +130,7 @@ class TFGraph:
     def evalSubsts state substs:
         (statewrapper, tensorwrappers) = self.wrapper.evalSubsts (self.outputs.length) substs state
 
-        tensors = (tensorwrappers . zip ((self . outputs) . map (x: x.typetag))) . each ((wrp, tag): Tensor (wrp tag))
+        tensors = (Patches.zip tensorwrappers ((self . outputs) . map (x: x.typetag))) . each ((wrp, tag): Tensor (wrp tag))
         newstate = State statewrapper
 
         (tensors, newstate)
@@ -157,7 +163,7 @@ class TFGraphMaker:
     # makeGraphFromOutputList :: List TFOutput -> TFGraph
     def makeFromOutputList outputList:
         wrapper = makeGraphWrapperFromOutputList outputList
-        TFGraph wrapper outputList
+        TFGraph wrapper outputList (outputList.getAt 0).typetag
 
     # Creates graph from single output.
     # Arguments: 

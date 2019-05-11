@@ -10,8 +10,9 @@ import Tensorflow.Graph
 
 import Tensorflow.CWrappers.Helpers
 
-class GraphWrapper:
+class GraphWrapper a:
     ptr :: ManagedPointer None
+    typetag :: a
 
     def toCArg:
         self.ptr.toCArg
@@ -37,7 +38,8 @@ class GraphWrapper:
         substsArr = Pointer (Pointer None) . mallocElems phCount
         indexed = 0 . upto (phCount - 1) . zip substs'
         indexed . each (idx, elem):
-            substsArr . moveElems idx . write (elem.ptr.ptr)
+          ptr = (elem.ptr.ptr)
+          substsArr . moveElems idx . write (PointerVal None ptr)
 
         returnedPtr = callHandlingError "eval_graph_with_placeholders" (Pointer (Pointer None)) [self.toCArg,
                 subsNameArr.toCArg, substsArr.toCArg, (CInt64.fromInt phCount).toCArg, state'.wrapper.toCArg]
@@ -75,7 +77,8 @@ class GraphWrapper:
         substs = placeholderVals' . foldLeft [] (+)
         indexed = 0 . upto (phCount * evalCount - 1) . zip substs
         indexed . each (idx, elem):
-            substsArr . moveElems idx . write (elem.ptr.ptr)
+            ptr = elem.ptr.ptr
+            substsArr . moveElems idx . write (PointerVal None ptr)
 
         returnedState = callHandlingError "fold_eval" (Pointer None) [self.toCArg, subsNameArr . toCArg,
                 (CInt64.fromInt phCount).toCArg, substsArr.toCArg,  initialState'.wrapper.toCArg,
@@ -99,11 +102,12 @@ def makeGraphWrapperFromOutputList outputList:
     carr = Pointer (Pointer None) . mallocElems count
     indexed = 0 . upto (count - 1) . zip outputList'
     indexed . each (idx, elem):
-        carr . moveElems idx . write (elem.ptr.ptr)
+        ptr = elem.ptr.ptr
+        carr . moveElems idx . write (PointerVal None ptr)
 
     returnedPtr = callHandlingError "make_graph_from_outputs" (Pointer None) [carr.toCArg, (CInt64.fromInt count).toCArg]
     managedGraph = ManagedPointer None . fromPointer releaseMethod returnedPtr
 
     carr.free
 
-    GraphWrapper managedGraph
+    GraphWrapper managedGraph (outputList'.getAt 0).typetag
