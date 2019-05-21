@@ -1,0 +1,16 @@
+modulesSettings:
+  src/Main.luna:
+    typeRepToVisMap: []
+    currentBreadcrumb: main
+    breadcrumbsSettings:
+    - - items: []
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[-437.0,-2.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[437.0,2.0,0.0,1.0]]'
+          lastInverse: 0
+    - - items:
+        - main
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.6680973242408392,0.0,0.0,0.0],[0.0,1.6680973242408392,0.0,0.0],[0.0,0.0,1.0,0.0],[-8581.960579360006,3.8956358924163084,0.0,1.0]]'
+          screenToLogical: ! '[[0.5994854049988395,0.0,0.0,0.0],[0.0,0.5994854049988395,0.0,0.0],[0.0,0.0,1.0,0.0],[5144.760113601708,-2.335376860693206,0.0,1.0]]'
+          lastInverse: 0

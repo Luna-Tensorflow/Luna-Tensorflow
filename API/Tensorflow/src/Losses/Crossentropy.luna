@@ -1,6 +1,7 @@
 import Tensorflow.Types
 import Tensorflow.Tensor
 import Tensorflow.Operations
+import Tensorflow.GeneratedOps
 
 # Most common loss functions.
 class Losses:
@@ -28,4 +29,14 @@ class Losses:
 
         added = (yTrue * (log yPred)) + ((ones - yTrue) * (log (ones - yPred)))
         out = Operations.neg (Operations.mean added [0])
+        out
+
+    # Sparse categorical cross-entropy
+    # Arguments:
+    # `yTrue` :: TFOutput
+    # `yPred` :: TFOutput
+    # `return` :: TFOutput
+    # sparseCategoricalCrossEntropy :: TFOutput -> TFOutput -> TFOutput
+    def sparseCategoricalCrossEntropy features labels:
+        (out, _) = sparseSoftmaxCrossEntropyWithLogitsGen "" features labels features.typetag labels.typetag
         out

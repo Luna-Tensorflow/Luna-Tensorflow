@@ -258,6 +258,15 @@ class Operations:
         out = reluGen "" x x.typetag
         out
 
+    # Returns TFOutput with value of softmax function on given TFOutput.
+    # Arguments:
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # softmax :: TFOutput a -> TFOutput a
+    def softmax x:
+        out = softmaxGen "" x x.typetag
+        out
+
     # Returns TFOutput with value of sigmoid function on given TFOutput.
     # Arguments: 
     # `x` :: TFOutput a

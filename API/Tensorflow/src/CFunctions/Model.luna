@@ -23,7 +23,7 @@ class ModelFunctions:
         substs = placeholderVals' . fold [] (+)
         indexed = 0 . upto (phCount * evalCount - 1) . zip substs
         indexed . each (idx, elem):
-          substsArr . moveElems idx . write (elem.ptr.ptr)
+          substsArr . moveElems idx . write (PointerVal None elem.ptr.ptr)
 
         returnedPtr = callHandlingError "train" (Pointer (Pointer None)) [model'.traingraph.wrapper.toCArg, subsNameArr . toCArg,
               (CInt64.fromInt phCount).toCArg, substsArr.toCArg,  model'.state.wrapper.toCArg,

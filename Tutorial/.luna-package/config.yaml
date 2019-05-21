@@ -1,0 +1,12 @@
+project-name: Tutorial
+project-version:
+  minor: 0
+  major: 0
+  patch: 1
+build-type: executable-library
+maintainer: ''
+synopsis: ''
+author: ''
+license:
+  tag: none
+description: ''

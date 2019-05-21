@@ -5,6 +5,7 @@ import Std.Foreign.C.Value
 
 import Tensorflow.Types
 import Tensorflow.CWrappers.Helpers
+import Tensorflow.GeneratedOps
 
 # Internal.
 # Arguments:

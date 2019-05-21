@@ -94,5 +94,5 @@ class Reshape:
     # `return` :: Layer
     # flatten :: Layer -> Layer
     def flatten parent:
-        r = reshape [-1] parent
+        r = Reshape.create [-1] parent
         r
