@@ -1,6 +1,8 @@
 import Tensorflow.Tests.TensorTest
 import Tensorflow.Tests.TensorSerialization
 import Tensorflow.Tests.Variables
+import Tensorflow.Tests.VisualizeNet
+import Tensorflow.Tests.TensorFromPNG
 
 import Tensorflow.Examples.LowlevelNet
 import Tensorflow.Examples.Classification
@@ -15,20 +17,13 @@ import Tensorflow.Test
 
 import Dataframes.Table
 
-def transposeTensor t:
-    c = Operations.makeConst t
-    perm = Operations.constFromList Int64Type [1,0]
-    transposed = transposeGen "" c perm c.typetag perm.typetag
-    t' = transposed.eval
-    t'
 
 def main:
-    print "hello"
-    testMain
-    vartest
-    lowlevelNetExample
-    exampleClassificationGradientDescent
-    exampleClassificationRMSProp
-    exampleConvolutional
-    tensorTest
-    tensorSerializationTest
+   l = [1,2,3,2,4,3]
+   "gg = l.groupBy id - this breaks"
+   print gg.toJSON
+   fromPngDir1 = Tensors.fromPngDir "."
+   print (fromPngDir1 . toText)
+   fromPng1 = Tensors.fromPng "flag.png"
+   toText1 = fromPng1 . toText
+   None

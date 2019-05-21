@@ -4,6 +4,7 @@ import Tensorflow.Tensor
 import Tensorflow.Operations
 import Tensorflow.CWrappers.Tensor
 import Tensorflow.Types
+import Tensorflow.Patches
 
 import Tensorflow.CWrappers.Helpers
 
@@ -13,16 +14,16 @@ def unzip listpair: case listpair of
         (tailx, taily): ((Prepend x tailx), (Prepend y taily))
 
 
-class OutputWrapper a:
+class OutputWrapper:
     ptr :: ManagedPointer None
-    typetag :: a
 
     def toCArg:
         self.ptr.toCArg
 
     def eval:
         tensorPtr = callHandlingError "eval_op" (Pointer None) [self.toCArg]
-        Tensors.fromPtr self.typetag tensorPtr
+        managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
+        managedTensorPtr
 
     def opName:
         cstr = callHandlingError "get_operation_name" CString [self.toCArg]
@@ -40,7 +41,8 @@ def batchEvalSubstitutions list substitutions:
     carr = Pointer (Pointer None) . mallocElems count
     indexed = 0 . upto (count - 1) . zip list'
     indexed . each (idx, elem):
-        carr . moveElems idx . write (elem.ptr.ptr)
+        ptr = elem.ptr.ptr
+        carr . moveElems idx . write (PointerVal None ptr)
 
     (names, substs) = unzip substitutions
     substs' = substs.each id
@@ -54,7 +56,8 @@ def batchEvalSubstitutions list substitutions:
     substsArr = Pointer (Pointer None) . mallocElems phCount
     indexed = 0 . upto (phCount - 1) . zip substs'
     indexed . each (idx, elem):
-        substsArr . moveElems idx . write (elem.ptr.ptr)
+        ptr = elem.ptr.ptr
+        substsArr . moveElems idx . write (PointerVal None ptr)
 
     returnedPtr = callHandlingError "batch_eval_op_placeholders" (Pointer (Pointer None)) [carr.toCArg, (CInt64.fromInt count).toCArg,
             subsNameArr.toCArg, substsArr.toCArg, (CInt64.fromInt phCount).toCArg]
@@ -72,11 +75,19 @@ def batchEvalSubstitutions list substitutions:
 
     retval
 
-def makeConstWrapper tensor:
+def makeConstWrapper tensor name:
     tensor' = tensor
-    out = callHandlingError "make_op_const" (Pointer None) [tensor'.ptr.toCArg]
+    out = CString.with name nameCStr:
+            callHandlingError "make_op_const" (Pointer None) [nameCStr.toCArg, tensor'.ptr.toCArg]
     managedOut = ManagedPointer None . fromPointer releaseMethod out
-    OutputWrapper managedOut tensor'.wrapper.typetag
+    OutputWrapper managedOut
+
+def makeConstFromRealWrapper real typetag name:
+    double = CDouble.fromReal real
+    out = CString.with name nameCStr:
+            callHandlingError "make_op_const_from_real" (Pointer None) [nameCStr.toCArg, CInt32.fromInt typetag.num . toCArg, double.toCArg]
+    managedOut = ManagedPointer None . fromPointer releaseMethod out
+    OutputWrapper managedOut
 
 def makePlaceholderWrapper typetag name:
     out = CString.with name nameCStr:
@@ -84,7 +95,7 @@ def makePlaceholderWrapper typetag name:
 
     managedOut = ManagedPointer None . fromPointer releaseMethod out
 
-    OutputWrapper managedOut typetag
+    OutputWrapper managedOut
 
 def makeBinaryOpWrapper name a b:
     None # TODO: add assert a.typetag == b.typetag
@@ -95,7 +106,7 @@ def makeBinaryOpWrapper name a b:
 
     managedOut = ManagedPointer None . fromPointer releaseMethod out
 
-    OutputWrapper managedOut a'.typetag
+    OutputWrapper managedOut
 
 def makeUnaryOpWrapper name a:
     a' = a
@@ -105,37 +116,37 @@ def makeUnaryOpWrapper name a:
 
     managedOut = ManagedPointer None . fromPointer releaseMethod out
 
-    OutputWrapper managedOut a'.typetag
+    OutputWrapper managedOut
 
 def makePartialDerivativeWrapper a b:
     a' = a
     b' = b
     out = callHandlingError "make_op_partial_derivative" (Pointer None) [a'.ptr.toCArg, b'.ptr.toCArg]
     managedOut = ManagedPointer None . fromPointer releaseMethod out
-    OutputWrapper managedOut a'.typetag
+    OutputWrapper managedOut
 
-def outputWrapperFromPtr typetag ptr:
+def outputWrapperFromPtr ptr:
     managedOutputPtr = ManagedPointer None . fromPointer releaseMethod ptr
-    OutputWrapper managedOutputPtr typetag
+    OutputWrapper managedOutputPtr
 
-
-def makeOutputWrappers name inputs outputTypetags attrList chosenName:
+# TODO remove outputTypetags
+def makeOutputWrappers name inputs noutputs attrList chosenName:
     inputs' = inputs.each id
     attrList' = attrList
-    noutputs = outputTypetags.length
 
     count = inputs'.length
     inputsCArr = Pointer (Pointer None) . mallocElems count
-    indexed = 0 . upto (count - 1) . zip inputs'
+    "indexed = 0 . upto (count - 1) . zip inputs'"
+    indexed = Patches.zip (0 . upto (count - 1)) inputs'
     indexed . each (idx, input):
-        inputsCArr . moveElems idx . write input.ptr.ptr
+        ptr = input.ptr.ptr
+        inputsCArr . moveElems idx . write (PointerVal None ptr)
 
     outsPtr = CString.with name nameCStr: CString.with chosenName chosenNameCStr:
             callHandlingError "make_op" (Pointer (Pointer None)) [nameCStr.toCArg, inputsCArr.toCArg, CInt32.fromInt inputs'.length . toCArg, CInt32.fromInt noutputs . toCArg, attrList'.toCArg, chosenNameCStr.toCArg]
 
     outsArr = Array (Pointer None) . make noutputs outsPtr
-    typedOuts = outputTypetags.zip outsArr.toList
-    outs = typedOuts.each (typetag, output): outputWrapperFromPtr typetag output
+    outs = outsArr.toList.each output: outputWrapperFromPtr output
 
     inputsCArr.free
 

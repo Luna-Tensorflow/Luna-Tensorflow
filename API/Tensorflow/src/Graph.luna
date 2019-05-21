@@ -3,6 +3,7 @@ import Tensorflow.CWrappers.State
 
 import Tensorflow.Operations
 import Tensorflow.Tensor
+import Tensorflow.Patches
 
 # Structure that contains variables values. 
 class State:
@@ -12,6 +13,8 @@ class State:
     # Arguments: 
     # `typetag` :: TypeTag
     # `names` :: List Text
+    # `return` :: List Tensor
+    # values :: TypeTag -> List Text -> List Tensor
     def values typetag names:
         wrappers = self.wrapper.values names
         wrappers . each(x: Tensor (x typetag))
@@ -20,6 +23,8 @@ class State:
     # Arguments:
     # `typetag` :: TypeTag
     # `name` :: Text
+    # `return` :: Tensor
+    # value :: TypeTag -> Text -> Tensor
     def value typetag name:
         wrapper = self.wrapper.value name
         Tensor (wrapper typetag)
@@ -28,21 +33,30 @@ class State:
     # Arguments:
     # `name` :: Text
     # `value` :: TFOutput
+    # `return` :: State
+    # updateOne :: Text -> TFOutput -> State
     def updateOne name value:
         self.update [(name, value)]
 
     # Updates given values.
     # Arguments: 
     # `values` :: List Tuple2 Text Tensor
+    # `return` :: State
+    # update :: List Tuple2 Text Tensor -> State
     def update values:
         wrapper = self.wrapper.update values
         State wrapper
+
+    def toJSON:
+        "TODO: better JSON"
+        "State".toJSON
 
 # State operations methods.
 class StateOps:
     StateOps
 
     # Creates empty state.
+    # `return` :: State
     # makeEmpty :: State
     def makeEmpty:
         wrapper = emptyState
@@ -52,6 +66,7 @@ class StateOps:
     # Arguments: 
     # `state` :: State 
     # `values` :: List Tuple2 Text Tensor
+    # `return` :: State
     # alter :: State -> List Tuple2 Text Tensor -> State
     def alter state values:
         newstate = state . update values
@@ -62,6 +77,7 @@ class StateOps:
     # `state` :: State
     # `varname` :: Text
     # `value` :: Tensor
+    # `return` :: State
     # setVariableValue :: State -> Text -> Tensor -> State
     def setVariableValue state varname value:
         newstate = state . updateOne varname value
@@ -70,34 +86,37 @@ class StateOps:
     # Saves given variables from state into file.
     # Arguments:
     # `fname` :: Text
-    # `vars` :: List Variable
+    # `vars` :: List (TFOutput ErasedType)
     # `state` :: State
+    # `return` :: ()
     # saveVariables :: Text -> List Variable -> State -> ()
     def saveVariables fname vars state:
         saveVarsFromStateWrapper fname vars state.wrapper
 
     # Loads given variables from file into state.
     # `fname` :: Text
-    # `vars` :: List Variable
+    # `vars` :: List (TFOutput ErasedType) 
     # `state` :: State
+    # `return` :: State
     # loadVariables :: Text -> List Variable -> State -> State
     def loadVariables fname vars state:
         w = loadVarsToStateWrapper fname vars state.wrapper
         State w
 
 # Structure that contains tensorflow Graph and evaluates choosen outputs.
-class TFGraph:
-    wrapper :: GraphWrapper
-    outputs :: List (TFOutput)
+class TFGraph a:
+    wrapper :: GraphWrapper a
+    outputs :: List (TFOutput a)
+    typetag :: a
 
     # Internal.
-    # ptr :: ManagedPointer None
     def ptr:
         self.wrapper.ptr
 
     # Evaluates TFGraph on given state.
     # Arguments:
     # `state` :: State
+    # `return` :: (List Tensor a, State)
     # eval :: State -> (List Tensor a, State)
     def eval state:
         self.evalSubsts state []
@@ -106,16 +125,18 @@ class TFGraph:
     # Arguments: 
     # `state` :: State
     # `substs` :: List Tuple2 Text (Tensor a)
+    # `return` :: (List Tensor a, State)
     # evalSubsts :: State -> List Tuple2 Text (Tensor a) -> (List Tensor a, State)
     def evalSubsts state substs:
         (statewrapper, tensorwrappers) = self.wrapper.evalSubsts (self.outputs.length) substs state
 
-        tensors = (tensorwrappers . zip ((self . outputs) . map (x: x.typetag))) . each ((wrp, tag): Tensor (wrp tag))
+        tensors = (Patches.zip tensorwrappers ((self . outputs) . map (x: x.typetag))) . each ((wrp, tag): Tensor (wrp tag))
         newstate = State statewrapper
 
         (tensors, newstate)
 
     # Returns TFGraph in JSON type.
+    # `return` :: JSON
     # toJSON :: JSON
     def toJSON:
         self.eval.toJSON
@@ -126,6 +147,7 @@ class TFGraph:
     # `placeholderVals` :: List List Tensor a
     # `epochs` :: Int
     # `initialState` :: State
+    # `return` :: State
     # foldEval :: List Text -> List List Tensor a -> Int -> State -> State
     def foldEval placeholderNames placeholderVals epochs initialState:
         wrapper = self.wrapper.foldEval placeholderNames placeholderVals epochs initialState
@@ -138,14 +160,16 @@ class TFGraphMaker:
     # Creates graph from list of outputs.
     # Arguments: 
     # `outputList` :: List TFOutput
+    # `return` :: TFGraph
     # makeGraphFromOutputList :: List TFOutput -> TFGraph
     def makeFromOutputList outputList:
         wrapper = makeGraphWrapperFromOutputList outputList
-        TFGraph wrapper outputList
+        TFGraph wrapper outputList (outputList.getAt 0).typetag
 
     # Creates graph from single output.
     # Arguments: 
     # `output` :: TFOutput
+    # `return` :: TFGraph
     # makeGraphFromOutput :: TFOutput-> TFGraph
     def makeFromOutput output:
         self.makeFromOutputList [output]

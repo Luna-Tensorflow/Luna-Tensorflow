@@ -4,33 +4,53 @@ import Tensorflow.Types
 import Tensorflow.Gradient
 import Tensorflow.Graph
 import Tensorflow.GeneratedOps
+import Tensorflow.Patches
 
+# Optimizer that implements the Gradient Descent algorithm. 
 class GradientDescent:
       lr :: Real
 
+      # Returns Gradient Descent Optimizer in Text type.
+      # `return` :: Text
+      # toText :: Text
       def toText:
           "Gradient Descent " + self.lr.toText
 
+      # Returns Gradient Descent Optimizer in JSON type.
+      # `return` :: JSON
+      # toJSON :: JSON
       def toJSON:
-          0 # TODO maybe some JSON format?
           self.toText.toJSON
 
-      # makeOptimizingGraph :: Operation a -> Operation a -> (Operation a -> Operation a -> Operation b) -> List Variable -> TFGraph
+      # Function to update variables in TFGraph based on expected output, real output and loss function according to the Gradient Descent.
+      # Arguments:
+      # `yTrue` :: TFOutput a
+      # `yPred` :: TFOutput a
+      # `loss` :: TFOutput a -> TFOutput a -> TFOutput b
+      # `variables` :: List (TFOutput ErasedType)
+      # `return` :: TFGraph
+      # makeOptimizingGraph :: TFOutput a -> TFOutput a -> (TFOutput a -> TFOutput a -> TFOutput b) -> List (TFOutput ErasedType) -> TFGraph
       def makeOptimizingGraph yTrue yPred loss variables:
           err = loss yTrue yPred
           grads = Gradients.make [err] variables []
-          varsAndGrads = variables.zip grads
+          varsAndGrads = Patches.zip variables grads
 
           def makeAndApplyGradientDescent (v, g):
-              lr = Operations.constFromScalar v.typetag self.lr
+              lr = Operations.constFromReal v.typetag self.lr
               applyGradientDescentGen "" v lr g v.typetag False
 
           errWithSideEffect = Variables.sequence' err makeAndApplyGradientDescent varsAndGrads
 
           TFGraphMaker.makeFromOutput errWithSideEffect
 
+# Gradient Descent Optimizer constructing and usage.
 class GradientDescentOptimizer:
     GradientDescentOptimizer
 
+    # Gradient Descent constructor.
+    # Arguments:
+    # `lr` :: Real
+    # `return` :: GradientDescent
+    # create :: Real -> GradientDescent
     def create lr:
         GradientDescent lr

@@ -28,6 +28,12 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 project(TFL)
 
+find_package(ZLIB REQUIRED)
+find_package(PNG REQUIRED)
+
+# Includes path: project root
+include_directories(${PNG_INCLUDE_DIR})
+
 if(WIN32 OR DEFINED ENV{TF_USE_LOCAL_LIBRARY})
     include_directories(${CMAKE_SOURCE_DIR}/../../../../tensorflow/include/)
     link_directories(${CMAKE_SOURCE_DIR}/../../../../tensorflow/lib)
@@ -44,9 +50,9 @@ file(GLOB_RECURSE SRC_FILES ${PROJECT_SOURCE_DIR}/*.cpp)
 # Define the compilation target
 add_library(${PROJECT_NAME} SHARED ${HEADER_FILES} ${SRC_FILES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE BUILDING_TFL_HELPER)
-# target_compile_definitions(${PROJECT_NAME} PRIVATE VERBOSE) # for debugging
-# target_compile_definitions(${PROJECT_NAME} PRIVATE VERBOSEFFI) # for debugging
-# target_compile_definitions(${PROJECT_NAME} PRIVATE LOG_GRAPH_STRUCTURE) # for debugging
+target_compile_definitions(${PROJECT_NAME} PRIVATE VERBOSE) # for debugging
+target_compile_definitions(${PROJECT_NAME} PRIVATE VERBOSEFFI) # for debugging
+target_compile_definitions(${PROJECT_NAME} PRIVATE LOG_GRAPH_STRUCTURE) # for debugging
 target_compile_definitions(${PROJECT_NAME} PUBLIC)
 
 # set warning level
@@ -56,9 +62,8 @@ else(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
 endif(MSVC)
 
-# Includes path: project root
 target_include_directories(${PROJECT_NAME} PUBLIC ../../../..)
 
-target_link_libraries(${PROJECT_NAME} tensorflow)
+target_link_libraries(${PROJECT_NAME} tensorflow ${PNG_LIBRARY} ${ZLIB_LIBRARY})
 
 ###################

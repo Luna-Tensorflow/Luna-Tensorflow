@@ -4,19 +4,24 @@ import Tensorflow.CFunctions.Model
 import Std.Foreign
 import Std.Foreign.C.Value
 
-class Model:
-      evalgraph :: TFGraph
-      traingraph :: TFGraph
-      vars :: List TFOutput
+class Model a layerT:
+      evalgraph :: TFGraph a
+      traingraph :: TFGraph a
+      vars :: List (TFOutput ErasedType)
       state :: State
+      outLayer :: layerT
+      # outLayer is only used for toJSON so might be removed if we change that
 
       # Returns Model in JSON type.
+      # `return` :: JSON
+      # toJSON :: JSON
       def toJSON:
-          "Tensorflow Model (TODO: toJSON)".toJSON
+          self.outLayer.toJSON
 
       # Predicts model's output on given input.
       # Arguments: 
       # x :: Tensor a
+      # `return` :: Tensor b
       # evaluate :: Tensor a -> Tensor b
       def evaluate x:
           (res, state') = self.evalgraph.evalSubsts self.state [("x", x)]
@@ -29,6 +34,7 @@ class Model:
       # `epochs` :: Int
       # `validation` :: Validation a b
       # `earlyStop`:: Int
+      # `return` :: Model
       # train :: List Tensor a -> List Tensor b -> Int -> Validation a b -> Int -> (List Real, Model) # TODO also consider real time visualization of loss in GUI
       def train xs ys epochs validation earlyStop:
           separateValidationVals = case validation of
@@ -48,16 +54,18 @@ class Model:
 
       # Saving trained model's weights into file.
       # `filename` :: Text
+      # `return` :: ()
       # saveWeights :: Text -> ()
       def saveWeights filename:
           StateOps.saveVariables filename self.vars self.state
 
       # Loading saved model's weights from file.
       # `filename` :: Text
+      # `return` :: Model
       # loadWeights :: Text -> Model
       def loadWeights filename:
           state' = StateOps.loadVariables filename self.vars StateOps.makeEmpty
-          Model self.evalgraph self.traingraph self.vars state'
+          Model self.evalgraph self.traingraph self.vars state' self.outLayer
 
 # Model building methods.
 class Models:
@@ -68,8 +76,9 @@ class Models:
     # `input` :: List Tensor
     # `output` :: List Tensor
     # `optimizer` :: TF_Optimizer
-    # `loss` :: TF_Loss
-    # make :: List Tensor -> List Tensor -> TF_Optimizer -> TF_Loss -> Model 
+    # `loss` :: (TFOutput -> TFOutput)
+    # `return` :: Model
+    # make :: List Tensor -> List Tensor -> TF_Optimizer -> (TFOutput -> TFOutput) -> Model 
     def make input output optimizer loss:
         inputPlaceholder = Operations.makePlaceholder input.typetag "x"
         yPredTrain = output.forward inputPlaceholder
@@ -85,9 +94,8 @@ class Models:
 
         initialState = StateOps.makeEmpty # TODO state initialization by layers
 
-        vars = output.trainableVariables
+        Model evalgraph traingraph variables initialState output
 
-        Model evalgraph traingraph vars initialState
 
 class Validation a b:
     NoValidation

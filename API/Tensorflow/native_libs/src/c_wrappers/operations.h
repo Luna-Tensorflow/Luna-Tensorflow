@@ -46,7 +46,8 @@ TFL_API State* update_value_state(State* ptr, const char* name, const Tensor* ne
 TFL_API State* update_state(State* ptr, const char** names, const Tensor** newvalues, size_t count, const char **outError);
 
 TFL_API Output** make_op(const char *name, Output **inputs, int ninputs, int noutputs, std::vector<std::shared_ptr<Attr>> *attr_list, const char *chosen_name, const char **outError);
-TFL_API Output* make_op_const(Tensor* tensor, const char **outError);
+TFL_API Output* make_op_const(const char* name, Tensor* tensor, const char **outError);
+TFL_API Output* make_op_const_from_real(const char* name, TF_DataType type, double value, const char **outError);
 TFL_API Output* make_op_placeholder(const char* name, TF_DataType type, const char **outError);
 TFL_API Output* make_op_binary(const char* name, Output* a, Output* b, const char **outError);
 TFL_API Output* make_op_unary(const char* name, Output* a, const char **outError);

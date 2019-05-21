@@ -6,20 +6,33 @@ import Tensorflow.Graph
 import Tensorflow.GeneratedOps
 import Tensorflow.Tensor
 
+# Optimizer that implements the RMSProp algorithm.
 class RMSProp:
       lr :: Real
       rho :: Real
       momentum :: Real
       epsilon :: Real
 
+      # Returns RMSProp Optimizer in Text type.
+      # `return` :: Text
+      # toText :: Text
       def toText:
           "RMSProp lr=" + self.lr.toText + " rho=" + self.rho.toText + " momentum=" + self.momentum.toText + " epsilon=" + self.epsilon.toText 
 
+      # Returns RMSProp Optimizer in JSON type.
+      # `return` :: JSON
+      # toJSON :: JSON
       def toJSON:
-          0 # TODO maybe some JSON format?
           self.toText.toJSON
 
-      # makeOptimizingGraph :: Operation a -> Operation a -> (Operation a -> Operation a -> Operation b) -> List Variable -> TFGraph
+      # Function to update variables in TFGraph based on expected output, real output and loss function according to the RMSProp.
+      # Arguments:
+      # `yTrue` :: TFOutput a
+      # `yPred` :: TFOutput a
+      # `loss` :: TFOutput a -> TFOutput a -> TFOutput b
+      # `variables` :: List Variable 
+      # `return` :: TFGraph
+      # makeOptimizingGraph :: TFOutput a -> TFOutput a -> (TFOutput a -> TFOutput a -> TFOutput b) -> List Variable -> TFGraph
       def makeOptimizingGraph yTrue yPred loss variables:
           err = loss yTrue yPred
           grads = Gradients.make [err] variables []
@@ -31,7 +44,7 @@ class RMSProp:
               momentum = Operations.constFromScalar v.typetag self.momentum
               epsilon = Operations.constFromScalar v.typetag self.epsilon
 
-              zerosTensor = zerosLikeGen "" v v.typetag . eval
+              zerosTensor = Tensors.zerosLike v
               ms = Variables.make ("ms" + i.toText) zerosTensor
               mom = Variables.make ("mom" + i.toText) zerosTensor
               applyRMSPropGen "" v ms mom lr rho momentum epsilon g v.typetag False
@@ -40,8 +53,17 @@ class RMSProp:
 
           TFGraphMaker.makeFromOutput errWithSideEffect
 
+# RMSProp Optimizer constructing and usage.
 class RMSPropOptimizer:
     RMSPropOptimizer
 
+    # RMSProp Optimizer constructor.
+    # Arguments:
+    # `lr` :: Real
+    # `rho` :: Real
+    # `momentum` :: Real
+    # `epsilon` :: Real
+    # `return` :: RMSProp
+    # create :: Real -> Real -> Real -> Real -> RMSProp
     def create lr rho momentum epsilon:
         RMSProp lr rho momentum epsilon

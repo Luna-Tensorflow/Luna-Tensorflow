@@ -201,26 +201,57 @@ Output *make_op_placeholder(const char* name, TF_DataType type, const char **out
     };
 }
 
-Output *make_op_const(Tensor *tensor, const char **outError) {
+Output *make_op_const(const char* name, Tensor *tensor, const char **outError) {
 	return TRANSLATE_EXCEPTION(outError) {
-		FFILOG(tensor);
+		FFILOG(name, tensor);
 		auto tensor_owned = LifetimeManager::instance().accessOwned(tensor);
 		return get_first_and_free(make_op_helper("Const", {}, {std::make_shared<AttrTensor>("value", *tensor_owned),
-											std::make_shared<AttrType>("dtype", tensor_owned->getType())}, 1, ""));
+											std::make_shared<AttrType>("dtype", tensor_owned->getType())}, 1, name));
 	};
+}
+
+namespace {
+    template<TF_DataType TypeLabel> Tensor make_tensor_from_real_helper(double value) {
+        auto x = static_cast<typename Type<TypeLabel>::tftype>(value);
+        return Tensor(&x, nullptr, 0, TypeLabel);
+    }
+
+    Tensor make_tensor_from_real(double value, TF_DataType type) {
+        switch (type) {
+            case TF_FLOAT: return make_tensor_from_real_helper<TF_FLOAT>(value);
+            case TF_DOUBLE: return make_tensor_from_real_helper<TF_DOUBLE>(value);
+            case TF_INT32: return make_tensor_from_real_helper<TF_INT32>(value);
+            case TF_INT64: return make_tensor_from_real_helper<TF_INT64>(value);
+            case TF_UINT32: return make_tensor_from_real_helper<TF_UINT32>(value);
+            case TF_UINT64: return make_tensor_from_real_helper<TF_UINT64>(value);
+            // TODO add more supported types
+            default: throw std::runtime_error("This type is not supported by constFromReal");
+        }
+    }
+}
+
+Output* make_op_const_from_real(const char* name, TF_DataType type, double value, const char **outError) {
+    return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(name, type, value);
+        auto tensor = make_tensor_from_real(value, type);
+        return get_first_and_free(make_op_helper("Const", {}, {std::make_shared<AttrTensor>("value", tensor),
+                                                               std::make_shared<AttrType>("dtype", tensor.getType())}, 1, name));
+    };
 }
 
 size_t operation_hashcode(Output *op, const char **outError) {
     return TRANSLATE_EXCEPTION(outError) {
         FFILOG(op);
-        return op->hashcode();
+        auto ptr = LifetimeManager::instance().accessOwned(op);
+        return ptr->hashcode();
     };
 }
 
 Tensor *eval_op(Output *op, const char **outError) {
     return TRANSLATE_EXCEPTION(outError) {
         FFILOG(op);
-        return LifetimeManager::instance().addOwnership(op->eval());
+        auto ptr = LifetimeManager::instance().accessOwned(op);
+        return LifetimeManager::instance().addOwnership(ptr->eval());
     };
 }
 
