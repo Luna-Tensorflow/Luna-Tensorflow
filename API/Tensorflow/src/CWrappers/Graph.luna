@@ -61,7 +61,7 @@ class GraphWrapper a:
 
         (statewrapper, retwrappers)
 
-    def foldEval placeholderNames placeholderVals initialState:
+    def foldEval placeholderNames placeholderVals epochs initialState:
         placeholderVals' = placeholderVals.each (vals: vals.each id)
         initialState' = initialState
 
@@ -82,7 +82,7 @@ class GraphWrapper a:
 
         returnedState = callHandlingError "fold_eval" (Pointer None) [self.toCArg, subsNameArr . toCArg,
                 (CInt64.fromInt phCount).toCArg, substsArr.toCArg,  initialState'.wrapper.toCArg,
-                (CInt64.fromInt evalCount).toCArg]
+                (CInt64.fromInt evalCount).toCArg, (CUInt32.fromInt epochs).toCArg]
 
         managed = ManagedPointer None . fromPointer releaseMethod returnedState
         stateWrapper = StateWrapper managed

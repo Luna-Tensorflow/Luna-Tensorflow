@@ -366,21 +366,106 @@ void** eval_graph_with_placeholders(GraphSession *graph,
     };
 }
 
-State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
-                         size_t fold_count, const char **outError){
+#define CASE(typelabel) case typelabel: return static_cast<double>(tensor->at<typelabel>(index));
+
+namespace {
+    double to_double(std::shared_ptr<Tensor> tensor, int64_t index) {
+        switch(tensor->getType()) {
+            CASE(TF_FLOAT)
+            CASE(TF_DOUBLE)
+            CASE(TF_INT8)
+            CASE(TF_INT16)
+            CASE(TF_INT32)
+            CASE(TF_INT64)
+            CASE(TF_UINT8)
+            CASE(TF_UINT16)
+            CASE(TF_UINT32)
+            CASE(TF_UINT64)
+            default:
+                throw std::runtime_error("Loss type not supported");
+        }
+    }
+
+    double iterate_over_inputs(GraphSession* graph, const char** ph_names, Tensor** ph_values, uint32_t ph_count,
+            std::shared_ptr<State>& state, uint32_t start_index, uint32_t end_index, bool apply_side_effects = true) {
+        std::map<std::string, std::shared_ptr<Tensor>> substitutions;
+        double running_loss = 0;
+        for (uint32_t input_index = start_index; input_index < end_index; ++input_index) {
+            for (size_t ph = 0; ph < ph_count; ++ph) {
+                substitutions.emplace(std::string(ph_names[ph]),
+                                      LifetimeManager::instance().accessOwned(ph_values[input_index * ph_count + ph]));
+            }
+            std::shared_ptr<EvaluationResult> eval_result = graph->eval(substitutions, state, apply_side_effects);
+            running_loss += to_double(eval_result->outputs[0], 0);
+            if (apply_side_effects) {
+                state = eval_result->result_state;
+            }
+            substitutions.clear();
+        }
+        return running_loss / (end_index - start_index);
+    }
+}
+
+void** train(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
+                 size_t inputs_count, uint32_t epochs, uint32_t validation_samples, uint32_t early_stop,
+                 const char **outError){
     return TRANSLATE_EXCEPTION(outError) {
-        FFILOG(graph, ph_names, ph_count, ph_values, initial, fold_count);
+        FFILOG(graph, ph_names, ph_count, ph_values, initial, inputs_count, epochs, validation_samples, early_stop);
+
+        std::map<std::string, std::shared_ptr<Tensor>> substitutions;
+        std::shared_ptr<State> state = LifetimeManager::instance().accessOwned(initial);
+        std::vector<double> loss_history;
+
+        void **ret = static_cast<void**>(malloc(3 * sizeof(void*))); // needs to be freed by caller
+        auto actual_epochs = static_cast<uint32_t*>(malloc(sizeof(uint32_t))); // needs to be freed by caller
+        ret[2] = actual_epochs;
+
+        uint32_t epochs_without_improvement = 0;
+
+        for (*actual_epochs = 0; *actual_epochs < epochs && (epochs_without_improvement < early_stop || early_stop == 0); ++*actual_epochs) {
+            double training_loss = iterate_over_inputs(graph, ph_names, ph_values, ph_count, state, validation_samples,
+                    inputs_count, true);
+            if (validation_samples == 0) {
+                loss_history.push_back(training_loss);
+            } else {
+                loss_history.push_back(iterate_over_inputs(graph, ph_names, ph_values, ph_count, state, 0,
+                        validation_samples, false));
+            }
+            if (early_stop > 0 && *actual_epochs > 0) {
+                if (loss_history[*actual_epochs] < loss_history[*actual_epochs - 1]) {
+                    epochs_without_improvement = 0;
+                } else {
+                    ++epochs_without_improvement;
+                }
+            }
+        }
+
+        ret[1] = malloc(*actual_epochs * sizeof(double)); // needs to be freed by caller
+        memcpy(ret[1], loss_history.data(), *actual_epochs * sizeof(double));
+
+        ret[0] = static_cast<void*>(LifetimeManager::instance().addOwnership(state));
+
+        return ret;
+    };
+}
+
+State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
+                         size_t inputs_count, uint32_t epochs, const char **outError){
+    return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(graph, ph_names, ph_count, ph_values, initial, inputs_count, epochs);
 
         std::map<std::string, std::shared_ptr<Tensor>> substitutions;
         std::shared_ptr<State> state = LifetimeManager::instance().accessOwned(initial);
 
-        for(size_t epoch=0; epoch < fold_count; ++epoch)
-        {
-            for(size_t ph = 0; ph < ph_count; ++ ph)
-                substitutions.emplace(std::string(ph_names[ph]),
-                                      LifetimeManager::instance().accessOwned(ph_values[epoch * ph_count + ph]));
-            state = graph->eval(substitutions, state)->result_state;
-            substitutions.clear();
+        for (uint32_t epoch = 0; epoch < epochs; ++epoch) {
+            for (size_t input_index = 0; input_index < inputs_count; ++input_index) {
+                for (size_t ph = 0; ph < ph_count; ++ph) {
+                    substitutions.emplace(std::string(ph_names[ph]),
+                                          LifetimeManager::instance().accessOwned(ph_values[input_index * ph_count + ph]));
+                }
+                state = graph->eval(substitutions, state)->result_state;
+                substitutions.clear();
+            }
         }
 
         return LifetimeManager::instance().addOwnership(state);

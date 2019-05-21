@@ -35,7 +35,8 @@ TF_Output GraphSession::get_output(const Output *out) {
 
 std::shared_ptr<EvaluationResult> GraphSession::eval(
         const std::map<std::string, std::shared_ptr<Tensor>> &substitutions,
-        const std::shared_ptr<State> &state) const {
+        const std::shared_ptr<State> &state,
+        bool apply_side_effects) const {
     for (auto &ph : placeholders) {
         if (substitutions.count(ph.first) > 0) {
             continue;
@@ -64,7 +65,7 @@ std::shared_ptr<EvaluationResult> GraphSession::eval(
 
     auto r = std::make_shared<EvaluationResult>();
 
-    r->outputs = eval_one_step(substitutions);
+    r->outputs = eval_one_step(substitutions, apply_side_effects);
 
     auto updates = read_variables();
     r->result_state = state->updated(updates);
@@ -171,7 +172,7 @@ std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> GraphSession::read_
 }
 
 std::vector<std::shared_ptr<Tensor>>
-GraphSession::eval_one_step(const std::map<std::string, std::shared_ptr<Tensor>> &substitutions) const {
+GraphSession::eval_one_step(const std::map<std::string, std::shared_ptr<Tensor>> &substitutions, bool apply_side_effects) const {
     std::vector<TF_Output> placeholders_vars_v;
     std::vector<TF_Tensor *> tensor_v;
 
@@ -189,7 +190,10 @@ GraphSession::eval_one_step(const std::map<std::string, std::shared_ptr<Tensor>>
 
     std::vector<TF_Tensor *> output_values(computed_outs.size());
 
-    std::vector<TF_Operation *> targets(side_effects.begin(), side_effects.end());
+    std::vector<TF_Operation *> targets;
+    if (apply_side_effects) {
+        targets = std::vector<TF_Operation *>(side_effects.begin(), side_effects.end());
+    }
 
     run_with_status<void>(std::bind(TF_SessionRun,
                                     session,

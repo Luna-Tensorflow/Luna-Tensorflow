@@ -27,8 +27,12 @@ TFL_API void** eval_graph(GraphSession* graph, State* state, const char **outErr
 TFL_API void** eval_graph_with_placeholders(GraphSession* graph, const char** ph_names, Tensor** ph_values,
 		size_t ph_count, State* state, const char **outError);
 
+// returns the new state and loss history
+TFL_API void** train(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
+	size_t inputs_count, uint32_t epochs, uint32_t validation_samples, uint32_t early_stop, const char **outError);
+
 TFL_API State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
-	size_t foldCount, const char **outError);
+                         size_t inputs_count, uint32_t epochs, const char **outError);
 
 TFL_API Output* make_variable(const char* name, Tensor* val, const char **outError);
 TFL_API Output* make_sequence(Output* sideefect, Output* value, const char **outError);
@@ -54,7 +58,7 @@ TFL_API Tensor* eval_op(Output* op, const char **outError);
 TFL_API const char* get_operation_name(Output* output, const char** outError);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif //FFITESTHELPER_OPERATIONS_H

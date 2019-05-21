@@ -1,5 +1,8 @@
 import Tensorflow.Graph
 import Tensorflow.Operations
+import Tensorflow.CFunctions.Model
+import Std.Foreign
+import Std.Foreign.C.Value
 
 class Model a layerT:
       evalgraph :: TFGraph a
@@ -24,16 +27,30 @@ class Model a layerT:
           (res, state') = self.evalgraph.evalSubsts self.state [("x", x)]
           res
 
-      # Trains model on given inputs and outputs.
+      # Trains model on given inputs and outputs. Returns loss history and the trained model.
       # Arguments: 
       # `xs` :: List Tensor a
       # `ys` :: List Tensor b
+      # `epochs` :: Int
+      # `validation` :: Validation a b
+      # `earlyStop`:: Int
       # `return` :: Model
-      # train :: List Tensor a -> List Tensor b -> Model # TODO also consider real time visualization of loss in GUI
-      def train xs ys:
-          0 # TODO we'd prefer to use batched fold that runs in C++ directly
-          state' =  self.traingraph.foldEval ["x","y"] (xs.zipWith (x: y: [x,y]) ys) self.state # (xs.zip ys).foldLeft self.state ((x,y): state: (self.traingraph.evalSubsts state [("x", x), ("y", y)]).second)
-          Model self.evalgraph self.traingraph self.vars state' self.outLayer
+      # train :: List Tensor a -> List Tensor b -> Int -> Validation a b -> Int -> (List Real, Model) # TODO also consider real time visualization of loss in GUI
+      def train xs ys epochs validation earlyStop:
+          separateValidationVals = case validation of
+              NoValidation: []
+              ValidationFraction _: []
+              ValidationSet vxs vys: vxs.zipWith (x: y: [x, y]) vys
+
+          placeholderNames = ["x","y"]
+          placeholderVals = separateValidationVals + (xs.zipWith (x: y: [x,y]) ys)
+
+          validationSamples = case validation of
+              NoValidation: 0
+              ValidationFraction p: (p * xs.length.toReal) . round 0 . floor
+              ValidationSet vxs _: vxs.length
+
+          ModelFunctions.train self placeholderNames placeholderVals epochs validationSamples earlyStop
 
       # Saving trained model's weights into file.
       # `filename` :: Text
@@ -78,3 +95,9 @@ class Models:
         initialState = StateOps.makeEmpty # TODO state initialization by layers
 
         Model evalgraph traingraph variables initialState output
+
+
+class Validation a b:
+    NoValidation
+    ValidationFraction Real
+    ValidationSet (List (Tensor a)) (List (Tensor b))

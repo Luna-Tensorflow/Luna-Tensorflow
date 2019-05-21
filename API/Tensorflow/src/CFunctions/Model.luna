@@ -1,0 +1,51 @@
+import Std.Foreign
+import Std.Foreign.C.Value
+
+import Tensorflow.CWrappers.Helpers
+import Tensorflow.CWrappers.State
+import Tensorflow.Graph
+import Tensorflow.Model
+
+class ModelFunctions:
+    def train model placeholderNames placeholderVals epochs validationSamples earlyStop:
+        placeholderVals' = placeholderVals.each (vals: vals.each id)
+        model' = model
+
+        phCount = placeholderNames . length
+        evalCount = placeholderVals' . length
+
+        subsNameArr = Pointer CString . mallocElems phCount
+        indexed = 0 . upto (phCount - 1) . zip placeholderNames
+        indexed . each (idx, elem):
+          subsNameArr . moveElems idx . write (CString . fromText elem)
+
+        substsArr = Pointer (Pointer None) . mallocElems (evalCount * phCount)
+        substs = placeholderVals' . fold [] (+)
+        indexed = 0 . upto (phCount * evalCount - 1) . zip substs
+        indexed . each (idx, elem):
+          substsArr . moveElems idx . write (elem.ptr.ptr)
+
+        returnedPtr = callHandlingError "train" (Pointer (Pointer None)) [model'.traingraph.wrapper.toCArg, subsNameArr . toCArg,
+              (CInt64.fromInt phCount).toCArg, substsArr.toCArg,  model'.state.wrapper.toCArg,
+              (CInt64.fromInt evalCount).toCArg, (CUInt32.fromInt epochs).toCArg,
+              (CUInt32.fromInt validationSamples).toCArg, (CUInt32.fromInt earlyStop).toCArg]
+
+        returnedArr = Array (Pointer (Pointer None)) . make 3 returnedPtr
+        newStatePtr = returnedArr.readAt 0
+        actualEpochsPtr = returnedArr.readAt 2
+        actualEpochs = Pointer CUInt32 . fromRetType actualEpochsPtr.ptr . read . toInt
+        lossHistoryPtr = returnedArr.readAt 1
+        lossHistoryArr = Array CDouble . make actualEpochs (Pointer CDouble . fromRetType lossHistoryPtr.ptr)
+        lossHistory = lossHistoryArr.toList
+
+        managed = ManagedPointer None . fromPointer releaseMethod newStatePtr
+        newState = State (StateWrapper managed)
+
+        0.upto (phCount - 1) . each (idx: subsNameArr . moveElems idx . read . free)
+        subsNameArr.free
+        substsArr.free
+        callHandlingError "free_pointer" None [lossHistoryPtr.toCArg]
+        callHandlingError "free_pointer" None [returnedPtr.toCArg]
+        callHandlingError "free_pointer" None [actualEpochsPtr.toCArg]
+
+        (lossHistory, Model model'.evalgraph model'.traingraph model'.vars newState model'.outLayer)
