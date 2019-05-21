@@ -335,15 +335,23 @@ void** eval_graph_with_placeholders(GraphSession *graph,
     };
 }
 
+#define CASE(typelabel) case typelabel: return static_cast<double>(tensor->at<typelabel>(index));
+
 namespace {
     double to_double(std::shared_ptr<Tensor> tensor, int64_t index) {
         switch(tensor->getType()) {
-            case TF_FLOAT:
-                return static_cast<double>(tensor->at<TF_FLOAT>(index));
-            case TF_DOUBLE:
-                return tensor->at<TF_DOUBLE>(index);
+            CASE(TF_FLOAT)
+            CASE(TF_DOUBLE)
+            CASE(TF_INT8)
+            CASE(TF_INT16)
+            CASE(TF_INT32)
+            CASE(TF_INT64)
+            CASE(TF_UINT8)
+            CASE(TF_UINT16)
+            CASE(TF_UINT32)
+            CASE(TF_UINT64)
             default:
-                throw std::runtime_error("Loss type not supported by loss history");
+                throw std::runtime_error("Loss type not supported");
         }
     }
 

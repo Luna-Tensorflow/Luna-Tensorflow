@@ -48,4 +48,4 @@ class ModelFunctions:
         callHandlingError "free_pointer" None [returnedPtr.toCArg]
         callHandlingError "free_pointer" None [actualEpochsPtr.toCArg]
 
-        (lossHistory, Model model'.evalgraph model'.traingraph model'.vars newState)
+        (lossHistory, Model model'.evalgraph model'.traingraph model'.vars newState model'.outLayer)
