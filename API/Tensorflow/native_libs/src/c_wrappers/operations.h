@@ -57,7 +57,7 @@ TFL_API Tensor* eval_op(Output* op, const char **outError);
 TFL_API const char* get_operation_name(Output* output, const char** outError);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif //FFITESTHELPER_OPERATIONS_H
