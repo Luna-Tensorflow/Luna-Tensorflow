@@ -25,7 +25,7 @@ class Model a layerT:
       # evaluate :: Tensor a -> Tensor b
       def evaluate x:
           (res, state') = self.evalgraph.evalSubsts self.state [("x", x)]
-          res
+          res.head.get
 
       # Trains model on given inputs and outputs. Returns loss history and the trained model.
       # Arguments: 

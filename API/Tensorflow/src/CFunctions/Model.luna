@@ -40,7 +40,7 @@ class ModelFunctions:
         actualEpochs = Pointer CUInt32 . fromRetType actualEpochsPtr.ptr . read . toInt
         lossHistoryPtr = returnedArr.readAt 1
         lossHistoryArr = Array CDouble . make actualEpochs (Pointer CDouble . fromRetType lossHistoryPtr.ptr)
-        lossHistory = lossHistoryArr.toList
+        lossHistory = lossHistoryArr.toList.each val: val.toReal
 
         managed = ManagedPointer None . fromPointer releaseMethod newStatePtr
         newState = State (StateWrapper managed)
