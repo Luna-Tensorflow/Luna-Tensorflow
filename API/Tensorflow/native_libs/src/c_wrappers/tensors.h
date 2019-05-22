@@ -19,6 +19,8 @@ TFL_API int64_t get_tensor_flatlist_length(Tensor* tensor, const char **outError
 TFL_API void save_tensors_to_file(const char* filename, Tensor** tensors, int64_t count, const char **outError);
 TFL_API Tensor** load_tensors_from_file(const char* filename, int64_t count, const char **outError);
 
+TFL_API Tensor* batch_tensors(const Tensor** tensors, size_t num_tensors, const char **outError);
+
 #define DECLARE_TENSOR(typelabel) \
 TFL_API Type<typelabel>::lunatype get_tensor_value_at_##typelabel(Tensor *tensor, int64_t *idxs, size_t idxs_len, const char **outError); \
 TFL_API Type<typelabel>::lunatype get_tensor_value_at_index_##typelabel(Tensor *tensor, int64_t index, const char **outError); \

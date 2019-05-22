@@ -77,15 +77,15 @@ class Dense:
     # create :: Int -> Layer -> Layer
     def create nOutputs parent:
         nInputs = case parent.shape of
-            [1, x]: x
-            _: throw $ "Dense layer requires its input to be a flat tensor 1 x n"
+            [_, x]: x
+            _: throw $ "Dense layer requires its input to be a tensor with dimensions batch_size x num_features"
 
         vartype = parent.outputType
 
         name = getNextName "Dense"
 
-        winit = Tensors.random vartype [nInputs, nOutputs] (vartype.fromReal 1.0.negate) (vartype.fromReal 1.0)
-        binit = Tensors.random vartype [1, nOutputs] (vartype.fromReal 1.0.negate) (vartype.fromReal 1.0)
+        winit = Tensors.random vartype [nInputs, nOutputs] (vartype.fromReal 0.01.negate) (vartype.fromReal 0.01)
+        binit = Tensors.random vartype [1, nOutputs] (vartype.fromReal 0.01.negate) (vartype.fromReal 0.01)
         w = Variables.make (name + "w") winit  # TODO defaultValue, TODO name scope to layer - need a mechanism for prefixes
         b = Variables.make (name + "b") binit # TODO j.w.
 

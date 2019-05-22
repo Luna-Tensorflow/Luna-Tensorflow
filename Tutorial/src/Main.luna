@@ -19,7 +19,7 @@ import Tensorflow.Model
 
 def oneHot label:
     oneHotList = 0.upto (labelsCount - 1) . each l: if l == label then 1.0 else 0.0
-    Tensors.fromList FloatType [1, labelsCount] oneHotList
+    Tensors.fromList FloatType [labelsCount] oneHotList
 
 «6»def getData path:
     «7»labels = 0.upto (labelsCount - 1)
@@ -33,8 +33,11 @@ def oneHot label:
     «28»(xTrain, yTrain) = getData "../../Tutorial/data/train"
     «29»(xTest, yTest) = getData "../../Tutorial/data/test"
 
+    xTrainBatch = Tensors.batchFromList xTrain
+    yTrainBatch = Tensors.batchFromList yTrain
+
     «31»input = Input.create FloatType [28, 28, 3]
-    «32»reshape = Reshape.create [1, -1] input
+    «32»reshape = Reshape.create [28 * 28 * 3] input
     «33»dense1 = Dense.createWithActivation 128 Operations.relu reshape
     «34»dense2 = Dense.createWithActivation 10 Operations.softmax dense1
 
@@ -51,7 +54,7 @@ def oneHot label:
 
     «43»model = Models.make input dense2 optimizer loss
 
-    «45»(h, trained) = model.train xTrain yTrain 30 (ValidationFraction 0.1) 0
+    «45»(h, trained) = model.train [xTrainBatch] [yTrainBatch] 30 (ValidationFraction 0.1) 0
 
     «46»history = h
 

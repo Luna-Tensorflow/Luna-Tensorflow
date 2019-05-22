@@ -10,7 +10,7 @@ DIRS = {
     'train': 'train'
 }
 
-SAMPLES_PER_CLASS = 100
+SAMPLES_PER_CLASS = 1000000
 
 
 def transform(prefix):

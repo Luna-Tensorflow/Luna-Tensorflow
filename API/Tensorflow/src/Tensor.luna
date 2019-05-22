@@ -276,3 +276,13 @@ class Tensors:
         shape = [cols, 1]
         samples = lst'.each(l: Tensors.fromList FloatType shape l)
         samples
+
+    # Convert a list of tensors of the same shape and type to a tensor
+    # Arguments:
+    # `tensors` :: List (Tensor a)
+    # `return` :: Tensor a
+    # batchFromList :: List (Tensor a) -> Tensor a
+    def batchFromList tensors:
+        wrappers = tensors.each tensor: tensor.wrapper
+        retWrapper = batchTensorWrappers wrappers
+        Tensor retWrapper

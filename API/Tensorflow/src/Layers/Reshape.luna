@@ -76,23 +76,5 @@ class Reshape:
     # `return` :: Layer
     # create :: List Int -> Layer -> Layer
     def create newdims parent:
-        nNegOnes = newdims . filter (e: e == -1) . length
-        if nNegOnes > 1 then throw $ "There can be at most one -1 in Reshape!" else
-            name = getNextName "Reshape"
-            if nNegOnes == 0 then (ReshapeLayer name newdims parent) else
-                parentLength = parent.shape.fold 1 (*)
-                remaining = newdims . filter (e: (e == -1).not) . fold 1 (*)
-                if ((parentLength % remaining) == 0).not then throw $ "Illegal reshape shapes!" else
-                    unknownDim = parentLength / remaining
-                    ndims = newdims . map (e: if e == -1 then unknownDim else e)
-                    r = ReshapeLayer name ndims parent
-                    r
-
-    # Reshape layer that flatten previous layer to 1D vector.
-    # Arguments:
-    # `parent` :: Layer
-    # `return` :: Layer
-    # flatten :: Layer -> Layer
-    def flatten parent:
-        r = Reshape.create [-1] parent
-        r
+        name = getNextName "Reshape"
+        ReshapeLayer name (newdims.prepend (-1)) parent
