@@ -31,12 +31,12 @@ class Losses:
         out = Operations.neg (Operations.mean added [0])
         out
 
-    # Sparse categorical cross-entropy
+    # Categorical cross-entropy
     # Arguments:
-    # `yTrue` :: TFOutput
-    # `yPred` :: TFOutput
+    # `labels` :: TFOutput
+    # `features` :: TFOutput
     # `return` :: TFOutput
-    # sparseCategoricalCrossEntropy :: TFOutput -> TFOutput -> TFOutput
-    def sparseCategoricalCrossEntropy features labels:
-        (out, _) = sparseSoftmaxCrossEntropyWithLogitsGen "" features labels features.typetag labels.typetag
+    # categoricalCrossEntropy :: TFOutput -> TFOutput -> TFOutput
+    def categoricalCrossEntropy labels features:
+        (out, _) = softmaxCrossEntropyWithLogitsGen "" features labels features.typetag
         out

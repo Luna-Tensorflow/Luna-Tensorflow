@@ -24,7 +24,7 @@ def generateTest n:
 
     testp = xys . each ((x,y):
         incircle = if x*x + y*y <= 1.0 then 1.0 else 0.0
-        t1 = Tensors.fromList FloatType [4,1] [x, x*x, y, y*y]
+        t1 = Tensors.fromList FloatType [1,4] [x, x*x, y, y*y]
         t2 = Tensors.fromList1d FloatType [incircle]
         (t1, t2))
 
@@ -41,7 +41,7 @@ def exampleClassificationRMSProp:
     (testX, testY) = generateTest n
 
     print "Building net"
-    i  = Input.create FloatType [4, 1]
+    i  = Input.create FloatType [1, 4]
     d1 = Dense.createWithActivation 10 Operations.tanh i
     d2 = Dropout.create 0.5 d1
     d3 = Dense.createWithActivation 1 Operations.sigmoid d2
@@ -73,7 +73,7 @@ def exampleClassificationGradientDescent:
     (testX, testY) = generateTest n
 
     print "Building net"
-    i =  Input.create FloatType [4, 1]
+    i =  Input.create FloatType [1, 4]
     d1 = Dense.createWithActivation 3 Operations.tanh i
     d2 = Dense.createWithActivation 1 Operations.sigmoid d1
 

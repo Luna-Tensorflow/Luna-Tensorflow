@@ -7,23 +7,27 @@ import Tensorflow.Graph
 import Tensorflow.Model
 
 class ModelFunctions:
-    def train model placeholderNames placeholderVals epochs validationSamples earlyStop:
-        placeholderVals' = placeholderVals.each (vals: vals.each id)
+    def train model (xPlaceholderName, yPlaceholderName) placeholderVals epochs validationSamples earlyStop:
+        placeholderVals' = placeholderVals.each (xVal, yVal):
+            xVal' = xVal
+            yVal' = yVal
+            (xVal', yVal')
+
         model' = model
 
-        phCount = placeholderNames . length
+        phCount = 2
         evalCount = placeholderVals' . length
 
         subsNameArr = Pointer CString . mallocElems phCount
-        indexed = 0 . upto (phCount - 1) . zip placeholderNames
+        indexed = [(0, xPlaceholderName), (1, yPlaceholderName)]
         indexed . each (idx, elem):
           subsNameArr . moveElems idx . write (CString . fromText elem)
 
         substsArr = Pointer (Pointer None) . mallocElems (evalCount * phCount)
-        substs = placeholderVals' . fold [] (+)
-        indexed = 0 . upto (phCount * evalCount - 1) . zip substs
-        indexed . each (idx, elem):
-          substsArr . moveElems idx . write (PointerVal None elem.ptr.ptr)
+        indexed = 0 . upto (phCount * evalCount - 1) . zip placeholderVals'
+        indexed . each (idx, (xSubst, ySubst)):
+          substsArr . moveElems (2 * idx) . write (PointerVal None xSubst.ptr.ptr)
+          substsArr . moveElems (2 * idx + 1) . write (PointerVal None ySubst.ptr.ptr)
 
         returnedPtr = callHandlingError "train" (Pointer (Pointer None)) [model'.traingraph.wrapper.toCArg, subsNameArr . toCArg,
               (CInt64.fromInt phCount).toCArg, substsArr.toCArg,  model'.state.wrapper.toCArg,

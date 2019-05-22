@@ -40,10 +40,10 @@ class Model a layerT:
           separateValidationVals = case validation of
               NoValidation: []
               ValidationFraction _: []
-              ValidationSet vxs vys: vxs.zipWith (x: y: [x, y]) vys
+              ValidationSet vxs vys: vxs.zip vys
 
-          placeholderNames = ["x","y"]
-          placeholderVals = separateValidationVals + (xs.zipWith (x: y: [x,y]) ys)
+          placeholderNames = ("x","y")
+          placeholderVals = separateValidationVals + (xs.zip ys)
 
           validationSamples = case validation of
               NoValidation: 0

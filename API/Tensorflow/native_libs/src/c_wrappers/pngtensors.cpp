@@ -13,7 +13,7 @@
 //namespace
 //{
     Tensor* read_tensor_from_png_noerror(const char* filename) {
-        std::cerr<<"read_tensor_from_png_noerror "<<std::string(filename)<<std::endl;
+        LOG(std::string("read_tensor_from_png_noerror ") + filename + "\n");
         png::image <png::rgb_pixel> image(filename);
 
         int64_t width = image.get_width(), height = image.get_height();
