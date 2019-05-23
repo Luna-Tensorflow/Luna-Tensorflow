@@ -5,8 +5,7 @@ import Tensorflow.Variables
 import Tensorflow.Layers.Activation
 import Tensorflow.CWrappers.Helpers
 
-# Reshapes a layer. Given resultDims, this layer returns a new layer that has the same values as previous layer with given shape.
-# TODO: currently the -1 is used for batch size, so it isn't available in other dimensions If one component of shape is the special value -1, the size of that dimension is computed so that the total size remains constant. In particular, a shape of [-1] flattens into 1-D. At most one component of shape can be -1.
+# Reshapes a layer. Given resultDims, this layer returns a new layer that has the same values as previous layer with given shape. If one component of shape is the special value -1, the size of that dimension is computed so that the total size remains constant. In particular, a shape of [-1] flattens into 1-D. At most one component of shape can be -1.
 class ReshapeLayer layerT:
       name :: Text
       resultDims :: List Int
@@ -77,5 +76,23 @@ class Reshape:
     # `return` :: Layer
     # create :: List Int -> Layer -> Layer
     def create newdims parent:
-        name = getNextName "Reshape"
-        ReshapeLayer name newdims parent
+        nNegOnes = newdims . filter (e: e == -1) . length
+        if nNegOnes > 1 then throw $ "There can be at most one -1 in Reshape!" else
+            name = getNextName "Reshape"
+            if nNegOnes == 0 then (ReshapeLayer name newdims parent) else
+                parentLength = parent.shape.fold 1 (*)
+                remaining = newdims . filter (e: (e == -1).not) . fold 1 (*)
+                if ((parentLength % remaining) == 0).not then throw $ "Illegal reshape shapes!" else
+                    unknownDim = parentLength / remaining
+                    ndims = newdims . map (e: if e == -1 then unknownDim else e)
+                    r = ReshapeLayer name ndims parent
+                    r
+
+    # Reshape layer that flatten previous layer to 1D vector.
+    # Arguments:
+    # `parent` :: Layer
+    # `return` :: Layer
+    # flatten :: Layer -> Layer
+    def flatten parent:
+        r = Reshape.create [-1] parent
+        r

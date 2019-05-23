@@ -54,7 +54,7 @@ import Tensorflow.Model
     «52»yTrainBatch = Tensors.batchFromList yTrain
 
     «31»input = Input.create FloatType [28, 28, 3]
-    «32»reshape = Reshape.create [28 * 28 * 3] input
+    «32»reshape = Reshape.flatten input
     «33»dense1 = Dense.createWithActivation 128 Operations.relu reshape
     «34»dense2 = Dense.createWithActivation 10 Operations.softmax dense1
 
