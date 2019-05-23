@@ -1,13 +1,13 @@
-#Luna-Tensorflow MNIST Tutorial
+# <center> Luna-Tensorflow MNIST Tutorial </center>
 
-<b>Cloning repository</b>
+## Cloning repository.
 
 ```bash
 git clone -b MNIST_tutorial https://github.com/Luna-Tensorflow/Luna-Tensorflow.git
 cd Luna-Tensorflow/Tutorial
 ```
 
-<b>Downloading and preprocesing data</b>
+## Downloading and preprocesing data.
 Unfortunatelly, full dataset is quite heavy, so we need to cut it a little, with additional preprocessing.
 ```bash
 chmod +x get_data.sh
@@ -15,8 +15,9 @@ chmod +x get_data.sh
 venv/bin/python3 mnist_to_png.py
 ```
 
-<b>Let's start with Luna Studio</b>
-We need some helper functions, to load dataset and work with it.
+## Let's start with Luna Studio.
+
+In the beggining we need some imports.
 
 ```
 import Std.Base
@@ -29,19 +30,40 @@ import Tensorflow.Operations
 import Tensorflow.Losses.Crossentropy
 import Tensorflow.Optimizers.Adam
 import Tensorflow.Model
+```
 
+The size of dataset labels is the number of different digits to distinguish.
+
+```
 def labelsCount:
     10
+```
 
+There is need to use some helper functions, to load dataset and work with it, like creating list of given value.
+
+```
 def nTimes n val:
     def helper acc m:
         if m > 0 then helper (acc.prepend val) (m - 1) else acc
     helper [] n
+```
 
+![](Screenshots/nTimes/nTimes.png)
+![](Screenshots/nTimes/helper.png)
+
+The training and testing labels are one hot encoded. It's simply list of length `labelsCount`, filled with 0, with 1 on index corresponding to presented value.
+
+```
 def oneHot label:
     oneHotList = 0.upto (labelsCount - 1) . each l: if l == label then 1.0 else 0.0
     Tensors.fromList FloatType [labelsCount] oneHotList
+```
 
+![](Screenshots/oneHot/oneHot.png)
+
+Function to load training and testing images from png format will be neccessary too.
+
+```
 def getData path:
     labels = 0.upto (labelsCount - 1)
     labelTensors = labels.each oneHot
@@ -50,42 +72,82 @@ def getData path:
     xs = tensorLists.foldLeft [] (acc: tList: tList + acc)
     (xs, ys)
 
-def accuracy model xBatch yBatch:
-    scores = model.evaluate xBatch
-    scoresConst = Operations.makeConst scores
-    preds = Operations.argMax scoresConst 1
-
-    labelsConst = Operations.makeConst yBatch
-    actual = Operations.argMax labelsConst 1
-
-    comparisonBool = Operations.equal preds actual
-    comparison = Operations.cast comparisonBool FloatType
-    correct = Operations.sum comparison [0]
-    all = Operations.size comparison
-    allFloat = Operations.cast all FloatType
-    accuracy = correct / allFloat
-
-    accuracy.eval.atIndex 0
 ```
 
-<b> Node editor </b>
-`main` function in full effect.
+![](Screenshots/getData/getData.png)
+
+## Now we can handle model training and testing.
+
+
+In Node editor we can observe `main` function in full effect.
 
 ![](Screenshots/main/main.png)
 
+Let's focus on smaller details of Luna Tensorflow API.
+
+<table>
+
+<tr><th> Code </th><th> Node editor </th></tr>
+
+<tr><td>
+
+```
+def main:
+    (xTrain, yTrain) = getData 
+        "data/train"
+    (xTest, yTest) = getData 
+        "data/test"
+
+    xTrainBatch = Tensors.batchFromList
+        xTrain
+    yTrainBatch = Tensors.batchFromList 
+        yTrain
+
+    xTestBatch = Tensors.batchFromList 
+        xTest
+    yTestBatch = Tensors.batchFromList 
+        yTest
+
+```
+</td><td>
+
+Data loading.
+![](Screenshots/main/loadData.png)
+
+</td></tr> 
+
+<tr><td>
+
 ```
 
-def main:
-    (xTrain, yTrain) = getData "data/train"
-    (xTest, yTest) = getData "data/test"
+    input = Input.create 
+        FloatType 
+        [28, 28, 3]
 
-    xTrainBatch = Tensors.batchFromList xTrain
-    yTrainBatch = Tensors.batchFromList yTrain
+    reshape = Reshape.flatten 
+        input
 
-    input = Input.create FloatType [28, 28, 3]
-    reshape = Reshape.flatten input
-    dense1 = Dense.createWithActivation 128 Operations.relu reshape
-    dense2 = Dense.createWithActivation 10 Operations.softmax dense1
+    dense1 = Dense.createWithActivation 
+        128 
+        Operations.relu 
+        reshape
+
+    dense2 = Dense.createWithActivation 
+        10 
+        Operations.softmax 
+        dense1
+
+```
+</td><td>
+
+Adding fully connected hidden and output layers.
+![](Screenshots/main/trainedAccuracy.png)
+
+</td></tr> 
+
+<tr><td>
+
+```
 
     beta1 = 0.9
     beta1Power = beta1
@@ -94,29 +156,77 @@ def main:
     lr = 0.001
     epsilon = 0.00000001
     useNesterov = False
-    optimizer = AdamOptimizer.create beta1Power beta2Power lr beta1 beta2 epsilon useNesterov
+
+    optimizer = AdamOptimizer.create 
+        beta1Power 
+        beta2Power 
+        lr 
+        beta1 
+        beta2 
+        epsilon 
+        useNesterov
 
     loss = Losses.categoricalCrossEntropy
 
-    model = Models.make input dense2 optimizer loss
+```
+</td><td>
 
-    xTestBatch = Tensors.batchFromList xTest
-    yTestBatch = Tensors.batchFromList yTest
+Fixing models parameters: optimizer and loss function.
+![](Screenshots/main/trainedAccuracy.png)
 
-    untrainedAccuracy = accuracy model xTestBatch yTestBatch
+</td></tr> 
 
-    (h, trained) = model.train [xTrainBatch] [yTrainBatch] 30 (ValidationFraction 0.1) 0
-
-    history = h
-
-    trainedAccuracy = accuracy trained xTestBatch yTestBatch
-
-    None
+<tr><td>
 
 ```
 
-<b> Results </b>
-Focusing on node named `trainedAccuracy` is necessary to observe the ratio of training process.
+    model = Models.make 
+        input 
+        dense2 
+        optimizer 
+        loss
+
+```
+</td><td>
+
+Building model.
+![](Screenshots/main/trainedAccuracy.png)
+
+</td></tr> 
+
+<tr><td>
+
+```
+
+    untrainedAccuracy = accuracy 
+        model 
+        xTestBatch 
+        yTestBatch
+
+    (h, trained) = model.train 
+        [xTrainBatch] 
+        [yTrainBatch] 
+        30 
+        (ValidationFraction 0.1) 
+        0
+
+    history = h
+
+    trainedAccuracy = accuracy 
+        trained 
+        xTestBatch 
+        yTestBatch
+
+    None
+```
+</td><td>
+
+Trained model let us observe the ratio of training process in the node named `trainedAccuracy`.
 
 ![](Screenshots/main/trainedAccuracy.png)
+
+</td></tr> 
+
+</table>
+
 

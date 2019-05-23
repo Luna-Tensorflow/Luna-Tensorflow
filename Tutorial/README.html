@@ -262,18 +262,21 @@ pre[data-line] .line-highlight[data-end]:after {
     </head>
     <body for="html-export">
       <div class="mume markdown-preview   ">
-      <h1 class="mume-header" id="luna-tensorflow-mnist-tutorial">Luna-Tensorflow MNIST Tutorial</h1>
+      <h1 class="mume-header" id="center-luna-tensorflow-mnist-tutorial-center"><center> Luna-Tensorflow MNIST Tutorial </center></h1>
 
-<p><b>Cloning repository</b></p>
+<h2 class="mume-header" id="cloning-repository">Cloning repository.</h2>
+
 <pre data-role="codeBlock" data-info="bash" class="language-bash"><span class="token function">git</span> clone -b MNIST_tutorial https://github.com/Luna-Tensorflow/Luna-Tensorflow.git
 <span class="token function">cd</span> Luna-Tensorflow/Tutorial
-</pre><p><b>Downloading and preprocesing data</b><br>
-Unfortunatelly, full dataset is quite heavy, so we need to cut it a little, with additional preprocessing.</p>
+</pre><h2 class="mume-header" id="downloading-and-preprocesing-data">Downloading and preprocesing data.</h2>
+
+<p>Unfortunatelly, full dataset is quite heavy, so we need to cut it a little, with additional preprocessing.</p>
 <pre data-role="codeBlock" data-info="bash" class="language-bash"><span class="token function">chmod</span> +x get_data.sh
 ./get_data.sh
 venv/bin/python3 mnist_to_png.py
-</pre><p><b>Let&apos;s start with Luna Studio</b><br>
-We need some helper functions, to load dataset and work with it.</p>
+</pre><h2 class="mume-header" id="lets-start-with-luna-studio">Let&apos;s start with Luna Studio.</h2>
+
+<p>In the beggining we need some imports.</p>
 <pre data-role="codeBlock" data-info class="language-"><code>import Std.Base
 import Tensorflow.Tensor
 import Tensorflow.Types
@@ -284,20 +287,23 @@ import Tensorflow.Operations
 import Tensorflow.Losses.Crossentropy
 import Tensorflow.Optimizers.Adam
 import Tensorflow.Model
-
-def labelsCount:
+</code></pre><p>The size of dataset labels is the number of different digits to distinguish.</p>
+<pre data-role="codeBlock" data-info class="language-"><code>def labelsCount:
     10
-
-def nTimes n val:
+</code></pre><p>There is need to use some helper functions, to load dataset and work with it, like creating list of given value.</p>
+<pre data-role="codeBlock" data-info class="language-"><code>def nTimes n val:
     def helper acc m:
         if m &gt; 0 then helper (acc.prepend val) (m - 1) else acc
     helper [] n
-
-def oneHot label:
+</code></pre><p><img src="Screenshots/nTimes/nTimes.png" alt><br>
+<img src="Screenshots/nTimes/helper.png" alt></p>
+<p>The training and testing labels are one hot encoded. It&apos;s simply list of length <code>labelsCount</code>, filled with 0, with 1 on index corresponding to presented value.</p>
+<pre data-role="codeBlock" data-info class="language-"><code>def oneHot label:
     oneHotList = 0.upto (labelsCount - 1) . each l: if l == label then 1.0 else 0.0
     Tensors.fromList FloatType [labelsCount] oneHotList
-
-def getData path:
+</code></pre><p><img src="Screenshots/oneHot/oneHot.png" alt></p>
+<p>Function to load training and testing images from png format will be neccessary too.</p>
+<pre data-role="codeBlock" data-info class="language-"><code>def getData path:
     labels = 0.upto (labelsCount - 1)
     labelTensors = labels.each oneHot
     tensorLists = labels.each label: Tensors.fromPngDir (path + &quot;/&quot; + label.toText)
@@ -305,66 +311,118 @@ def getData path:
     xs = tensorLists.foldLeft [] (acc: tList: tList + acc)
     (xs, ys)
 
-def accuracy model xBatch yBatch:
-    scores = model.evaluate xBatch
-    scoresConst = Operations.makeConst scores
-    preds = Operations.argMax scoresConst 1
+</code></pre><p><img src="Screenshots/getData/getData.png" alt></p>
+<h2 class="mume-header" id="now-we-can-handle-model-training-and-testing">Now we can handle model training and testing.</h2>
 
-    labelsConst = Operations.makeConst yBatch
-    actual = Operations.argMax labelsConst 1
-
-    comparisonBool = Operations.equal preds actual
-    comparison = Operations.cast comparisonBool FloatType
-    correct = Operations.sum comparison [0]
-    all = Operations.size comparison
-    allFloat = Operations.cast all FloatType
-    accuracy = correct / allFloat
-
-    accuracy.eval.atIndex 0
-</code></pre><p><b> Node editor </b><br>
-<code>main</code> function in full effect.</p>
+<p>In Node editor we can observe <code>main</code> function in full effect.</p>
 <p><img src="Screenshots/main/main.png" alt></p>
+<p>Let&apos;s focus on smaller details of Luna Tensorflow API.</p>
+<table>
+<tbody><tr><th> Code </th><th> Node editor </th></tr>
+<tr><td>
 <pre data-role="codeBlock" data-info class="language-"><code>def main:
-    (xTrain, yTrain) = getData &quot;data/train&quot;
-    (xTest, yTest) = getData &quot;data/test&quot;
+    (xTrain, yTrain) = getData 
+        &quot;data/train&quot;
+    (xTest, yTest) = getData 
+        &quot;data/test&quot;
 
-    xTrainBatch = Tensors.batchFromList xTrain
-    yTrainBatch = Tensors.batchFromList yTrain
+    xTrainBatch = Tensors.batchFromList
+        xTrain
+    yTrainBatch = Tensors.batchFromList 
+        yTrain
 
-    input = Input.create FloatType [28, 28, 3]
-    reshape = Reshape.flatten input
-    dense1 = Dense.createWithActivation 128 Operations.relu reshape
-    dense2 = Dense.createWithActivation 10 Operations.softmax dense1
+    xTestBatch = Tensors.batchFromList 
+        xTest
+    yTestBatch = Tensors.batchFromList 
+        yTest
 
-    beta1 = 0.9
+</code></pre></td><td>
+<p>Data loading.<br>
+<img src="Screenshots/main/loadData.png" alt></p>
+</td></tr> 
+<tr><td>
+<pre data-role="codeBlock" data-info class="language-"><code>    input = Input.create 
+        FloatType 
+        [28, 28, 3]
+
+    reshape = Reshape.flatten 
+        input
+
+    dense1 = Dense.createWithActivation 
+        128 
+        Operations.relu 
+        reshape
+
+    dense2 = Dense.createWithActivation 
+        10 
+        Operations.softmax 
+        dense1
+
+</code></pre></td><td>
+<p>Adding fully connected hidden and output layers.<br>
+<img src="Screenshots/main/trainedAccuracy.png" alt></p>
+</td></tr> 
+<tr><td>
+<pre data-role="codeBlock" data-info class="language-"><code>    beta1 = 0.9
     beta1Power = beta1
     beta2 = 0.999
     beta2Power = beta2
     lr = 0.001
     epsilon = 0.00000001
     useNesterov = False
-    optimizer = AdamOptimizer.create beta1Power beta2Power lr beta1 beta2 epsilon useNesterov
+
+    optimizer = AdamOptimizer.create 
+        beta1Power 
+        beta2Power 
+        lr 
+        beta1 
+        beta2 
+        epsilon 
+        useNesterov
 
     loss = Losses.categoricalCrossEntropy
 
-    model = Models.make input dense2 optimizer loss
+</code></pre></td><td>
+<p>Fixing models parameters: optimizer and loss function.<br>
+<img src="Screenshots/main/trainedAccuracy.png" alt></p>
+</td></tr> 
+<tr><td>
+<pre data-role="codeBlock" data-info class="language-"><code>    model = Models.make 
+        input 
+        dense2 
+        optimizer 
+        loss
 
-    xTestBatch = Tensors.batchFromList xTest
-    yTestBatch = Tensors.batchFromList yTest
+</code></pre></td><td>
+<p>Building model.<br>
+<img src="Screenshots/main/trainedAccuracy.png" alt></p>
+</td></tr> 
+<tr><td>
+<pre data-role="codeBlock" data-info class="language-"><code>    untrainedAccuracy = accuracy 
+        model 
+        xTestBatch 
+        yTestBatch
 
-    untrainedAccuracy = accuracy model xTestBatch yTestBatch
-
-    (h, trained) = model.train [xTrainBatch] [yTrainBatch] 30 (ValidationFraction 0.1) 0
+    (h, trained) = model.train 
+        [xTrainBatch] 
+        [yTrainBatch] 
+        30 
+        (ValidationFraction 0.1) 
+        0
 
     history = h
 
-    trainedAccuracy = accuracy trained xTestBatch yTestBatch
+    trainedAccuracy = accuracy 
+        trained 
+        xTestBatch 
+        yTestBatch
 
     None
-
-</code></pre><p><b> Results </b><br>
-Focusing on node named <code>trainedAccuracy</code> is necessary to observe the ratio of training process.</p>
+</code></pre></td><td>
+<p>Trained model let us observe the ratio of training process in the node named <code>trainedAccuracy</code>.</p>
 <p><img src="Screenshots/main/trainedAccuracy.png" alt></p>
+</td></tr> 
+</tbody></table>
 
       </div>
       
