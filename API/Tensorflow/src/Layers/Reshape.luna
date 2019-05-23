@@ -5,7 +5,8 @@ import Tensorflow.Variables
 import Tensorflow.Layers.Activation
 import Tensorflow.CWrappers.Helpers
 
-# Reshapes a layer. Given resultDims, this layer returns a new layer that has the same values as previous layer with given shape. If one component of shape is the special value -1, the size of that dimension is computed so that the total size remains constant. In particular, a shape of [-1] flattens into 1-D. At most one component of shape can be -1.
+# Reshapes a layer. Given resultDims, this layer returns a new layer that has the same values as previous layer with given shape.
+# TODO: currently the -1 is used for batch size, so it isn't available in other dimensions If one component of shape is the special value -1, the size of that dimension is computed so that the total size remains constant. In particular, a shape of [-1] flattens into 1-D. At most one component of shape can be -1.
 class ReshapeLayer layerT:
       name :: Text
       resultDims :: List Int
@@ -40,7 +41,7 @@ class ReshapeLayer layerT:
       # forward :: TFOutput a -> TFOutput a
       def forward inp:
           myin = self.parentLayer.forward inp
-          reshaped = Operations.reshape myin self.resultDims
+          reshaped = Operations.reshape myin (self.resultDims.prepend (-1))
           reshaped
 
       # Helper function to run evaluation of model.
@@ -50,7 +51,7 @@ class ReshapeLayer layerT:
       # eval :: TFOutput a -> TFOutput a
       def eval inp:
           myin = self.parentLayer.eval inp
-          reshaped = Operations.reshape myin self.resultDims
+          reshaped = Operations.reshape myin (self.resultDims.prepend (-1))
           reshaped
 
       # Returns variables to train, up to this layer. This layer has no new variables and inherits parent's variables.
@@ -77,4 +78,4 @@ class Reshape:
     # create :: List Int -> Layer -> Layer
     def create newdims parent:
         name = getNextName "Reshape"
-        ReshapeLayer name (newdims.prepend (-1)) parent
+        ReshapeLayer name newdims parent

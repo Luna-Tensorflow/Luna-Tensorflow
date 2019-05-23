@@ -19,11 +19,13 @@ import Dataframes.Table
 
 
 def main:
-   l = [1,2,3,2,4,3]
-   "gg = l.groupBy id - this breaks"
-   0#print gg.toJSON
-   fromPngDir1 = Tensors.fromPngDir "."
-   print (fromPngDir1 . toText)
-   fromPng1 = Tensors.fromPng "flag.png"
-   toText1 = fromPng1 . toText
-   None
+    testMain
+    vartest
+    lowlevelNetExample
+    exampleClassificationGradientDescent
+    exampleClassificationRMSProp
+    exampleConvolutional
+    tensorTest
+    tensorSerializationTest
+    tensorFromPngTest
+    testMerge

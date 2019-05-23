@@ -9,7 +9,7 @@ import Tensorflow.Tensor
 import Tensorflow.Types
 
 def testMerge:
-    i =  Input.create FloatType [1, 4]
+    i =  Input.create FloatType [4]
     d1 = Dense.create 7 i
     d2 = Dense.create 4 d1
     d3 = Dense.create 4 d2
@@ -31,7 +31,7 @@ def testMerge:
     0 # Data only for testing that the flow works, we're not building a practical example here
     testX = Tensors.random FloatType [1, 4] 0.0 1.0
     testY = Tensors.random FloatType [1, 1] 0.0 1.0
-    fitted = model.train [testX] [testY]
+    fitted = model.train [testX] [testY] 1 NoValidation 0
     print fitted.toJSON
 
 # this test summons implicit IO again, TODO fix it
@@ -51,5 +51,5 @@ def testMergeImplicitIOError:
     0 # Data only for testing that the flow works, we're not building a practical example here
     testX = [Tensors.random FloatType [1, 4] 0.0 1.0]
     testY = [Tensors.random FloatType [1, 1] 0.0 1.0]
-    fitted = model.train testX testY
+    fitted = model.train testX testY 1 NoValidation 0
     print fitted.toJSON

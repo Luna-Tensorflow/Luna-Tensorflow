@@ -21,7 +21,7 @@ def exampleConvolutional:
     print "Building net"
     i =  Input.create FloatType [h, w]
     c1 = Conv2d.createWithActivation [4, 5] 1 (1, 2) Valid Operations.tanh i
-    r =  Reshape.create [2, -1] c1
+    r =  Reshape.create [2, 3] c1
 
     print "Compiling model"
     opt = GradientDescentOptimizer.create 0.1
@@ -30,7 +30,7 @@ def exampleConvolutional:
     model = Models.make i r opt loss
 
     print "Evaluation"
-    res = model . evaluate picture
+    res = model . evaluate $ Tensors.batchFromList [picture]
 
     print (res . toJSON)
 
@@ -41,7 +41,7 @@ def exampleConvolutional:
     i =  Input.create FloatType [w]
 
     c1 = Conv1d.createWithActivation 5 1 2 Valid Operations.tanh i
-    r =  Reshape.create [3, -1] c1
+    r =  Reshape.create [3] c1
 
     print "Compiling model"
     opt = GradientDescentOptimizer.create 0.1
@@ -50,8 +50,6 @@ def exampleConvolutional:
     model = Models.make i r opt loss
 
     print "Evaluation"
-    res = model . evaluate picture
+    res = model . evaluate $ Tensors.batchFromList [picture]
 
     print (res . toJSON)
-
-

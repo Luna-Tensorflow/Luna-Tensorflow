@@ -385,7 +385,7 @@ class Operations:
     # partial :: TFOutput a -> TFOutput a -> TFOutput a
     def partial a b:
         wrapper = makePartialDerivativeWrapper a.wrapper b.wrapper
-        TFOutput wrapper
+        TFOutput wrapper a.typetag
 
     # Arguments:
     # `a` :: TFOutput a
@@ -396,7 +396,7 @@ class Operations:
         dim = self.constFromScalar Int32Type 1
 
         wrapper = makeBinaryOpWrapper "Sum" mult.wrapper dim.wrapper
-        TFOutput wrapper
+        TFOutput wrapper a.typetag
 
     # Returns TFOutput with value of computed 2-D convolution with given 4-D input and filter tensors. 
     # Arguments: 
@@ -466,3 +466,21 @@ class Operations:
     # cast :: TFOutput a -> b -> TFOutput b
     def cast x dstType:
         out = castGen "" x x.typetag dstType False
+
+    # Returns TFOutput filled with zeros with given type and shape of a given TFOutput
+    # Arguments:
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # zerosLike :: TFOutput a -> TFOutput a
+    def zerosLike x:
+        out = zerosLikeGen "" x x.typetag
+        out
+
+    # Returns TFOutput filled with ones with given type and shape of a given TFOutput
+    # Arguments:
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # onesLike :: TFOutput a -> TFOutput a
+    def onesLike x:
+        out = onesLikeGen "" x x.typetag
+        out

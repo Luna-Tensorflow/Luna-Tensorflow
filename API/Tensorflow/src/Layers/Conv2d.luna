@@ -45,11 +45,9 @@ class Conv2dLayer a layerT:
 
     # Internal. Helper function to compute Conv2D layer output.
     def calculateConv parentsOutput:
-        expanded' = Operations.expandDim parentsOutput 0 # expand batch dim as 1
-        expanded = if self.parentLayer.shape.length == 2 then (Operations.expandDim expanded' 1.negate) else expanded' #expand channel dim as 1
+        expanded = if self.parentLayer.shape.length == 2 then (Operations.expandDim parentsOutput 1.negate) else parentsOutput #expand channel dim as 1
         convo = Operations.conv2D expanded self.kernelWeights self.stride self.paddingType
-        squeezed = Operations.squeeze convo [0] # squeeze back
-        squeezed
+        convo
 
     # Helper function to run evaluation of model.
     # Arguments:
@@ -132,6 +130,6 @@ class Conv2d:
     def createWithActivation kernelHW outChannels stride paddingType activationFunction parent:
         c = self.create kernelHW outChannels stride paddingType parent
         name = getNextName "Activation"
-        a = ActivationLayer name activationFunction c
+        a = ActivationLayer name activationFunction c c.outputType
         a
 

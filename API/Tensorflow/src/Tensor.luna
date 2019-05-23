@@ -6,6 +6,7 @@ import Std.Foreign.C.Value
 import Tensorflow.Types
 import Tensorflow.CWrappers.Helpers
 import Tensorflow.GeneratedOps
+import Tensorflow.Operations
 
 # Internal.
 # Arguments:
@@ -160,16 +161,6 @@ class Tensors:
         wrapper = createConstTensorWrapper typetag dims (typetag.fromReal 0.0)
         Tensor wrapper
 
-    # Creates const tensor of zeros with given type and shape of given tensor.
-    # Arguments: 
-    # `typetag` :: TypeTag
-    # `x` :: Tensor a
-    # `return` :: Tensor a
-    # zerosLike :: Typetag a -> Tensor a -> Tensor a
-    def zerosLike x:
-        zerosTensor = zerosLikeGen "" x x.typetag . eval
-        zerosTensor
-
     # Creates const tensor of ones with given type and dimensions.
     # Arguments: 
     # `typetag` :: TypeTag
@@ -179,15 +170,6 @@ class Tensors:
     def ones typetag dims:
         wrapper = createConstTensorWrapper typetag dims (typetag.fromReal 1.0)
         Tensor wrapper
-
-    # Creates const tensor of ones with given type and shape of given tensor.
-    # Arguments: 
-    # `x` :: Tensor a
-    # `return` :: Tensor a
-    # onesLike :: Tensor a -> Tensor a
-    def onesLike x:
-        tensor = onesLikeGen "" x x.typetag . eval
-        tensor
 
     # Transposes a tensor (TODO better description)
     # Arguments:

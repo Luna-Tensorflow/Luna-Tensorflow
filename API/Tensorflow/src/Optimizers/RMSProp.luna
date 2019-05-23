@@ -39,12 +39,12 @@ class RMSProp:
           varsAndGrads = variables.zip grads
 
           def makeAndApplyRMSProp ((v, g), i):
-              lr = Operations.constFromScalar v.typetag self.lr
-              rho = Operations.constFromScalar v.typetag self.rho
-              momentum = Operations.constFromScalar v.typetag self.momentum
-              epsilon = Operations.constFromScalar v.typetag self.epsilon
+              lr = Operations.constFromReal v.typetag self.lr
+              rho = Operations.constFromReal v.typetag self.rho
+              momentum = Operations.constFromReal v.typetag self.momentum
+              epsilon = Operations.constFromReal v.typetag self.epsilon
 
-              zerosTensor = Tensors.zerosLike v
+              zerosTensor = Operations.zerosLike v . eval
               ms = Variables.make ("ms" + i.toText) zerosTensor
               mom = Variables.make ("mom" + i.toText) zerosTensor
               applyRMSPropGen "" v ms mom lr rho momentum epsilon g v.typetag False

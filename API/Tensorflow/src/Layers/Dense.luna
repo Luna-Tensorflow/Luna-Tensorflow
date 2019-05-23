@@ -35,7 +35,7 @@ class DenseLayer a layerT:
       # `return` :: List Int
       # shape :: List Int
       def shape:
-          [1, self.nOutputs]
+          [self.nOutputs]
 
       # Computes output on this layer after feeding with data from previous one.
       # Arguments:
@@ -77,7 +77,7 @@ class Dense:
     # create :: Int -> Layer -> Layer
     def create nOutputs parent:
         nInputs = case parent.shape of
-            [_, x]: x
+            [x]: x
             _: throw $ "Dense layer requires its input to be a tensor with dimensions batch_size x num_features"
 
         vartype = parent.outputType

@@ -19,7 +19,7 @@ def tensorSerializationTest:
     st = StateOps.makeEmpty
     v1 = Variables.make "v1" t1d
     v2 = Variables.make "v2" (Tensors.fromList1d StringType ["a", "bb", "ccc"])
-    vars = [v1, v2]
+    vars = [v1.eraseType, v2.eraseType]
     st' = StateOps.setVariableValue st "v2" (Tensors.fromList1d StringType ["a'", "b'b", "c'dd"])
     print "Saving state"
     StateOps.saveVariables "state.tf" vars st'

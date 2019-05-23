@@ -35,7 +35,8 @@ class Conv1d:
 
         reshape1 = Reshape.create newShape1 parent
         conv = Conv2d.create [1, kernelW] outChannels (1, stride) paddingType reshape1
-        reshape2 = Reshape.create [-1, outChannels] conv        
+        [convH, convW, _] = conv.shape
+        reshape2 = Reshape.create [convH * convW, outChannels] conv
         reshape2
 
     # Conv1d with activation layer constructor.
@@ -51,5 +52,5 @@ class Conv1d:
     def createWithActivation kernelW outChannels stride paddingType activationFunction parent:
         c = self.create kernelW outChannels stride paddingType parent
         name = getNextName "Activation"
-        a = ActivationLayer name activationFunction c
+        a = ActivationLayer name activationFunction c c.outputType
         a
