@@ -7,6 +7,16 @@ git clone -b MNIST_tutorial https://github.com/Luna-Tensorflow/Luna-Tensorflow.g
 cd Luna-Tensorflow/Tutorial
 ```
 
+## Building libraries.
+```bash
+cd local_libs/Tensorflow/native_libs/
+mkdir build
+cd build
+cmake ../src
+make
+cd ../../../..
+```
+
 ## Downloading and preprocesing data.
 Unfortunatelly, full dataset is quite heavy, so we need to cut it a little, with additional preprocessing.
 ```bash
@@ -48,9 +58,6 @@ def nTimes n val:
     helper [] n
 ```
 
-![](Screenshots/nTimes/nTimes.png)
-![](Screenshots/nTimes/helper.png)
-
 The training and testing labels are one hot encoded. It's simply list of length `labelsCount`, filled with 0, with 1 on index corresponding to presented value.
 
 ```
@@ -62,6 +69,7 @@ def oneHot label:
 ![](Screenshots/oneHot/oneHot.png)
 
 Function to load training and testing images from png format will be neccessary too.
+<b> TODO </b> More explanations needed.
 
 ```
 def getData path:
@@ -76,12 +84,24 @@ def getData path:
 
 ![](Screenshots/getData/getData.png)
 
+And finally helper function to prepare optimizer.
+
+```
+def prepareOptimizer:
+    beta1 = 0.9
+    beta1Power = beta1
+    beta2 = 0.999
+    beta2Power = beta2
+    lr = 0.001
+    epsilon = 0.00000001
+    useNesterov = False
+
+    AdamOptimizer.create beta1Power beta2Power lr beta1 beta2 epsilon useNesterov
+```
+
+![](Screenshots/prepareOptimizer/prepareOptimizer.png)
+
 ## Now we can handle model training and testing.
-
-
-In Node editor we can observe `main` function in full effect.
-
-![](Screenshots/main/main.png)
 
 Let's focus on smaller details of Luna Tensorflow API.
 
@@ -141,44 +161,16 @@ Data loading.
 </td><td>
 
 Adding fully connected hidden and output layers.
-![](Screenshots/main/trainedAccuracy.png)
+![](Screenshots/main/layers.png)
 
 </td></tr> 
 
 <tr><td>
 
 ```
-
-    beta1 = 0.9
-    beta1Power = beta1
-    beta2 = 0.999
-    beta2Power = beta2
-    lr = 0.001
-    epsilon = 0.00000001
-    useNesterov = False
-
-    optimizer = AdamOptimizer.create 
-        beta1Power 
-        beta2Power 
-        lr 
-        beta1 
-        beta2 
-        epsilon 
-        useNesterov
+    optimizer = prepareOptimizer
 
     loss = Losses.categoricalCrossEntropy
-
-```
-</td><td>
-
-Fixing models parameters: optimizer and loss function.
-![](Screenshots/main/trainedAccuracy.png)
-
-</td></tr> 
-
-<tr><td>
-
-```
 
     model = Models.make 
         input 
@@ -189,8 +181,8 @@ Fixing models parameters: optimizer and loss function.
 ```
 </td><td>
 
-Building model.
-![](Screenshots/main/trainedAccuracy.png)
+Building model with its parameters.
+![](Screenshots/main/model.png)
 
 </td></tr> 
 
@@ -221,12 +213,21 @@ Building model.
 ```
 </td><td>
 
-Trained model let us observe the ratio of training process in the node named `trainedAccuracy`.
-
-![](Screenshots/main/trainedAccuracy.png)
+Training model and accuracy ratio comparision.
+![](Screenshots/main/test.png)
 
 </td></tr> 
 
 </table>
+
+
+Evaluated model let us observe the ratio of training process in the node named `trainedAccuracy`.
+
+![](Screenshots/main/trainedAccuracy.png)
+
+In Node editor we can look at `main` function in full effect.
+<b> TODO </b> Better image.
+
+![](Screenshots/main/main.png)
 
 
