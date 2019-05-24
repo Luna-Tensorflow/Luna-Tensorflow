@@ -262,8 +262,10 @@ pre[data-line] .line-highlight[data-end]:after {
     </head>
     <body for="html-export">
       <div class="mume markdown-preview   ">
-      <h1 class="mume-header" id="center-luna-tensorflow-mnist-tutorial-center"><center> Luna-Tensorflow MNIST Tutorial </center></h1>
-
+      <center>
+<h1>Luna-Tensorflow Fashion MNIST Tutorial</h1>
+<p>Based on: <a href="https://www.tensorflow.org/tutorials/keras/basic_classification">https://www.tensorflow.org/tutorials/keras/basic_classification</a></p>
+</center>
 <h2 class="mume-header" id="cloning-repository">Cloning repository.</h2>
 
 <pre data-role="codeBlock" data-info="bash" class="language-bash"><span class="token function">git</span> clone -b MNIST_tutorial https://github.com/Luna-Tensorflow/Luna-Tensorflow.git
@@ -278,7 +280,7 @@ cmake <span class="token punctuation">..</span>/src
 <span class="token function">cd</span> <span class="token punctuation">..</span>/<span class="token punctuation">..</span>/<span class="token punctuation">..</span>/<span class="token punctuation">..</span>
 </pre><h2 class="mume-header" id="downloading-and-preprocesing-data">Downloading and preprocesing data.</h2>
 
-<p>Unfortunatelly, full dataset is quite heavy, so we need to cut it a little, with additional preprocessing.</p>
+<p>Unfortunatelly, Fashion MNIST dataset is in incompatible format, so we have to preprocess it.</p>
 <pre data-role="codeBlock" data-info="bash" class="language-bash"><span class="token function">chmod</span> +x get_data.sh
 ./get_data.sh
 venv/bin/python3 mnist_to_png.py
@@ -295,31 +297,30 @@ import Tensorflow.Operations
 import Tensorflow.Losses.Crossentropy
 import Tensorflow.Optimizers.Adam
 import Tensorflow.Model
-</code></pre><p>The size of dataset labels is the number of different digits to distinguish.</p>
+</code></pre><p>The size of dataset labels is the number of different pictures to distinguish.</p>
 <pre data-role="codeBlock" data-info class="language-"><code>def labelsCount:
     10
-</code></pre><p>There is need to use some helper functions, to load dataset and work with it, like creating list of given value.</p>
+</code></pre><p>There is need to use some helper functions, to load dataset and work with it, like creating list of given value, used later to make pictures ont hot encoded labels.</p>
 <pre data-role="codeBlock" data-info class="language-"><code>def nTimes n val:
     def helper acc m:
         if m &gt; 0 then helper (acc.prepend val) (m - 1) else acc
     helper [] n
-</code></pre><p>The training and testing labels are one hot encoded. It&apos;s simply list of length <code>labelsCount</code>, filled with 0, with 1 on index corresponding to presented value.</p>
+</code></pre><p>The training and testing labels are one hot encoded. It&apos;s simply list of length <code>labelsCount</code>, filled with 0, with 1 on index corresponding to presented object.</p>
 <pre data-role="codeBlock" data-info class="language-"><code>def oneHot label:
     oneHotList = 0.upto (labelsCount - 1) . each l: if l == label then 1.0 else 0.0
     Tensors.fromList FloatType [labelsCount] oneHotList
 </code></pre><p><img src="Screenshots/oneHot/oneHot.png" alt></p>
-<p>Function to load training and testing images from png format will be neccessary too.<br>
-<b> TODO </b> More explanations needed.</p>
+<p>Function to load training and testing images from png format will be neccessary too. It creates one hot encoded labels for each object type on <code>labelTensors</code>. Loads dataset of each object type on <code>tensorLists</code> and finally concatenate all image tensors into <code>xs</code>, and corresponding to them labels into <code>ys</code>.</p>
 <pre data-role="codeBlock" data-info class="language-"><code>def getData path:
     labels = 0.upto (labelsCount - 1)
     labelTensors = labels.each oneHot
     tensorLists = labels.each label: Tensors.fromPngDir (path + &quot;/&quot; + label.toText)
-    ys = labelTensors.zip tensorLists . foldLeft [] ((label, tList): acc: (nTimes tList.length label) + acc)
-    xs = tensorLists.foldLeft [] (acc: tList: tList + acc)
+    ys = labelTensors.zip tensorLists . flatMap ((label, tList): (nTimes tList.length label))
+    xs = tensorLists.concat
     (xs, ys)
 
 </code></pre><p><img src="Screenshots/getData/getData.png" alt></p>
-<p>And finally helper function to prepare optimizer.</p>
+<p>And last but not least, helper function to prepare optimizer.</p>
 <pre data-role="codeBlock" data-info class="language-"><code>def prepareOptimizer:
     beta1 = 0.9
     beta1Power = beta1
@@ -331,9 +332,9 @@ import Tensorflow.Model
 
     AdamOptimizer.create beta1Power beta2Power lr beta1 beta2 epsilon useNesterov
 </code></pre><p><img src="Screenshots/prepareOptimizer/prepareOptimizer.png" alt></p>
-<h2 class="mume-header" id="now-we-can-handle-model-training-and-testing">Now we can handle model training and testing.</h2>
+<h2 class="mume-header" id="now-we-can-handle-building-model-training-and-testing">Now we can handle building model, training and testing.</h2>
 
-<p>Let&apos;s focus on smaller details of Luna Tensorflow API.</p>
+<p>Let&apos;s focus on details of Luna Tensorflow API.</p>
 <table>
 <tbody><tr><th> Code </th><th> Node editor </th></tr>
 <tr><td>
@@ -354,7 +355,7 @@ import Tensorflow.Model
         yTest
 
 </code></pre></td><td>
-<p>Data loading.<br>
+<p>Loading data, preparing training and testing tensors into batches.<br>
 <img src="Screenshots/main/loadData.png" alt></p>
 </td></tr> 
 <tr><td>
@@ -376,8 +377,14 @@ import Tensorflow.Model
         dense1
 
 </code></pre></td><td>
-<p>Adding fully connected hidden and output layers.<br>
-<img src="Screenshots/main/layers.png" alt></p>
+<p>Connecting models layers in sequential order:</p>
+<ul>
+<li> input layer, feeded with 28x28 pixels pictures, </li>
+<li> reshape layer, flattening to 1D, </li>
+<li> hidden fully connected layer with 128 neurons, </li>
+<li> output fully connected layer with 10 neurons as label predictions. </li>
+</ul>
+<p><img src="Screenshots/main/layers.png" alt></p>
 </td></tr> 
 <tr><td>
 <pre data-role="codeBlock" data-info class="language-"><code>    optimizer = prepareOptimizer
@@ -391,8 +398,13 @@ import Tensorflow.Model
         loss
 
 </code></pre></td><td>
-<p>Building model with its parameters.<br>
-<img src="Screenshots/main/model.png" alt></p>
+<p>Building model with its parameters:</p>
+<ul>
+<li> input and output layers, </li>
+<li> optimizer, </li>
+<li> loss function. </li>
+</ul>
+<p><img src="Screenshots/main/model.png" alt></p>
 </td></tr> 
 <tr><td>
 <pre data-role="codeBlock" data-info class="language-"><code>    untrainedAccuracy = accuracy 
@@ -416,15 +428,18 @@ import Tensorflow.Model
 
     None
 </code></pre></td><td>
-<p>Training model and accuracy ratio comparision.<br>
+<p>Training model, and calculating its accuracy on test dataset before and after whole process.<br>
 <img src="Screenshots/main/test.png" alt></p>
 </td></tr> 
 </tbody></table>
-<p>Evaluated model let us observe the ratio of training process in the node named <code>trainedAccuracy</code>.</p>
-<p><img src="Screenshots/main/trainedAccuracy.png" alt></p>
-<p>In Node editor we can look at <code>main</code> function in full effect.<br>
-<b> TODO </b> Better image.</p>
-<p><img src="Screenshots/main/main.png" alt></p>
+<p>Evaluated model let us observe the accuracy ratio after training process, in the node named <code>trainedAccuracy</code>, with comparision to accuracy ratio before it, in the node named <code>untrainedAccuracy</code>.</p>
+<center>
+<p><img src="Screenshots/main/comparision.png" alt></p>
+</center>
+<p>In Node editor we can look at <code>main</code> function in full effect.</p>
+<center>
+<p><img src="Screenshots/main/main2.png" alt></p>
+</center>
 
       </div>
       

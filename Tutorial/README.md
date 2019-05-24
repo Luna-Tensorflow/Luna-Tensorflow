@@ -82,8 +82,8 @@ def getData path:
     labels = 0.upto (labelsCount - 1)
     labelTensors = labels.each oneHot
     tensorLists = labels.each label: Tensors.fromPngDir (path + "/" + label.toText)
-    ys = labelTensors.zip tensorLists . foldLeft [] ((label, tList): acc: (nTimes tList.length label) + acc)
-    xs = tensorLists.foldLeft [] (acc: tList: tList + acc)
+    ys = labelTensors.zip tensorLists . flatMap ((label, tList): (nTimes tList.length label))
+    xs = tensorLists.concat
     (xs, ys)
 
 ```
