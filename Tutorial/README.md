@@ -1,4 +1,10 @@
-# <center> Luna-Tensorflow MNIST Tutorial </center>
+ <center>
+
+# Luna-Tensorflow Fashion MNIST Tutorial 
+
+Based on: https://www.tensorflow.org/tutorials/keras/basic_classification
+
+</center>
 
 ## Cloning repository.
 
@@ -18,7 +24,8 @@ cd ../../../..
 ```
 
 ## Downloading and preprocesing data.
-Unfortunatelly, full dataset is quite heavy, so we need to cut it a little, with additional preprocessing.
+Unfortunatelly, Fashion MNIST dataset is in incompatible format, so we have to preprocess it.
+
 ```bash
 chmod +x get_data.sh
 ./get_data.sh
@@ -42,14 +49,14 @@ import Tensorflow.Optimizers.Adam
 import Tensorflow.Model
 ```
 
-The size of dataset labels is the number of different digits to distinguish.
+The size of dataset labels is the number of different pictures to distinguish.
 
 ```
 def labelsCount:
     10
 ```
 
-There is need to use some helper functions, to load dataset and work with it, like creating list of given value.
+There is need to use some helper functions, to load dataset and work with it, like creating list of given value, used later to make pictures ont hot encoded labels.
 
 ```
 def nTimes n val:
@@ -58,7 +65,7 @@ def nTimes n val:
     helper [] n
 ```
 
-The training and testing labels are one hot encoded. It's simply list of length `labelsCount`, filled with 0, with 1 on index corresponding to presented value.
+The training and testing labels are one hot encoded. It's simply list of length `labelsCount`, filled with 0, with 1 on index corresponding to presented object.
 
 ```
 def oneHot label:
@@ -68,8 +75,7 @@ def oneHot label:
 
 ![](Screenshots/oneHot/oneHot.png)
 
-Function to load training and testing images from png format will be neccessary too.
-<b> TODO </b> More explanations needed.
+Function to load training and testing images from png format will be neccessary too. It creates one hot encoded labels for each object type on `labelTensors`. Loads dataset of each object type on `tensorLists` and finally concatenate all image tensors into `xs`, and corresponding to them labels into `ys`.
 
 ```
 def getData path:
@@ -84,7 +90,7 @@ def getData path:
 
 ![](Screenshots/getData/getData.png)
 
-And finally helper function to prepare optimizer.
+And last but not least, helper function to prepare optimizer.
 
 ```
 def prepareOptimizer:
@@ -101,9 +107,9 @@ def prepareOptimizer:
 
 ![](Screenshots/prepareOptimizer/prepareOptimizer.png)
 
-## Now we can handle model training and testing.
+## Now we can handle building model, training and testing.
 
-Let's focus on smaller details of Luna Tensorflow API.
+Let's focus on details of Luna Tensorflow API.
 
 <table>
 
@@ -131,7 +137,7 @@ def main:
 ```
 </td><td>
 
-Data loading.
+Loading data, preparing training and testing tensors into batches.
 ![](Screenshots/main/loadData.png)
 
 </td></tr> 
@@ -160,7 +166,14 @@ Data loading.
 ```
 </td><td>
 
-Adding fully connected hidden and output layers.
+Connecting models layers in sequential order:
+<ul>
+<li> input layer, feeded with 28x28 pixels pictures, </li>
+<li> reshape layer, flattening to 1D, </li>
+<li> hidden fully connected layer with 128 neurons, </li>
+<li> output fully connected layer with 10 neurons as label predictions. </li>
+</ul>
+
 ![](Screenshots/main/layers.png)
 
 </td></tr> 
@@ -181,7 +194,13 @@ Adding fully connected hidden and output layers.
 ```
 </td><td>
 
-Building model with its parameters.
+Building model with its parameters: 
+<ul>
+<li> input and output layers, </li>
+<li> optimizer, </li>
+<li> loss function. </li>
+</ul>
+
 ![](Screenshots/main/model.png)
 
 </td></tr> 
@@ -213,7 +232,7 @@ Building model with its parameters.
 ```
 </td><td>
 
-Training model and accuracy ratio comparision.
+Training model, and calculating its accuracy on test dataset before and after whole process.
 ![](Screenshots/main/test.png)
 
 </td></tr> 
@@ -221,13 +240,19 @@ Training model and accuracy ratio comparision.
 </table>
 
 
-Evaluated model let us observe the ratio of training process in the node named `trainedAccuracy`.
+Evaluated model let us observe the accuracy ratio after training process, in the node named `trainedAccuracy`, with comparision to accuracy ratio before it, in the node named `untrainedAccuracy`.
 
-![](Screenshots/main/trainedAccuracy.png)
+<center>
+
+![](Screenshots/main/comparision.png)
+
+</center>
 
 In Node editor we can look at `main` function in full effect.
-<b> TODO </b> Better image.
 
-![](Screenshots/main/main.png)
+<center>
 
+![](Screenshots/main/main2.png)
+
+</center>
 
