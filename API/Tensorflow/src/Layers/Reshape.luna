@@ -5,7 +5,7 @@ import Tensorflow.Variables
 import Tensorflow.Layers.Activation
 import Tensorflow.CWrappers.Helpers
 
-# Reshapes a layer. Given resultDims, this layer returns a new layer that has the same values as previous layer with given shape. If one component of shape is the special value -1, the size of that dimension is computed so that the total size remains constant. In particular, a shape of [-1] flattens into 1-D. At most one component of shape can be -1.
+# Reshapes a layer. Given resultDims, this layer returns a new layer that has the same values as previous layer with given shape. If one component of shape is the special value 1.negate, the size of that dimension is computed so that the total size remains constant. In particular, a shape of [1.negate] flattens into 1-D. At most one component of shape can be 1.negate.
 class ReshapeLayer layerT:
       name :: Text
       resultDims :: List Int
@@ -40,7 +40,7 @@ class ReshapeLayer layerT:
       # forward :: TFOutput a -> TFOutput a
       def forward inp:
           myin = self.parentLayer.forward inp
-          reshaped = Operations.reshape myin (self.resultDims.prepend (-1))
+          reshaped = Operations.reshape myin (self.resultDims.prepend (1.negate))
           reshaped
 
       # Helper function to run evaluation of model.
@@ -50,7 +50,7 @@ class ReshapeLayer layerT:
       # eval :: TFOutput a -> TFOutput a
       def eval inp:
           myin = self.parentLayer.eval inp
-          reshaped = Operations.reshape myin (self.resultDims.prepend (-1))
+          reshaped = Operations.reshape myin (self.resultDims.prepend (1.negate))
           reshaped
 
       # Returns variables to train, up to this layer. This layer has no new variables and inherits parent's variables.
@@ -76,15 +76,15 @@ class Reshape:
     # `return` :: Layer
     # create :: List Int -> Layer -> Layer
     def create newdims parent:
-        nNegOnes = newdims . filter (e: e == -1) . length
-        if nNegOnes > 1 then throw $ "There can be at most one -1 in Reshape!" else
+        nNegOnes = newdims . filter (e: e == 1.negate) . length
+        if nNegOnes > 1 then throw $ "There can be at most one 1.negate in Reshape!" else
             name = getNextName "Reshape"
             if nNegOnes == 0 then (ReshapeLayer name newdims parent) else
                 parentLength = parent.shape.fold 1 (*)
-                remaining = newdims . filter (e: (e == -1).not) . fold 1 (*)
+                remaining = newdims . filter (e: (e == 1.negate).not) . fold 1 (*)
                 if ((parentLength % remaining) == 0).not then throw $ "Illegal reshape shapes!" else
                     unknownDim = parentLength / remaining
-                    ndims = newdims . map (e: if e == -1 then unknownDim else e)
+                    ndims = newdims . map (e: if e == 1.negate then unknownDim else e)
                     r = ReshapeLayer name ndims parent
                     r
 
@@ -94,5 +94,5 @@ class Reshape:
     # `return` :: Layer
     # flatten :: Layer -> Layer
     def flatten parent:
-        r = Reshape.create [-1] parent
+        r = Reshape.create [1.negate] parent
         r

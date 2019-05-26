@@ -1,11 +1,9 @@
 import Tensorflow.Types
 import Tensorflow.Tensor
 import Tensorflow.Operations
-import Tensorflow.Padding
 
 import Tensorflow.Layers.Input
-import Tensorflow.Layers.Conv1d
-import Tensorflow.Layers.Conv2d
+import Tensorflow.Layers.Conv
 import Tensorflow.Layers.Reshape
 import Tensorflow.Optimizers.GradientDescent
 import Tensorflow.Losses.MeanError
@@ -21,7 +19,7 @@ def exampleConvolutional:
     print "Building net"
     i =  Input.create FloatType [h, w]
     c1 = Conv2d.createWithActivation [4, 5] 1 (1, 2) Valid Operations.tanh i
-    r =  Reshape.create [2, -1] c1
+    r =  Reshape.create [2, 1.negate] c1
 
     print "Compiling model"
     opt = GradientDescentOptimizer.create 0.1

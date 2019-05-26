@@ -15,10 +15,12 @@ import Tensorflow.GeneratedOps
 
 import Tensorflow.Test
 
-import Dataframes.Table
-
+#import Dataframes.Table
 
 def main:
+    exampleConvolutional
+
+def main2:
     testMain
     vartest
     lowlevelNetExample
