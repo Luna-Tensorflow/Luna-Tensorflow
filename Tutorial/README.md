@@ -6,14 +6,14 @@ Based on: https://www.tensorflow.org/tutorials/keras/basic_classification
 
 </center>
 
-## Cloning repository.
+## Cloning repository
 
 ```bash
 git clone -b MNIST_tutorial https://github.com/Luna-Tensorflow/Luna-Tensorflow.git
 cd Luna-Tensorflow/Tutorial
 ```
 
-## Building libraries.
+## Building libraries
 ```bash
 cd local_libs/Tensorflow/native_libs/
 mkdir build
@@ -23,8 +23,8 @@ make
 cd ../../../..
 ```
 
-## Downloading and preprocesing data.
-Unfortunatelly, Fashion MNIST dataset is in incompatible format, so we have to preprocess it.
+## Downloading and preprocesing data
+Unfortunately, Fashion MNIST dataset is in an incompatible format, so we have to preprocess it first to PNG format supported by LunaTensorFlow.
 
 ```bash
 chmod +x get_data.sh
@@ -32,9 +32,9 @@ chmod +x get_data.sh
 venv/bin/python3 mnist_to_png.py
 ```
 
-## Let's start with Luna Studio.
+## Let's start with Luna Studio!
 
-In the beggining we need some imports.
+At the beggining we need some imports:
 
 ```
 import Std.Base
@@ -49,14 +49,14 @@ import Tensorflow.Optimizers.Adam
 import Tensorflow.Model
 ```
 
-The size of dataset labels is the number of different pictures to distinguish.
+The size of dataset labels is the number of different pictures to be classified.
 
 ```
 def labelsCount:
     10
 ```
 
-There is need to use some helper functions, to load dataset and work with it, like creating list of given value, used later to make pictures ont hot encoded labels.
+Then we introduce a number of helper functions, used to load dataset and work with it. The following one serves to replicate a given value `n` times, which we use later in order to assign pictures their one-hot encoded labels.
 
 ```
 def nTimes n val:
@@ -65,7 +65,7 @@ def nTimes n val:
     helper [] n
 ```
 
-The training and testing labels are one hot encoded. It's simply list of length `labelsCount`, filled with 0, with 1 on index corresponding to presented object.
+The training and testing labels are one-hot encoded. That encoding is simply a list of length `labelsCount`, filled with zeroes and one `1` on the index corresponding to the presented object.
 
 ```
 def oneHot label:
@@ -75,7 +75,7 @@ def oneHot label:
 
 ![](Screenshots/oneHot/oneHot.png)
 
-Function to load training and testing images from png format will be neccessary too. It creates one hot encoded labels for each object type on `labelTensors`. Loads dataset of each object type on `tensorLists` and finally concatenate all image tensors into `xs`, and corresponding to them labels into `ys`.
+An auxiliary function to load training and testing images from png format would be also helpful. The one shown below creates one-hot encoded labels for each object type in `labelTensors`. Then, it loads dataset of each object type into `tensorLists` and finally concatenates all the image tensors into `xs`, and their corresponding labels into `ys`.
 
 ```
 def getData path:
@@ -90,7 +90,7 @@ def getData path:
 
 ![](Screenshots/getData/getData.png)
 
-And last but not least, helper function to prepare optimizer.
+And last but not least, helper function to prepare the optimizing function used in a learning process:
 
 ```
 def prepareOptimizer:
@@ -107,9 +107,9 @@ def prepareOptimizer:
 
 ![](Screenshots/prepareOptimizer/prepareOptimizer.png)
 
-## Now we can handle building model, training and testing.
+## Building model, training and testing
 
-Let's focus on details of Luna Tensorflow API.
+Let's focus on the details of Luna Tensorflow API.
 
 <table>
 
@@ -232,7 +232,7 @@ Building model with its parameters:
 ```
 </td><td>
 
-Training model, and calculating its accuracy on test dataset before and after whole process.
+Training model, and calculating its accuracy on the test dataset before and after a whole process.
 ![](Screenshots/main/test.png)
 
 </td></tr> 
@@ -240,7 +240,7 @@ Training model, and calculating its accuracy on test dataset before and after wh
 </table>
 
 
-Evaluated model let us observe the accuracy ratio after training process, in the node named `trainedAccuracy`, with comparision to accuracy ratio before it, in the node named `untrainedAccuracy`.
+Evaluated model lets us observe the accuracy ratio after training process, on the node named `trainedAccuracy`. We can compare it with the accuracy ratio before training, displayed onn the node named `untrainedAccuracy`.
 
 <center>
 
@@ -248,7 +248,7 @@ Evaluated model let us observe the accuracy ratio after training process, in the
 
 </center>
 
-In Node editor we can look at `main` function in full effect.
+In the Node Editor we can look at `main` function in full effect.
 
 <center>
 
