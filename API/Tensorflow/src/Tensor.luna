@@ -1,10 +1,7 @@
-import Tensorflow.CWrappers.Tensor
-
-import Std.Foreign
-import Std.Foreign.C.Value
-
-import Tensorflow.Types
 import Tensorflow.CWrappers.Helpers
+import Tensorflow.CWrappers.Tensor
+import Tensorflow.GeneratedOps
+import Tensorflow.Types
 
 # Internal.
 # Arguments:
