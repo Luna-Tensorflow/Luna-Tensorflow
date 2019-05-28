@@ -15,13 +15,11 @@ import Tensorflow.GeneratedOps
 
 import Tensorflow.Test
 
-import Dataframes.Table
+# import Dataframes.Table
 
 
 def main:
-   l = [1,2,3,2,4,3]
-   "gg = l.groupBy id - this breaks"
-   print gg.toJSON
+   vartest
    fromPngDir1 = Tensors.fromPngDir "."
    print (fromPngDir1 . toText)
    fromPng1 = Tensors.fromPng "flag.png"

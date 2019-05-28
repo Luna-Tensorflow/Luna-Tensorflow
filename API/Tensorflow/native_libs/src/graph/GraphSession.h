@@ -44,7 +44,7 @@ private:
 	std::unordered_set<TF_Operation*> side_effects;
 
 	void initialize_variables(const std::shared_ptr<State>& state) const; // this function is const as it doesnt modify the graph, despite modifying the mutable state, but it's used inside of eval which itself is rightfully const
- 	std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> read_variables() const; // TODO mark what's been updated
+ 	std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> read_variables() const; // TODO possible optimization: mark which variables have been updated and only fetch + update them, this could save some bandwidth, especially during inference when variables are not updated at all
 
  	std::vector<std::shared_ptr<Tensor>> eval_one_step(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions, bool apply_side_effects) const;
 

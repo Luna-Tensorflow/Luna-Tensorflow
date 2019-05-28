@@ -250,12 +250,21 @@ class Operations:
         out
 
     # Returns TFOutput with value of rectified linear unit on given TFOutput.
-    # Arguments: 
+    # Arguments:
     # `x` :: TFOutput a
     # `return` :: TFOutput a
     # relu :: TFOutput a -> TFOutput a
     def relu x:
         out = reluGen "" x x.typetag
+        out
+
+    # Returns TFOutput with value of softmax on given TFOutput.
+    # Arguments:
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # relu :: TFOutput a -> TFOutput a
+    def softmax x:
+        out = softmaxGen "" x x.typetag
         out
 
     # Returns TFOutput with value of sigmoid function on given TFOutput.

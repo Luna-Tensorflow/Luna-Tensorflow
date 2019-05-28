@@ -13,7 +13,7 @@ class DenseLayer a layerT:
       weights :: TFOutput a
       biases :: TFOutput a
       outputType :: a
-      parentLayer :: layerT # :: Layer # TODO no interfaces
+      parentLayer :: layerT
 
       # Returns Dense layer in Text type.
       # `return` :: Text
@@ -84,10 +84,11 @@ class Dense:
 
         name = getNextName "Dense"
 
+        None # TODO in the future we may add a way to initialize layer's default values to other than random
         winit = Tensors.random vartype [nOutputs, nInputs] (vartype.fromReal 0.0) (vartype.fromReal 1.0)
         binit = Tensors.random vartype [nOutputs, 1] (vartype.fromReal 0.0) (vartype.fromReal 1.0)
-        w = Variables.make (name + "w") winit  # TODO defaultValue, TODO name scope to layer - need a mechanism for prefixes
-        b = Variables.make (name + "b") binit # TODO j.w.
+        w = Variables.make (name + "w") winit
+        b = Variables.make (name + "b") binit
 
         d = DenseLayer name nOutputs w b parent.outputType parent
         d

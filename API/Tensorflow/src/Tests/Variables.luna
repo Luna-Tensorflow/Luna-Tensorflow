@@ -19,7 +19,7 @@ def vartest:
 
     y = x + c
 
-    0 # print y.toJSON # evals in default context, so should return 24 # TODO debug why this doesn't compile
+    print y.toJSON # evals in default context, so should return 24
 
     g2 = TFGraphMaker.makeFromOutput y
     (xout, st3) = g2.eval st2

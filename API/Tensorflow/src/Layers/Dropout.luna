@@ -8,7 +8,7 @@ import Tensorflow.GeneratedOps
 class DropoutLayer layerT:
     name :: Text
     rate :: Real
-    parentLayer :: layerT # :: Layer # TODO no interfaces
+    parentLayer :: layerT
 
     # Returns Dropout layer in Text type.
     # `return` :: Text

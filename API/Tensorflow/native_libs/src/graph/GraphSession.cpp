@@ -42,7 +42,6 @@ std::shared_ptr<EvaluationResult> GraphSession::eval(
             continue;
         }
 
-        // TODO maybe only print what's missing
         std::string err;
         err += "Not all placeholders are substituted!\n";
 

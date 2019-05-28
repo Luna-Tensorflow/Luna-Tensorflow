@@ -30,6 +30,7 @@ class OutputWrapper:
         name = cstr.toText
         name
 
+# TODO likely not used, remove
 def batchEval list:
     batchEvalSubstitutions list []
 

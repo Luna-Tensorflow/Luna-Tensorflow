@@ -48,7 +48,7 @@ class State:
         State wrapper
 
     def toJSON:
-        "TODO: better JSON"
+        "TODO: JSON could fetch all variables from the state (C++ support required)"
         "State".toJSON
 
 # State operations methods.

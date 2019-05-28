@@ -34,22 +34,3 @@ def testMerge:
     fitted = model.train [testX] [testY]
     print fitted.toJSON
 
-# this test summons implicit IO again, TODO fix it
-def testMergeImplicitIOError:
-    i =  Input.create FloatType [4, 1]
-    d1 = Dense.create 4 i
-    0 # a = Merge.add [i, d1]
-    d2 = Dense.create 1 d1
-
-    opt = GradientDescentOptimizer.create 0.1
-    loss = MeanErrors.meanSquareError
-
-    model = Models.make i d2 opt loss
-
-    print d2.toJSON
-
-    0 # Data only for testing that the flow works, we're not building a practical example here
-    testX = [Tensors.random FloatType [4, 1] 0.0 1.0]
-    testY = [Tensors.random FloatType [1, 1] 0.0 1.0]
-    fitted = model.train testX testY
-    print fitted.toJSON

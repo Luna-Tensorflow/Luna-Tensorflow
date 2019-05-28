@@ -5,7 +5,7 @@ import Tensorflow.Operations
 import Tensorflow.Graph
 import Tensorflow.Types
 
-# TODO FIXME add lift support to types other than Float
+# TODO add lift support to types other than Float
 # This may require further language support or at least features that are not yet available
 # lift1 :: (TFOutput a1 -> (List TFOutput b)) -> Tensor a1 -> (List Tensor b)
 def lift1 fun:

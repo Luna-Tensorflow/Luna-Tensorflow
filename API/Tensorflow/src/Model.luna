@@ -35,7 +35,8 @@ class Model a layerT:
       # `validation` :: Validation a b
       # `earlyStop`:: Int
       # `return` :: Model
-      # train :: List Tensor a -> List Tensor b -> Int -> Validation a b -> Int -> (List Real, Model) # TODO also consider real time visualization of loss in GUI
+      # TODO a future version may utilize Luna's streams to display live training progress in GUI
+      # train :: List Tensor a -> List Tensor b -> Int -> Validation a b -> Int -> (List Real, Model)
       def train xs ys epochs validation earlyStop:
           separateValidationVals = case validation of
               NoValidation: []
@@ -92,7 +93,7 @@ class Models:
         variables = output.trainableVariables
         traingraph = optimizer.makeOptimizingGraph yTruePlaceholder yPredTrain loss variables
 
-        initialState = StateOps.makeEmpty # TODO state initialization by layers
+        initialState = StateOps.makeEmpty
 
         Model evalgraph traingraph variables initialState output
 

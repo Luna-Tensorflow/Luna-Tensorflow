@@ -46,12 +46,6 @@ class Tensor a:
     def atIndex index:
         self.wrapper.atIndex index
 
-    # Returns multidimensional list from tensor.
-    # `return` :: List a
-    # toList :: List a
-    def toList:
-        throw "Function toList is deprecated and will be removed" # TODO remove
-
     # Returns flatten list from tensor.
     # `return` :: List a
     # toList :: List a
@@ -188,7 +182,7 @@ class Tensors:
         tensor = onesLikeGen "" x x.typetag . eval
         tensor
 
-    # Transposes a tensor (TODO better description)
+    # Transposes a tensor
     # Arguments:
     # `t` :: Tensor a
     # `return` :: Tensor a

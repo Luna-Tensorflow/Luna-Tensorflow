@@ -291,7 +291,7 @@ Tensor** batch_eval_op_placeholders(Output** outs, size_t op_count,
                 LifetimeManager::instance().accessOwned(ph_values[i]));
         }
 
-        auto r = graph.eval(substitutions, State::make_empty()); // TODO support for state
+        auto r = graph.eval(substitutions, State::make_empty());
         return LifetimeManager::instance().addOwnershipOfArray(r->outputs);
     };
 }

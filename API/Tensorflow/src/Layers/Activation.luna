@@ -7,7 +7,7 @@ import Tensorflow.CWrappers.Helpers
 class ActivationLayer a layerT:
     name :: Text
     activationFunction :: (TFOutput a) -> (TFOutput a)
-    parentLayer :: layerT # :: Layer # TODO no interfaces
+    parentLayer :: layerT
     outputType :: a # this type is forced in construction to unify activationFunction type
 
     # Returns Activation layer in Text type.
