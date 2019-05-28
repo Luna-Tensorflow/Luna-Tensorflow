@@ -87,8 +87,28 @@ def getData path:
     (xs, ys)
 
 ```
-
 ![](Screenshots/getData/getData.png)
+
+Function that calculates models accuracy, given test dataset with its labels.
+
+```
+def accuracy model xBatch yBatch:
+    scores = model.evaluate xBatch
+    scoresConst = Operations.makeConst scores
+    preds = Operations.argMax scoresConst 1
+
+    labelsConst = Operations.makeConst yBatch
+    actual = Operations.argMax labelsConst 1
+
+    comparisonBool = Operations.equal preds actual
+    comparison = Operations.cast comparisonBool FloatType
+    correct = Operations.sum comparison [0]
+    all = Operations.size comparison
+    allFloat = Operations.cast all FloatType
+    accuracy = correct / allFloat
+
+    accuracy.eval.atIndex 0
+```
 
 And last but not least, helper function to prepare the optimizing function used in a learning process:
 
@@ -245,6 +265,21 @@ Evaluated model lets us observe the accuracy ratio after training process, on th
 <center>
 
 ![](Screenshots/main/comparision.png)
+
+</center>
+
+We can even check models prediction on particular image. The path `data/test/3/6.png` means, that we use picture `6.png`, from object class folder `3`, that is one hot encoded by function `getData` with the same label. The extract function feeded with models output, shows the same prediction as expected.
+
+```
+    picture = Tensors.fromPng "data/test/3/6.png"
+    tp = testPicture trained picture
+    e = extract tp
+
+```
+
+<center>
+
+![](Screenshots/main/testPicture.png)
 
 </center>
 
