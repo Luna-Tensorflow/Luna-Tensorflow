@@ -49,7 +49,7 @@ class RMSProp:
               mom = Variables.make ("mom" + i.toText) zerosTensor
               applyRMSPropGen "" v ms mom lr rho momentum epsilon g v.typetag False
 
-          errWithSideEffect = Variables.sequence' err $ varsAndGrads.zip (0.upto (variables.length - 1)).map makeAndApplyRMSProp
+          errWithSideEffect = Variables.sequence' err $ varsAndGrads.zip (0.upto (variables.length - 1)) . map makeAndApplyRMSProp
 
           TFGraphMaker.makeFromOutput errWithSideEffect
 

@@ -55,7 +55,7 @@ class Adam:
               vAdam = Variables.make ("v" + i.toText) zerosTensor
               applyAdamGen "" v m vAdam beta1Power beta2Power lr beta1 beta2 epsilon g v.typetag False self.useNesterov
 
-          errWithSideEffect = Variables.sequence' err $ varsAndGrads.zip (0.upto (variables.length - 1)).map makeAndApplyAdam
+          errWithSideEffect = Variables.sequence' err $ varsAndGrads.zip (0.upto (variables.length - 1)) . map makeAndApplyAdam
 
           TFGraphMaker.makeFromOutput errWithSideEffect
 
