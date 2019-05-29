@@ -13,7 +13,7 @@
 //namespace
 //{
     Tensor* read_tensor_from_png_noerror(const char* filename) {
-        std::cerr<<"read_tensor_from_png_noerror "<<std::string(filename)<<std::endl;
+        LOG(std::string("read_tensor_from_png_noerror ") + filename + "\n");
         png::image <png::rgb_pixel> image(filename);
 
         int64_t width = image.get_width(), height = image.get_height();
@@ -37,6 +37,7 @@
 
 TFL_API Tensor* read_tensor_from_png(const char* filename, const char** outError) {
     return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(filename);
         return read_tensor_from_png_noerror(filename);
     };
 }
@@ -67,6 +68,7 @@ std::vector<std::string> png_files_in_directory(const char* path)
 
 TFL_API int png_files_in_directory_count(const char* path, const char** outError) {
     return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(path);
         return png_files_in_directory(path).size();
     };
 }
@@ -74,6 +76,7 @@ TFL_API int png_files_in_directory_count(const char* path, const char** outError
 TFL_API Tensor** read_tensor_arr_from_png_directory(const char* path, const char** outError)
 {
     return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(path);
         auto files = png_files_in_directory(path);
         std::vector<Tensor*> tensors(files.size());
         std::transform(files.begin(), files.end(), tensors.begin(), [](std::string& path)

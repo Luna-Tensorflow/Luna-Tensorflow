@@ -258,11 +258,11 @@ class Operations:
         out = reluGen "" x x.typetag
         out
 
-    # Returns TFOutput with value of softmax on given TFOutput.
+    # Returns TFOutput with value of softmax function on given TFOutput.
     # Arguments:
     # `x` :: TFOutput a
     # `return` :: TFOutput a
-    # relu :: TFOutput a -> TFOutput a
+    # softmax :: TFOutput a -> TFOutput a
     def softmax x:
         out = softmaxGen "" x x.typetag
         out
@@ -385,7 +385,7 @@ class Operations:
     # partial :: TFOutput a -> TFOutput a -> TFOutput a
     def partial a b:
         wrapper = makePartialDerivativeWrapper a.wrapper b.wrapper
-        TFOutput wrapper
+        TFOutput wrapper a.typetag
 
     # Arguments:
     # `a` :: TFOutput a
@@ -396,7 +396,7 @@ class Operations:
         dim = self.constFromScalar Int32Type 1
 
         wrapper = makeBinaryOpWrapper "Sum" mult.wrapper dim.wrapper
-        TFOutput wrapper
+        TFOutput wrapper a.typetag
 
     # Returns TFOutput with value of computed 2-D convolution with given 4-D input and filter tensors. 
     # Arguments: 
@@ -441,3 +441,46 @@ class Operations:
             callHandlingError "add_attr_type" None [attrList.toCArg, nameCStr.toCArg, CInt32.fromInt typetag.num . toCArg]
         wrappers = makeOutputWrappers "RandomUniform" [shape] 2 attrList ""
         TFOutput wrappers.head.get typetag
+
+    # Arguments:
+    # `input` :: TFOutput a
+    # `dimension` :: Int
+    # `return` :: TFOutput Int32Type
+    # argMax :: TFOutput a -> Int -> TFOutput Int32Type
+    def argMax input dimension:
+        dim = Operations.constFromScalar Int32Type dimension
+        out = argMaxGen "" input dim input.typetag dim.typetag Int32Type
+
+    # Arguments:
+    # `input` :: TFOutput a
+    # `return` :: TFOutput Int32Type
+    # size :: TFOutput a -> TFOutput Int32Type
+    def size input:
+        out = sizeGen "" input input.typetag Int32Type
+        out
+
+    # Arguments
+    # `x` :: TFOutput a
+    # `dstType` :: b
+    # `return` :: TFOutput b
+    # cast :: TFOutput a -> b -> TFOutput b
+    def cast x dstType:
+        out = castGen "" x x.typetag dstType False
+
+    # Returns TFOutput filled with zeros with given type and shape of a given TFOutput
+    # Arguments:
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # zerosLike :: TFOutput a -> TFOutput a
+    def zerosLike x:
+        out = zerosLikeGen "" x x.typetag
+        out
+
+    # Returns TFOutput filled with ones with given type and shape of a given TFOutput
+    # Arguments:
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # onesLike :: TFOutput a -> TFOutput a
+    def onesLike x:
+        out = onesLikeGen "" x x.typetag
+        out

@@ -386,8 +386,8 @@ namespace {
         }
     }
 
-    double iterate_over_inputs(GraphSession* graph, const char** ph_names, Tensor** ph_values, uint32_t ph_count,
-            std::shared_ptr<State>& state, uint32_t start_index, uint32_t end_index, bool apply_side_effects = true) {
+    double iterate_over_inputs(std::shared_ptr<GraphSession> &graph, const char** ph_names, Tensor** ph_values, uint32_t ph_count,
+            uint32_t start_index, uint32_t end_index, bool apply_side_effects = true) {
         std::map<std::string, std::shared_ptr<Tensor>> substitutions;
         double running_loss = 0;
         for (uint32_t input_index = start_index; input_index < end_index; ++input_index) {
@@ -395,18 +395,15 @@ namespace {
                 substitutions.emplace(std::string(ph_names[ph]),
                                       LifetimeManager::instance().accessOwned(ph_values[input_index * ph_count + ph]));
             }
-            std::shared_ptr<EvaluationResult> eval_result = graph->eval(substitutions, state, apply_side_effects);
-            running_loss += to_double(eval_result->outputs[0], 0);
-            if (apply_side_effects) {
-                state = eval_result->result_state;
-            }
+            std::vector<std::shared_ptr<Tensor>> eval_results = graph->eval_one_step(substitutions, apply_side_effects);
+            running_loss += to_double(eval_results[0], 0);
             substitutions.clear();
         }
         return running_loss / (end_index - start_index);
     }
 }
 
-void** train(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
+void** train(GraphSession* graphPtr, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
                  size_t inputs_count, uint32_t epochs, uint32_t validation_samples, uint32_t early_stop,
                  const char **outError){
     return TRANSLATE_EXCEPTION(outError) {
@@ -415,6 +412,9 @@ void** train(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor
         std::map<std::string, std::shared_ptr<Tensor>> substitutions;
         std::shared_ptr<State> state = LifetimeManager::instance().accessOwned(initial);
         std::vector<double> loss_history;
+        std::shared_ptr<GraphSession> graph = LifetimeManager::instance().accessOwned(graphPtr);
+
+        graph->initialize_variables(state);
 
         void **ret = static_cast<void**>(malloc(3 * sizeof(void*))); // needs to be freed by caller
         auto actual_epochs = static_cast<uint32_t*>(malloc(sizeof(uint32_t))); // needs to be freed by caller
@@ -423,12 +423,12 @@ void** train(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor
         uint32_t epochs_without_improvement = 0;
 
         for (*actual_epochs = 0; *actual_epochs < epochs && (epochs_without_improvement < early_stop || early_stop == 0); ++*actual_epochs) {
-            double training_loss = iterate_over_inputs(graph, ph_names, ph_values, ph_count, state, validation_samples,
+            double training_loss = iterate_over_inputs(graph, ph_names, ph_values, ph_count, validation_samples,
                     inputs_count, true);
             if (validation_samples == 0) {
                 loss_history.push_back(training_loss);
             } else {
-                loss_history.push_back(iterate_over_inputs(graph, ph_names, ph_values, ph_count, state, 0,
+                loss_history.push_back(iterate_over_inputs(graph, ph_names, ph_values, ph_count, 0,
                         validation_samples, false));
             }
             if (early_stop > 0 && *actual_epochs > 0) {
@@ -443,19 +443,24 @@ void** train(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor
         ret[1] = malloc(*actual_epochs * sizeof(double)); // needs to be freed by caller
         memcpy(ret[1], loss_history.data(), *actual_epochs * sizeof(double));
 
+        state = state->updated(graph->read_variables());
+
         ret[0] = static_cast<void*>(LifetimeManager::instance().addOwnership(state));
 
         return ret;
     };
 }
 
-State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
+State* fold_eval(GraphSession* graphPtr, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
                          size_t inputs_count, uint32_t epochs, const char **outError){
     return TRANSLATE_EXCEPTION(outError) {
         FFILOG(graph, ph_names, ph_count, ph_values, initial, inputs_count, epochs);
 
         std::map<std::string, std::shared_ptr<Tensor>> substitutions;
         std::shared_ptr<State> state = LifetimeManager::instance().accessOwned(initial);
+        std::shared_ptr<GraphSession> graph = LifetimeManager::instance().accessOwned(graphPtr);
+
+        graph->initialize_variables(state);
 
         for (uint32_t epoch = 0; epoch < epochs; ++epoch) {
             for (size_t input_index = 0; input_index < inputs_count; ++input_index) {
@@ -463,10 +468,12 @@ State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Te
                     substitutions.emplace(std::string(ph_names[ph]),
                                           LifetimeManager::instance().accessOwned(ph_values[input_index * ph_count + ph]));
                 }
-                state = graph->eval(substitutions, state)->result_state;
+                graph->eval_one_step(substitutions);
                 substitutions.clear();
             }
         }
+
+        state = state->updated(graph->read_variables());
 
         return LifetimeManager::instance().addOwnership(state);
     };

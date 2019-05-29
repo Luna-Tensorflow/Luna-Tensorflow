@@ -3,3 +3,6 @@ cmake-build-debug/
 venv/
 __pycache__
 scripts/
+state.tf
+tensors.tf
+classification.tf

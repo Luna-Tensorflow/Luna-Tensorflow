@@ -47,6 +47,8 @@ trace_io_transform(char const* fmt, ...)
     fprintf(stderr, "TRANSFORM_IO: ");
     vfprintf(stderr, fmt, va);
     va_end(va);
+#else
+    (void)fmt;
 #endif
 }
 #define TRACE_IO_TRANSFORM trace_io_transform

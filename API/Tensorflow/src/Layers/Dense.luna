@@ -35,7 +35,7 @@ class DenseLayer a layerT:
       # `return` :: List Int
       # shape :: List Int
       def shape:
-          [self.nOutputs, 1]
+          [self.nOutputs]
 
       # Computes output on this layer after feeding with data from previous one.
       # Arguments:
@@ -44,7 +44,7 @@ class DenseLayer a layerT:
       # forward :: TFOutput a -> TFOutput a
       def forward inp:
           in = self.parentLayer.forward inp
-          prod = Operations.matMul self.weights in
+          prod = Operations.matMul in self.weights
           result = Operations.add prod self.biases
           result
 
@@ -55,7 +55,7 @@ class DenseLayer a layerT:
       # eval :: TFOutput a -> TFOutput a
       def eval inp:
           in = self.parentLayer.eval inp
-          prod = Operations.matMul self.weights in
+          prod = Operations.matMul in self.weights
           result = Operations.add prod self.biases
           result
 
@@ -77,18 +77,17 @@ class Dense:
     # create :: Int -> Layer -> Layer
     def create nOutputs parent:
         nInputs = case parent.shape of
-            [x, 1]: x
-            _: throw $ "Dense layer requires its input to be a flat tensor n x 1"
+            [x]: x
+            _: throw $ "Dense layer requires its input to be a tensor with dimensions batch_size x num_features"
 
         vartype = parent.outputType
 
         name = getNextName "Dense"
 
-        None # TODO in the future we may add a way to initialize layer's default values to other than random
-        winit = Tensors.random vartype [nOutputs, nInputs] (vartype.fromReal 0.0) (vartype.fromReal 1.0)
-        binit = Tensors.random vartype [nOutputs, 1] (vartype.fromReal 0.0) (vartype.fromReal 1.0)
-        w = Variables.make (name + "w") winit
-        b = Variables.make (name + "b") binit
+        winit = Tensors.random vartype [nInputs, nOutputs] (vartype.fromReal 0.01.negate) (vartype.fromReal 0.01)
+        binit = Tensors.random vartype [1, nOutputs] (vartype.fromReal 0.01.negate) (vartype.fromReal 0.01)
+        w = Variables.make (name + "w") winit  # TODO defaultValue, TODO name scope to layer - need a mechanism for prefixes
+        b = Variables.make (name + "b") binit # TODO j.w.
 
         d = DenseLayer name nOutputs w b parent.outputType parent
         d

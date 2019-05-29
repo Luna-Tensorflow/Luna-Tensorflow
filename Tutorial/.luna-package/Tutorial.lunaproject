@@ -1,0 +1,25 @@
+modulesSettings:
+  src/Main.luna:
+    typeRepToVisMap:
+    - - tag: TCons
+        contents:
+        - Tensor
+        - - tag: TCons
+            contents:
+            - FloatType
+            - []
+      - - ! 'LunaVisualizer: base: json'
+        - base/json/json.html
+    currentBreadcrumb: main
+    breadcrumbsSettings:
+    - - items: []
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[-437.0,-2.0,0.0,1.0]]'
+          screenToLogical: ! '[[1.0,0.0,0.0,0.0],[0.0,1.0,0.0,0.0],[0.0,0.0,1.0,0.0],[437.0,2.0,0.0,1.0]]'
+          lastInverse: 0
+    - - items:
+        - main
+      - breadcrumbCameraSettings:
+          logicalToScreen: ! '[[0.9124634936018265,0.0,0.0,0.0],[0.0,0.9124634936018265,0.0,0.0],[0.0,0.0,1.0,0.0],[-4706.729562844765,-429.07770736274136,0.0,1.0]]'
+          screenToLogical: ! '[[1.0959342560135035,0.0,0.0,0.0],[0.0,1.0959342560135035,0.0,0.0],[0.0,0.0,1.0,0.0],[5158.26616171304,470.24095799056573,0.0,1.0]]'
+          lastInverse: 0

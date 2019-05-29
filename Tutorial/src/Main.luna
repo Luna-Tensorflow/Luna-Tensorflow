@@ -1,0 +1,105 @@
+import Std.Base
+import Tensorflow.Tensor
+import Tensorflow.Types
+import Tensorflow.Layers.Input
+import Tensorflow.Layers.Dense
+import Tensorflow.Layers.Reshape
+import Tensorflow.Operations
+import Tensorflow.Losses.Crossentropy
+import Tensorflow.Optimizers.Adam
+import Tensorflow.Model
+
+«24»def labelsCount:
+    «25»10
+
+«19»def nTimes n val:
+    «20»def helper acc m:
+        «21»if m > 0 then helper (acc.prepend val) (m - 1) else acc
+    «22»helper [] n
+
+«47»def oneHot label:
+    «48»oneHotList = 0.upto (labelsCount - 1) . each l: «49»if l == label then 1.0 else 0.0
+    «50»Tensors.fromList FloatType [labelsCount] oneHotList
+
+«6»def getData path:
+    «7»labels = 0.upto (labelsCount - 1)
+    «18»labelTensors = labels.each oneHot
+    «8»tensorLists = labels.each label: «9»Tensors.fromPngDir (path + "/" + label.toText)
+    «80»ys = labelTensors.zip tensorLists . flatMap ((label, tList): «83»(nTimes tList.length label))
+    «82»xs = tensorLists.concat
+    «13»(xs, ys)
+
+«54»def accuracy model xBatch yBatch:
+    «55»scores = model.evaluate xBatch
+    «56»scoresConst = Operations.makeConst scores
+    «57»preds = Operations.argMax scoresConst 1
+
+    «58»labelsConst = Operations.makeConst yBatch
+    «59»actual = Operations.argMax labelsConst 1
+
+    «60»comparisonBool = Operations.equal preds actual
+    «69»comparison = Operations.cast comparisonBool FloatType
+    «61»correct = Operations.sum comparison [0]
+    «62»all = Operations.size comparison
+    «70»allFloat = Operations.cast all FloatType
+    «63»accuracy = correct / allFloat
+
+    «64»accuracy.eval.atIndex 0
+
+«71»def prepareOptimizer:
+    «72»beta1 = 0.9
+    «73»beta1Power = beta1
+    «74»beta2 = 0.999
+    «75»beta2Power = beta2
+    «76»lr = 0.001
+    «77»epsilon = 0.00000001
+    «78»useNesterov = False
+
+    «79»AdamOptimizer.create beta1Power beta2Power lr beta1 beta2 epsilon useNesterov
+
+«84»def extract label:
+    «86»labelConst = Operations.makeConst label
+    «87»output = Operations.argMax labelConst 1
+    «88»output.eval.atIndex 0
+
+«85»def testPicture model picture:
+    «89»batch = Tensors.batchFromList [picture]
+    «90»score = model.evaluate batch
+    score
+
+«0»def main:
+    «28»(xTrain, yTrain) = getData "data/train"
+    «29»(xTest, yTest) = getData "data/test"
+
+    «51»xTrainBatch = Tensors.batchFromList xTrain
+    «52»yTrainBatch = Tensors.batchFromList yTrain
+
+    «31»input = Input.create FloatType [28, 28, 3]
+    «32»reshape = Reshape.flatten input
+    «33»dense1 = Dense.createWithActivation 128 Operations.relu reshape
+    «34»dense2 = Dense.createWithActivation 10 Operations.softmax dense1
+
+    «41»optimizer = prepareOptimizer
+
+    «44»loss = Losses.categoricalCrossEntropy
+
+    «43»model = Models.make input dense2 optimizer loss
+
+    «65»xTestBatch = Tensors.batchFromList xTest
+    «66»yTestBatch = Tensors.batchFromList yTest
+
+    «67»untrainedAccuracy = accuracy model xTestBatch yTestBatch
+
+    «45»(h, trained) = model.train [xTrainBatch] [yTrainBatch] 30 (ValidationFraction 0.1) 0
+
+    «53»history = h
+
+    «68»trainedAccuracy = accuracy trained xTestBatch yTestBatch
+
+    «94»picture = Tensors.fromPng "data/test/0/1.png"
+    «95»tp = testPicture trained picture
+    «96»e = extract tp
+
+    None
+
+### META {"metas":[{"marker":7,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":18,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":1600}}}},{"marker":8,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":320}}}},{"marker":9,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":80,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":1920}}}},{"marker":83,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":82,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":640}}}},{"marker":13,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":96,"_vector2_x":1088}}}},{"marker":28,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":29,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":320}}}},{"marker":51,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":320}}}},{"marker":52,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":640,"_vector2_x":320}}}},{"marker":31,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":640}}}},{"marker":32,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":960}}}},{"marker":33,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":1280}}}},{"marker":34,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":1600}}}},{"marker":41,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":3840}}}},{"marker":44,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":4800}}}},{"marker":43,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":4480}}}},{"marker":65,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":5120}}}},{"marker":66,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":640,"_vector2_x":5120}}}},{"marker":67,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":5440}}}},{"marker":45,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":736,"_vector2_x":5200}}}},{"marker":53,"meta":{"_displayResult":false,"_selectedVisualizer":["LunaVisualizer: base: json","base/json/json.html"],"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":5440}}}},{"marker":68,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":640,"_vector2_x":5440}}}},{"marker":94,"meta":{"_displayResult":true,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":848,"_vector2_x":5104}}}},{"marker":95,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":848,"_vector2_x":5280}}}},{"marker":96,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":848,"_vector2_x":5440}}}},{"marker":72,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":73,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":320}}}},{"marker":74,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":0}}}},{"marker":75,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":320}}}},{"marker":76,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":640,"_vector2_x":320}}}},{"marker":77,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":640,"_vector2_x":320}}}},{"marker":78,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":640,"_vector2_x":320}}}},{"marker":79,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":640}}}},{"marker":25,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":20,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":21,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":22,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":320}}}},{"marker":48,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":49,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":50,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":320}}}},{"marker":89,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":90,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":320}}}},{"marker":55,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":56,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":320}}}},{"marker":57,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":640}}}},{"marker":58,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":320}}}},{"marker":59,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":640}}}},{"marker":60,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":960}}}},{"marker":69,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":2240}}}},{"marker":61,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":1280}}}},{"marker":62,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":1280}}}},{"marker":70,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":1600}}}},{"marker":63,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":1600}}}},{"marker":64,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":1920}}}},{"marker":86,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":87,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":320}}}},{"marker":88,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":640}}}}]}

@@ -145,3 +145,23 @@ def fromPngWrapper filename:
 
     managed = ManagedPointer None . fromPointer releaseMethod returnedPtr
     TensorWrapper managed FloatType
+
+
+def batchTensorWrappers wrappers:
+    wrappers' = wrappers.each id
+    count = wrappers'.length
+
+    carr = Pointer (Pointer None) . mallocElems count
+    indexed = 0.upto (count - 1) . zip wrappers'
+    indexed.each (idx, elem):
+        ptr = elem.ptr.ptr
+        carr.moveElems idx . write (PointerVal None ptr)
+
+    returnedPtr = callHandlingError "batch_tensors" (Pointer None) [carr.toCArg, CSize.fromInt count . toCArg]
+
+    managedPtr = ManagedPointer None . fromPointer releaseMethod returnedPtr
+    ret = TensorWrapper managedPtr wrappers.head.get.typetag
+
+    carr.free
+
+    ret

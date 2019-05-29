@@ -55,8 +55,8 @@ class Variables:
     # `list` :: List (TFOutput b)
     # `return` :: TFOutput b
     # sequence :: TFOutput a -> (TFOutput a -> TFOutput b) -> List (TFOutput b) -> TFOutput b
-    def sequence' initial f list:
-        list . foldLeft initial (elem: (f elem) >> )
+    def sequence' initial list:
+        list . foldLeft initial (elem: elem >> )
 
     # This is an operation that is meant to have no value, it may be used to build graphs that consist of only side effects. For now it's implemented as a constant, but it should be rewritten so that no TF operations can be done on it besides providing it as a first argument of apply and output to compute in a graph.
     # `return` :: ()

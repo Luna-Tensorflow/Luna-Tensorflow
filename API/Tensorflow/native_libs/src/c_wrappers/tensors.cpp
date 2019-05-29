@@ -143,6 +143,41 @@ TFL_API Tensor** load_tensors_from_file(const char* filename, int64_t count, con
     };
 }
 
+TFL_API Tensor* batch_tensors(const Tensor** tensors, size_t num_tensors, const char **outError) {
+    return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(tensors, num_tensors);
+        if (num_tensors == 0) {
+            throw std::runtime_error("Attempted to batch empty tensor list");
+        }
+
+        auto first_tensor = LifetimeManager::instance().accessOwned(tensors[0]);
+        std::vector<int64_t> first_tensor_shape = first_tensor->shape();
+        size_t first_tensor_size = TF_TensorByteSize(first_tensor->get_underlying());
+        TF_DataType first_tensor_type = first_tensor->getType();
+
+        std::vector<int64_t> ret_shape = first_tensor_shape;
+        ret_shape.insert(ret_shape.begin(), num_tensors);
+
+        TF_Tensor* ret_underlying = TF_AllocateTensor(first_tensor->getType(), ret_shape.data(), ret_shape.size(),
+                num_tensors * first_tensor_size);
+
+        for (size_t i = 0; i < num_tensors; ++i) {
+            if (tensors[i]->shape() != first_tensor_shape) {
+                throw std::runtime_error("Attempted to batch tensors with different shapes");
+            }
+            if (tensors[i]->getType() != first_tensor_type) {
+                throw std::runtime_error("Attempted to batch tensors with different types");
+            }
+            memcpy(static_cast<char*>(TF_TensorData(ret_underlying)) + i * first_tensor_size,
+                    TF_TensorData(tensors[i]->get_underlying()), first_tensor_size);
+        }
+
+        auto ret = std::make_shared<Tensor>(ret_underlying);
+
+        return LifetimeManager::instance().addOwnership(ret);
+    };
+}
+
 #define GET_TENSOR_VALUE_AT(typelabel) \
 TFL_API Type<typelabel>::lunatype get_tensor_value_at_##typelabel(Tensor *tensor, int64_t *idxs, size_t len, const char **outError) { \
     return TRANSLATE_EXCEPTION(outError) { \

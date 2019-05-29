@@ -1,5 +1,6 @@
 import Tensorflow.Tensor
 import Tensorflow.Types
+import Tensorflow.Operations
 
 def tensorTest:
     t1d = Tensors.fromList1d FloatType [1.0, 2.0, 3.0, 4.0]
@@ -23,9 +24,7 @@ def tensorTest:
     print t1.toJSON
     t2 = Tensors.zeros Int32Type [3, 3]
     print t2.toJSON
-    t3 = Tensors.onesLike t2
+    t3 = Operations.onesLike (Operations.makeConst t2) . eval
     print t3.toJSON
-    t4 = Tensors.zerosLike t1
+    t4 = Operations.zerosLike (Operations.makeConst t1) . eval
     print t4.toJSON
-
-    

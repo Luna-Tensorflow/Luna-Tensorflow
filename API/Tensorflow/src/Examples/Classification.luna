@@ -24,8 +24,8 @@ def generateTest n:
 
     testp = xys . each ((x,y):
         incircle = if x*x + y*y <= 1.0 then 1.0 else 0.0
-        t1 = Tensors.fromList FloatType [4,1] [x, x*x, y, y*y]
-        t2 = Tensors.fromList1d FloatType [incircle]
+        t1 = Tensors.fromList FloatType [1, 4] [x, x*x, y, y*y]
+        t2 = Tensors.fromList FloatType [1, 1] [incircle]
         (t1, t2))
 
     unzip testp
@@ -41,7 +41,7 @@ def exampleClassificationRMSProp:
     (testX, testY) = generateTest n
 
     print "Building net"
-    i  = Input.create FloatType [4, 1]
+    i  = Input.create FloatType [4]
     d1 = Dense.createWithActivation 10 Operations.tanh i
     d2 = Dropout.create 0.5 d1
     d3 = Dense.createWithActivation 1 Operations.sigmoid d2
@@ -56,7 +56,7 @@ def exampleClassificationRMSProp:
     (_, fitted) = model.train x y 10 (ValidationFraction 0.1) 0
 
     print "Evaluation"
-    predY = testX . each (tx: fitted.evaluate tx . head . get)
+    predY = testX . each fitted.evaluate
 
     result = (predY . zip testY) . fold 0.0 ((pY, tY): ((absPatch (pY.atIndex 0 - tY.atIndex 0)) . round 0 +) ) # 0 is ok, 1 is fail
 
@@ -73,7 +73,7 @@ def exampleClassificationGradientDescent:
     (testX, testY) = generateTest n
 
     print "Building net"
-    i =  Input.create FloatType [4, 1]
+    i =  Input.create FloatType [4]
     d1 = Dense.createWithActivation 3 Operations.tanh i
     d2 = Dense.createWithActivation 1 Operations.sigmoid d1
 
@@ -95,7 +95,7 @@ def exampleClassificationGradientDescent:
     loaded = model.loadWeights "classification.tf"
 
     print "Evaluation"
-    predY = testX . each (tx: loaded.evaluate tx . head . get)
+    predY = testX . each loaded.evaluate
 
     result = (predY . zip testY) . fold 0.0 ((pY, tY): ((absPatch (pY.atIndex 0 - tY.atIndex 0)) . round 0 +) ) # 0 is ok, 1 is fail
 

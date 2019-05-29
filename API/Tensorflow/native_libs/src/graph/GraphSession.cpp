@@ -175,8 +175,6 @@ GraphSession::eval_one_step(const std::map<std::string, std::shared_ptr<Tensor>>
     std::vector<TF_Output> placeholders_vars_v;
     std::vector<TF_Tensor *> tensor_v;
 
-    std::cerr<<"1" << std::endl;
-
     for (auto &elem : substitutions) {
         LOG("subs", elem.first, vec_to_string(elem.second->shape()));
         if (placeholders.find(elem.first) == placeholders.end()) //bypass obsolete substs

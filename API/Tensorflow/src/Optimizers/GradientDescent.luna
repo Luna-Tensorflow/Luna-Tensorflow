@@ -39,7 +39,7 @@ class GradientDescent:
               lr = Operations.constFromReal v.typetag self.lr
               applyGradientDescentGen "" v lr g v.typetag False
 
-          errWithSideEffect = Variables.sequence' err makeAndApplyGradientDescent varsAndGrads
+          errWithSideEffect = Variables.sequence' err $ varsAndGrads.map makeAndApplyGradientDescent
 
           TFGraphMaker.makeFromOutput errWithSideEffect
 

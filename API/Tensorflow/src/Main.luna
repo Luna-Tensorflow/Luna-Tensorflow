@@ -15,13 +15,19 @@ import Tensorflow.GeneratedOps
 
 import Tensorflow.Test
 
-# import Dataframes.Table
-
-
 def main:
-   vartest
-   fromPngDir1 = Tensors.fromPngDir "."
-   print (fromPngDir1 . toText)
-   fromPng1 = Tensors.fromPng "flag.png"
-   toText1 = fromPng1 . toText
-   None
+    testMain
+    vartest
+    lowlevelNetExample
+    exampleClassificationGradientDescent
+    exampleClassificationRMSProp
+    exampleConvolutional
+    tensorTest
+    tensorSerializationTest
+    tensorFromPngTest
+    testMerge
+    testMerge2
+    fromPngDir1 = Tensors.fromPngDir "."
+    print (fromPngDir1 . toText)
+    fromPng1 = Tensors.fromPng "flag.png"
+    toText1 = fromPng1 . toText

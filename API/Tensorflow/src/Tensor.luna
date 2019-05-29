@@ -2,6 +2,9 @@ import Tensorflow.CWrappers.Helpers
 import Tensorflow.CWrappers.Tensor
 import Tensorflow.GeneratedOps
 import Tensorflow.Types
+import Tensorflow.CWrappers.Helpers
+import Tensorflow.GeneratedOps
+import Tensorflow.Operations
 
 # Internal.
 # Arguments:
@@ -150,16 +153,6 @@ class Tensors:
         wrapper = createConstTensorWrapper typetag dims (typetag.fromReal 0.0)
         Tensor wrapper
 
-    # Creates const tensor of zeros with given type and shape of given tensor.
-    # Arguments: 
-    # `typetag` :: TypeTag
-    # `x` :: Tensor a
-    # `return` :: Tensor a
-    # zerosLike :: Typetag a -> Tensor a -> Tensor a
-    def zerosLike x:
-        zerosTensor = zerosLikeGen "" x x.typetag . eval
-        zerosTensor
-
     # Creates const tensor of ones with given type and dimensions.
     # Arguments: 
     # `typetag` :: TypeTag
@@ -170,16 +163,7 @@ class Tensors:
         wrapper = createConstTensorWrapper typetag dims (typetag.fromReal 1.0)
         Tensor wrapper
 
-    # Creates const tensor of ones with given type and shape of given tensor.
-    # Arguments: 
-    # `x` :: Tensor a
-    # `return` :: Tensor a
-    # onesLike :: Tensor a -> Tensor a
-    def onesLike x:
-        tensor = onesLikeGen "" x x.typetag . eval
-        tensor
-
-    # Transposes a tensor
+    # Transposes a tensor (TODO better description)
     # Arguments:
     # `t` :: Tensor a
     # `return` :: Tensor a
@@ -266,3 +250,13 @@ class Tensors:
         shape = [cols, 1]
         samples = lst'.each(l: Tensors.fromList FloatType shape l)
         samples
+
+    # Convert a list of tensors of the same shape and type to a tensor
+    # Arguments:
+    # `tensors` :: List (Tensor a)
+    # `return` :: Tensor a
+    # batchFromList :: List (Tensor a) -> Tensor a
+    def batchFromList tensors:
+        wrappers = tensors.each tensor: tensor.wrapper
+        retWrapper = batchTensorWrappers wrappers
+        Tensor retWrapper

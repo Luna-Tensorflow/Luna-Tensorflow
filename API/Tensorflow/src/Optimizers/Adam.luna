@@ -50,12 +50,12 @@ class Adam:
               beta2 = Operations.constFromReal v.typetag self.beta2
               epsilon = Operations.constFromReal v.typetag self.epsilon
 
-              zerosTensor = Tensors.zerosLike v
+              zerosTensor = Operations.zerosLike v . eval
               m = Variables.make ("m" + i.toText) zerosTensor
               vAdam = Variables.make ("v" + i.toText) zerosTensor
               applyAdamGen "" v m vAdam beta1Power beta2Power lr beta1 beta2 epsilon g v.typetag False self.useNesterov
 
-          errWithSideEffect = Variables.sequence' err makeAndApplyAdam $ varsAndGrads.zip (0.upto (variables.length - 1))
+          errWithSideEffect = Variables.sequence' err $ varsAndGrads.zip (0.upto (variables.length - 1)) . map makeAndApplyAdam
 
           TFGraphMaker.makeFromOutput errWithSideEffect
 

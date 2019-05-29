@@ -1,6 +1,7 @@
 import Tensorflow.Types
 import Tensorflow.Tensor
 import Tensorflow.Operations
+import Tensorflow.GeneratedOps
 
 # Most common loss functions.
 class Losses:
@@ -28,4 +29,14 @@ class Losses:
 
         added = (yTrue * (log yPred)) + ((ones - yTrue) * (log (ones - yPred)))
         out = Operations.neg (Operations.mean added [0])
+        out
+
+    # Categorical cross-entropy
+    # Arguments:
+    # `labels` :: TFOutput
+    # `features` :: TFOutput
+    # `return` :: TFOutput
+    # categoricalCrossEntropy :: TFOutput -> TFOutput -> TFOutput
+    def categoricalCrossEntropy labels features:
+        (out, _) = softmaxCrossEntropyWithLogitsGen "" features labels features.typetag
         out
