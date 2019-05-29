@@ -8,7 +8,6 @@
 
 #include "../helpers/utils.h"
 #include "../tensor/Tensor.h"
-#include "../helpers/LifeTimeManager.h"
 #include "../ops/Output.h"
 
 #include <any>
@@ -43,35 +42,35 @@ private:
 
 	std::map<std::string, VariableDesc> variables;
 	std::unordered_set<TF_Operation*> side_effects;
-
-	void initialize_variables(const std::shared_ptr<State>& state) const; // this function is const as it doesnt modify the graph, despite modifying the mutable state, but it's used inside of eval which itself is rightfully const
- 	std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> read_variables() const; // TODO mark what's been updated
-
- 	std::vector<std::shared_ptr<Tensor>> eval_one_step(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions) const;
-
 public:
-	GraphSession();
-	~GraphSession();
+    GraphSession();
 
-	bool exists(const Output* out);
+    ~GraphSession();
 
-	TF_Output add_output(const Output* out);
-	TF_Output get_output(const Output* out);
+    bool exists(const Output* out);
+    TF_Output add_output(const Output* out);
+    TF_Output get_output(const Output* out);
 
+    std::shared_ptr<EvaluationResult> eval(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions,
+		const std::shared_ptr<State>& state = State::make_empty(), bool apply_side_effects = true) const;
 
-	std::shared_ptr<EvaluationResult> eval(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions,
-		const std::shared_ptr<State>& state = State::make_empty()) const;
-
-	std::shared_ptr<EvaluationResult> eval(const std::shared_ptr<State>& state = State::make_empty()) const;
-
+    std::shared_ptr<EvaluationResult> eval(const std::shared_ptr<State>& state = State::make_empty()) const;
 	void register_output_hash(size_t hash, TF_Output &out);
-	void register_placeholder(const std::string& name, TF_Output &out);
 
-	void add_fetched_output(TF_Output out);
 
-	void register_sideefect(TF_Operation* effect);
+    void register_placeholder(const std::string& name, TF_Output &out);
 
+    void add_fetched_output(TF_Output out);
+
+    void register_sideefect(TF_Operation* effect);
 	void register_variable(const std::string& name, VariableDesc variableDesc);
+
+    void initialize_variables(const std::shared_ptr<State>& state) const; // this function is const as it doesnt modify the graph, despite modifying the mutable state, but it's used inside of eval which itself is rightfully const
+
+    std::vector<std::shared_ptr<Tensor>> eval_one_step(const std::map<std::string, std::shared_ptr<Tensor>>& substitutions,
+            bool apply_side_effects = true) const;
+
+    std::vector<std::pair<std::string, std::shared_ptr<Tensor>>> read_variables() const; // TODO mark what's been updated
 
 	TF_Graph* get_underlying();
 

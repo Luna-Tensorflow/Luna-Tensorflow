@@ -76,8 +76,9 @@ Tensor* get_value_from_state(State* ptr, const char* name, const char **outError
 	return TRANSLATE_EXCEPTION(outError) {
 		FFILOG(ptr, name);
 		auto stateptr = LifetimeManager::instance().accessOwned(ptr);
-		auto tensor = ptr->get(std::string(name));
-		if (tensor == nullptr) return static_cast<Tensor*>(nullptr);
+        std::string namestr = name;
+		auto tensor = ptr->get(namestr);
+		if (tensor == nullptr) throw std::runtime_error("No value found in state for " + namestr);
 		return LifetimeManager::instance().addOwnership(tensor);
 	};
 }
@@ -93,6 +94,24 @@ Tensor** get_values_from_state(State* ptr, const char** names, size_t count, con
         });
 
         auto returned = stateptr->get(names_v);
+        for (size_t i = 0; i < returned.size(); ++i) {
+            if (returned[i] == nullptr) {
+                throw std::runtime_error("No value found in state for " + names_v[i]);
+            }
+        }
+
+        return LifetimeManager::instance().addOwnershipOfArray(returned);
+    };
+}
+
+Tensor** get_variable_values_from_state(State* ptr, const Output** vars, size_t count, const char **outError)
+{
+    return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(ptr, vars, count);
+        auto stateptr = LifetimeManager::instance().accessOwned(ptr);
+        auto outsarray = LifetimeManager::instance().accessOwnedArray(vars, count);
+
+        auto returned = stateptr->get_with_defaults(outsarray);
 
         return LifetimeManager::instance().addOwnershipOfArray(returned);
     };
@@ -141,6 +160,7 @@ Output* make_sequence(Output* sideefect, Output* value, const char **outError)
 
 Output **make_op(const char *name, Output **inputs, int ninputs, int noutputs, std::vector<std::shared_ptr<Attr>>* attr_list, const char *chosen_name, const char **outError) {
     return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(name, inputs, ninputs, noutputs, attr_list, chosen_name);
         if (attr_list == nullptr) {
             return make_op_helper(name, std::vector<Output *>(inputs, inputs + ninputs), {}, noutputs, chosen_name);
         }
@@ -181,26 +201,57 @@ Output *make_op_placeholder(const char* name, TF_DataType type, const char **out
     };
 }
 
-Output *make_op_const(Tensor *tensor, const char **outError) {
+Output *make_op_const(const char* name, Tensor *tensor, const char **outError) {
 	return TRANSLATE_EXCEPTION(outError) {
-		FFILOG(tensor);
+		FFILOG(name, tensor);
 		auto tensor_owned = LifetimeManager::instance().accessOwned(tensor);
 		return get_first_and_free(make_op_helper("Const", {}, {std::make_shared<AttrTensor>("value", *tensor_owned),
-											std::make_shared<AttrType>("dtype", tensor_owned->getType())}, 1, ""));
+											std::make_shared<AttrType>("dtype", tensor_owned->getType())}, 1, name));
 	};
+}
+
+namespace {
+    template<TF_DataType TypeLabel> Tensor make_tensor_from_real_helper(double value) {
+        auto x = static_cast<typename Type<TypeLabel>::tftype>(value);
+        return Tensor(&x, nullptr, 0, TypeLabel);
+    }
+
+    Tensor make_tensor_from_real(double value, TF_DataType type) {
+        switch (type) {
+            case TF_FLOAT: return make_tensor_from_real_helper<TF_FLOAT>(value);
+            case TF_DOUBLE: return make_tensor_from_real_helper<TF_DOUBLE>(value);
+            case TF_INT32: return make_tensor_from_real_helper<TF_INT32>(value);
+            case TF_INT64: return make_tensor_from_real_helper<TF_INT64>(value);
+            case TF_UINT32: return make_tensor_from_real_helper<TF_UINT32>(value);
+            case TF_UINT64: return make_tensor_from_real_helper<TF_UINT64>(value);
+            // TODO add more supported types
+            default: throw std::runtime_error("This type is not supported by constFromReal");
+        }
+    }
+}
+
+Output* make_op_const_from_real(const char* name, TF_DataType type, double value, const char **outError) {
+    return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(name, type, value);
+        auto tensor = make_tensor_from_real(value, type);
+        return get_first_and_free(make_op_helper("Const", {}, {std::make_shared<AttrTensor>("value", tensor),
+                                                               std::make_shared<AttrType>("dtype", tensor.getType())}, 1, name));
+    };
 }
 
 size_t operation_hashcode(Output *op, const char **outError) {
     return TRANSLATE_EXCEPTION(outError) {
         FFILOG(op);
-        return op->hashcode();
+        auto ptr = LifetimeManager::instance().accessOwned(op);
+        return ptr->hashcode();
     };
 }
 
 Tensor *eval_op(Output *op, const char **outError) {
     return TRANSLATE_EXCEPTION(outError) {
         FFILOG(op);
-        return LifetimeManager::instance().addOwnership(op->eval());
+        auto ptr = LifetimeManager::instance().accessOwned(op);
+        return LifetimeManager::instance().addOwnership(ptr->eval());
     };
 }
 
@@ -240,7 +291,7 @@ Tensor** batch_eval_op_placeholders(Output** outs, size_t op_count,
                 LifetimeManager::instance().accessOwned(ph_values[i]));
         }
 
-        auto r = graph.eval(substitutions, State::make_empty()); // TODO support for state
+        auto r = graph.eval(substitutions, State::make_empty());
         return LifetimeManager::instance().addOwnershipOfArray(r->outputs);
     };
 }
@@ -315,23 +366,127 @@ void** eval_graph_with_placeholders(GraphSession *graph,
     };
 }
 
-State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
-                         size_t fold_count, const char **outError){
+#define CASE(typelabel) case typelabel: return static_cast<double>(tensor->at<typelabel>(index));
+
+namespace {
+    double to_double(std::shared_ptr<Tensor> tensor, int64_t index) {
+        switch(tensor->getType()) {
+            CASE(TF_FLOAT)
+            CASE(TF_DOUBLE)
+            CASE(TF_INT8)
+            CASE(TF_INT16)
+            CASE(TF_INT32)
+            CASE(TF_INT64)
+            CASE(TF_UINT8)
+            CASE(TF_UINT16)
+            CASE(TF_UINT32)
+            CASE(TF_UINT64)
+            default:
+                throw std::runtime_error("Loss type not supported");
+        }
+    }
+
+    double iterate_over_inputs(std::shared_ptr<GraphSession> &graph, const char** ph_names, Tensor** ph_values, uint32_t ph_count,
+            uint32_t start_index, uint32_t end_index, bool apply_side_effects = true) {
+        std::map<std::string, std::shared_ptr<Tensor>> substitutions;
+        double running_loss = 0;
+        for (uint32_t input_index = start_index; input_index < end_index; ++input_index) {
+            for (size_t ph = 0; ph < ph_count; ++ph) {
+                substitutions.emplace(std::string(ph_names[ph]),
+                                      LifetimeManager::instance().accessOwned(ph_values[input_index * ph_count + ph]));
+            }
+            std::vector<std::shared_ptr<Tensor>> eval_results = graph->eval_one_step(substitutions, apply_side_effects);
+            running_loss += to_double(eval_results[0], 0);
+            substitutions.clear();
+        }
+        return running_loss / (end_index - start_index);
+    }
+}
+
+void** train(GraphSession* graphPtr, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
+                 size_t inputs_count, uint32_t epochs, uint32_t validation_samples, uint32_t early_stop,
+                 const char **outError){
     return TRANSLATE_EXCEPTION(outError) {
-        FFILOG(graph, ph_names, ph_count, ph_values, initial, fold_count);
+        FFILOG(graph, ph_names, ph_count, ph_values, initial, inputs_count, epochs, validation_samples, early_stop);
 
         std::map<std::string, std::shared_ptr<Tensor>> substitutions;
         std::shared_ptr<State> state = LifetimeManager::instance().accessOwned(initial);
+        std::vector<double> loss_history;
+        std::shared_ptr<GraphSession> graph = LifetimeManager::instance().accessOwned(graphPtr);
 
-        for(size_t epoch=0; epoch < fold_count; ++epoch)
-        {
-            for(size_t ph = 0; ph < ph_count; ++ ph)
-                substitutions.emplace(std::string(ph_names[ph]),
-                                      LifetimeManager::instance().accessOwned(ph_values[epoch * ph_count + ph]));
-            state = graph->eval(substitutions, state)->result_state;
-            substitutions.clear();
+        graph->initialize_variables(state);
+
+        void **ret = static_cast<void**>(malloc(3 * sizeof(void*))); // needs to be freed by caller
+        auto actual_epochs = static_cast<uint32_t*>(malloc(sizeof(uint32_t))); // needs to be freed by caller
+        ret[2] = actual_epochs;
+
+        uint32_t epochs_without_improvement = 0;
+
+        for (*actual_epochs = 0; *actual_epochs < epochs && (epochs_without_improvement < early_stop || early_stop == 0); ++*actual_epochs) {
+            double training_loss = iterate_over_inputs(graph, ph_names, ph_values, ph_count, validation_samples,
+                    inputs_count, true);
+            if (validation_samples == 0) {
+                loss_history.push_back(training_loss);
+            } else {
+                loss_history.push_back(iterate_over_inputs(graph, ph_names, ph_values, ph_count, 0,
+                        validation_samples, false));
+            }
+            if (early_stop > 0 && *actual_epochs > 0) {
+                if (loss_history[*actual_epochs] < loss_history[*actual_epochs - 1]) {
+                    epochs_without_improvement = 0;
+                } else {
+                    ++epochs_without_improvement;
+                }
+            }
         }
 
+        ret[1] = malloc(*actual_epochs * sizeof(double)); // needs to be freed by caller
+        memcpy(ret[1], loss_history.data(), *actual_epochs * sizeof(double));
+
+        state = state->updated(graph->read_variables());
+
+        ret[0] = static_cast<void*>(LifetimeManager::instance().addOwnership(state));
+
+        return ret;
+    };
+}
+
+State* fold_eval(GraphSession* graphPtr, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
+                         size_t inputs_count, uint32_t epochs, const char **outError){
+    return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(graph, ph_names, ph_count, ph_values, initial, inputs_count, epochs);
+
+        std::map<std::string, std::shared_ptr<Tensor>> substitutions;
+        std::shared_ptr<State> state = LifetimeManager::instance().accessOwned(initial);
+        std::shared_ptr<GraphSession> graph = LifetimeManager::instance().accessOwned(graphPtr);
+
+        graph->initialize_variables(state);
+
+        for (uint32_t epoch = 0; epoch < epochs; ++epoch) {
+            for (size_t input_index = 0; input_index < inputs_count; ++input_index) {
+                for (size_t ph = 0; ph < ph_count; ++ph) {
+                    substitutions.emplace(std::string(ph_names[ph]),
+                                          LifetimeManager::instance().accessOwned(ph_values[input_index * ph_count + ph]));
+                }
+                graph->eval_one_step(substitutions);
+                substitutions.clear();
+            }
+        }
+
+        state = state->updated(graph->read_variables());
+
         return LifetimeManager::instance().addOwnership(state);
+    };
+}
+
+const char* get_operation_name(Output* output, const char** outError) {
+    return TRANSLATE_EXCEPTION(outError) {
+        FFILOG(output);
+        auto o = LifetimeManager::instance().accessOwned(output);
+        const char* name = o->get_binder()->get_name();
+        if (name == nullptr) {
+            throw std::runtime_error("This operation doesn't support `get_name`");
+        }
+        return name;
     };
 }

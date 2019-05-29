@@ -122,7 +122,7 @@ def output_arg_typetag(output_arg, op):
 
     for input_arg in op.input_arg:
         if input_arg.type_attr == output_arg.type_attr:
-            return '{}.wrapper.typetag'.format(lunify_name(input_arg.name))
+            return '{}.typetag'.format(lunify_name(input_arg.name))
 
     return lunify_name(output_arg.type_attr)
 
@@ -133,7 +133,7 @@ def op_code(operation):
     nattrs = len(operation.attr)
 
     head = 'def ' + lunify_name(operation.name)
-    head += 'Gen'  # TODO: this is only temporary, to avoid conflict with existing functions
+    head += 'Gen'
     head += ' chosenName'
     for i in range(nargs):
         head += ' ' + lunify_name(operation.input_arg[i].name)
@@ -152,20 +152,29 @@ def op_code(operation):
 
     make_wrappers = '    wrappers = makeOutputWrappers "' + operation.name + '" ['
     for i in range(nargs):
-        make_wrappers += lunify_name(operation.input_arg[i].name)
+        make_wrappers += lunify_name(operation.input_arg[i].name) + ".wrapper"
         if i < nargs - 1:
             make_wrappers += ', '
-    make_wrappers += '] ['
-    for i in range(noutputs):
-        make_wrappers += output_arg_typetag(operation.output_arg[i], operation)
-        if i < noutputs - 1:
-            make_wrappers += ', '
-    make_wrappers += '] attrList chosenName\n'
+    make_wrappers += ']'
+    make_wrappers += ' ' + str(noutputs)
+    # for i in range(noutputs):
+    #     make_wrappers += output_arg_typetag(operation.output_arg[i], operation)
+    #     if i < noutputs - 1:
+    #         make_wrappers += ', '
+    make_wrappers += ' attrList chosenName\n'
 
-    if noutputs == 1:
-        return_line = '    TFOutput wrappers.head.get'
+    if noutputs == 0:
+        return_line = '    None'
+    elif noutputs == 1:
+        return_line = '    TFOutput wrappers.head.get ' + output_arg_typetag(operation.output_arg[0], operation)
     else:
-        return_line = '    wrappers.each (wrapper: TFOutput wrapper)'
+        return_line = '    ('
+        for i in range(noutputs):
+            typetag = output_arg_typetag(operation.output_arg[i], operation)
+            return_line += f"TFOutput (wrappers.getAt {i}) {typetag}"
+            if i < noutputs - 1:
+                return_line += ', '
+        return_line += ')'
     return head + attr_setup + make_wrappers + return_line
 
 
@@ -182,8 +191,10 @@ ffi.cdef("""
     void TF_DeleteBuffer(TF_Buffer*);
 """)
 
-TF = ffi.dlopen('tensorflow')
+print("Loading the library")
+TF = ffi.dlopen('../../../tensorflow/lib/libtensorflow.so')
 
+print("Fetching operations list")
 ops = TF.TF_GetAllOpList()
 
 opList = op_def_pb2.OpList()
@@ -215,11 +226,18 @@ def is_supported(op):
     return not op.is_stateful and not has_tensor_list(op) and has_supported_types(op) and not is_internal(op)
 
 
+print("Generating wrappers")
+skipped = 0
+written = 0
 with open(generated_ops_file, 'w') as f:
     f.write(file_header)
     for op in opList.op:
         if is_supported(op):
             f.write('\n\n' + op_code(op))
+            written += 1
+        else:
+            skipped += 1
     f.write('\n')
 
 TF.TF_DeleteBuffer(ops)
+print(f"Written {written} supported operations, skipped {skipped}.")

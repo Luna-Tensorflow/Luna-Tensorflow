@@ -27,8 +27,12 @@ TFL_API void** eval_graph(GraphSession* graph, State* state, const char **outErr
 TFL_API void** eval_graph_with_placeholders(GraphSession* graph, const char** ph_names, Tensor** ph_values,
 		size_t ph_count, State* state, const char **outError);
 
+// returns the new state and loss history
+TFL_API void** train(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
+	size_t inputs_count, uint32_t epochs, uint32_t validation_samples, uint32_t early_stop, const char **outError);
+
 TFL_API State* fold_eval(GraphSession* graph, const char** ph_names, size_t ph_count, Tensor** ph_values, State* initial,
-	size_t foldCount, const char **outError);
+                         size_t inputs_count, uint32_t epochs, const char **outError);
 
 TFL_API Output* make_variable(const char* name, Tensor* val, const char **outError);
 TFL_API Output* make_sequence(Output* sideefect, Output* value, const char **outError);
@@ -36,12 +40,14 @@ TFL_API Output* make_sequence(Output* sideefect, Output* value, const char **out
 TFL_API State* make_empty_state(const char **outError);
 TFL_API Tensor* get_value_from_state(State* ptr, const char* name, const char **outError);
 TFL_API Tensor** get_values_from_state(State* ptr, const char** names, size_t count, const char **outError);
+TFL_API Tensor** get_variable_values_from_state(State* ptr, const Output** vars, size_t count, const char **outError);
 
 TFL_API State* update_value_state(State* ptr, const char* name, const Tensor* newvalue, const char **outError);
 TFL_API State* update_state(State* ptr, const char** names, const Tensor** newvalues, size_t count, const char **outError);
 
 TFL_API Output** make_op(const char *name, Output **inputs, int ninputs, int noutputs, std::vector<std::shared_ptr<Attr>> *attr_list, const char *chosen_name, const char **outError);
-TFL_API Output* make_op_const(Tensor* tensor, const char **outError);
+TFL_API Output* make_op_const(const char* name, Tensor* tensor, const char **outError);
+TFL_API Output* make_op_const_from_real(const char* name, TF_DataType type, double value, const char **outError);
 TFL_API Output* make_op_placeholder(const char* name, TF_DataType type, const char **outError);
 TFL_API Output* make_op_binary(const char* name, Output* a, Output* b, const char **outError);
 TFL_API Output* make_op_unary(const char* name, Output* a, const char **outError);
@@ -49,8 +55,10 @@ TFL_API Output* make_op_partial_derivative(Output* a, Output* b, const char **ou
 TFL_API size_t operation_hashcode(Output* op, const char **outError);
 TFL_API Tensor* eval_op(Output* op, const char **outError);
 
+TFL_API const char* get_operation_name(Output* output, const char** outError);
+
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif //FFITESTHELPER_OPERATIONS_H

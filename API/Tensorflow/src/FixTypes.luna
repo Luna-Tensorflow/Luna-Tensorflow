@@ -1,0 +1,53 @@
+import Tensorflow.Graph
+import Tensorflow.Optimizers.GradientDescent
+import Std.Base
+import Std.Time
+
+import Tensorflow.Lift
+import Tensorflow.Operations
+import Tensorflow.Tensor
+import Tensorflow.Gradient
+import Tensorflow.Types
+
+import Tensorflow.Model
+import Tensorflow.Graph
+import Tensorflow.Layers.Dense
+import Tensorflow.Layers.Input
+import Tensorflow.Layers.Reshape
+import Tensorflow.Layers.Layers
+import Tensorflow.Losses.MeanError
+import Tensorflow.Optimizers.Adam
+import Tensorflow.GeneratedOps
+import Tensorflow.CWrappers.Operations
+import Std.Foreign
+import Std.Foreign.C.Value
+import Tensorflow.CWrappers.Helpers
+import Tensorflow.CWrappers.Graph
+
+
+«7»def testModelVis:
+    «10»idata = Tensors.fromList FloatType [1, 4] [1.0,2.0,3.0,4.0]
+
+    «8»emptyState = StateOps.makeEmpty
+    «14»inp = Input.create FloatType [1, 4]
+    «9»d1 = Dense.create 5 inp
+    «11»d2 = Dense.createWithActivation 16 (Operations.tanh) d1
+
+    «22»vis = Layers.eval d1 emptyState idata
+    «23»visjs = vis.toJSON
+
+    «25»i = Operations.makeConst idata
+    «26»out = d1.eval i
+
+    «44»evalfunsig = d1.eval
+    «36»graph = TFGraphMaker.makeFromOutput out
+    «37»(res, state') = graph.eval emptyState
+    «38»tensor0 = res.getAt 0
+
+    «45»out2 = d1.eval i
+    «46»outputList = [out2]
+    «47»wrapper = makeGraphWrapperFromOutputList outputList
+    «49»tt = (outputList.getAt 0).typetag
+    «50»g = TFGraph wrapper outputList (outputList.getAt 0).typetag
+
+### META {"metas":[{"marker":10,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":0}}}},{"marker":8,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":960}}}},{"marker":14,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":0}}}},{"marker":9,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":320}}}},{"marker":11,"meta":{"_displayResult":false,"_selectedVisualizer":["LunaVisualizer: base: json","base/json/json.html"],"_position":{"fromPosition":{"_vector2_y":736,"_vector2_x":176}}}},{"marker":22,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":1280}}}},{"marker":23,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":1600}}}},{"marker":25,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":320,"_vector2_x":320}}}},{"marker":26,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":640,"_vector2_x":640}}}},{"marker":44,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":0,"_vector2_x":640}}}},{"marker":36,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":640,"_vector2_x":960}}}},{"marker":37,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":640,"_vector2_x":1280}}}},{"marker":38,"meta":{"_displayResult":true,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":640,"_vector2_x":1600}}}},{"marker":45,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":960,"_vector2_x":640}}}},{"marker":46,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":640,"_vector2_x":1920}}}},{"marker":47,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":496,"_vector2_x":2240}}}},{"marker":49,"meta":{"_displayResult":false,"_selectedVisualizer":["LunaVisualizer: base: json","base/json/json.html"],"_position":{"fromPosition":{"_vector2_y":688,"_vector2_x":2208}}}},{"marker":50,"meta":{"_displayResult":false,"_selectedVisualizer":null,"_position":{"fromPosition":{"_vector2_y":496,"_vector2_x":2560}}}}]}

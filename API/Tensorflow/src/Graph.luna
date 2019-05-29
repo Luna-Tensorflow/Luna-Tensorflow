@@ -3,79 +3,173 @@ import Tensorflow.CWrappers.State
 
 import Tensorflow.Operations
 import Tensorflow.Tensor
+import Tensorflow.Patches
 
+# Structure that contains variables values. 
 class State:
     wrapper :: StateWrapper
 
+    # Returns values of variables with given names.
+    # Arguments: 
+    # `typetag` :: TypeTag
+    # `names` :: List Text
+    # `return` :: List Tensor
+    # values :: TypeTag -> List Text -> List Tensor
     def values typetag names:
         wrappers = self.wrapper.values names
         wrappers . each(x: Tensor (x typetag))
 
+    # Returns value of variable with given name.
+    # Arguments:
+    # `typetag` :: TypeTag
+    # `name` :: Text
+    # `return` :: Tensor
+    # value :: TypeTag -> Text -> Tensor
     def value typetag name:
         wrapper = self.wrapper.value name
         Tensor (wrapper typetag)
 
+    # Updates single value.
+    # Arguments:
+    # `name` :: Text
+    # `value` :: TFOutput
+    # `return` :: State
+    # updateOne :: Text -> TFOutput -> State
     def updateOne name value:
-        0 # TODO
-        wrapper = self.wrapper.updateOne name value
-        State wrapper
+        self.update [(name, value)]
 
+    # Updates given values.
+    # Arguments: 
+    # `values` :: List Tuple2 Text Tensor
+    # `return` :: State
+    # update :: List Tuple2 Text Tensor -> State
     def update values:
-        wrapper = self.wrappers.update values
+        wrapper = self.wrapper.update values
         State wrapper
 
+    def toJSON:
+        "TODO: JSON could fetch all variables from the state (C++ support required)"
+        "State".toJSON
 
-# makeEmptyState :: State
-def makeEmptyState:
-    wrapper = emptyState
-    State wrapper
+# State operations methods.
+class StateOps:
+    StateOps
 
-# alterState :: State -> List Tuple2 Text Tensor -> State
-def alterState state values:
-    newstate = state . update values
-    newstate
+    # Creates empty state.
+    # `return` :: State
+    # makeEmpty :: State
+    def makeEmpty:
+        wrapper = emptyState
+        State wrapper
 
-# setVarInState :: State -> Text -> Tensor -> State
-def setVarInState state varname value:
-    newstate = state . updateOne varname value
-    newstate
+    # Modifies state with given values.
+    # Arguments: 
+    # `state` :: State 
+    # `values` :: List Tuple2 Text Tensor
+    # `return` :: State
+    # alter :: State -> List Tuple2 Text Tensor -> State
+    def alter state values:
+        newstate = state . update values
+        newstate
 
-class TFGraph:
-    wrapper :: GraphWrapper
-    outputs :: List (TFOutput)
+    # Puts new variable into given state.
+    # Arguments: 
+    # `state` :: State
+    # `varname` :: Text
+    # `value` :: Tensor
+    # `return` :: State
+    # setVariableValue :: State -> Text -> Tensor -> State
+    def setVariableValue state varname value:
+        newstate = state . updateOne varname value
+        newstate
 
-    # ptr :: ManagedPointer None
+    # Saves given variables from state into file.
+    # Arguments:
+    # `fname` :: Text
+    # `vars` :: List (TFOutput ErasedType)
+    # `state` :: State
+    # `return` :: ()
+    # saveVariables :: Text -> List Variable -> State -> ()
+    def saveVariables fname vars state:
+        saveVarsFromStateWrapper fname vars state.wrapper
+
+    # Loads given variables from file into state.
+    # `fname` :: Text
+    # `vars` :: List (TFOutput ErasedType) 
+    # `state` :: State
+    # `return` :: State
+    # loadVariables :: Text -> List Variable -> State -> State
+    def loadVariables fname vars state:
+        w = loadVarsToStateWrapper fname vars state.wrapper
+        State w
+
+# Structure that contains tensorflow Graph and evaluates choosen outputs.
+class TFGraph a:
+    wrapper :: GraphWrapper a
+    outputs :: List (TFOutput a)
+    typetag :: a
+
+    # Internal.
     def ptr:
         self.wrapper.ptr
 
+    # Evaluates TFGraph on given state.
+    # Arguments:
+    # `state` :: State
+    # `return` :: (List Tensor a, State)
     # eval :: State -> (List Tensor a, State)
     def eval state:
         self.evalSubsts state []
 
+    # Evaluates TFGraph on given state with given substitutions.
+    # Arguments: 
+    # `state` :: State
+    # `substs` :: List Tuple2 Text (Tensor a)
+    # `return` :: (List Tensor a, State)
     # evalSubsts :: State -> List Tuple2 Text (Tensor a) -> (List Tensor a, State)
     def evalSubsts state substs:
         (statewrapper, tensorwrappers) = self.wrapper.evalSubsts (self.outputs.length) substs state
 
-        tensors = (tensorwrappers . zip ((self . outputs) . map (x: x.typetag))) . each ((wrp, tag): Tensor (wrp tag))
+        tensors = (Patches.zip tensorwrappers ((self . outputs) . map (x: x.typetag))) . each ((wrp, tag): Tensor (wrp tag))
         newstate = State statewrapper
 
         (tensors, newstate)
 
+    # Returns TFGraph in JSON type.
+    # `return` :: JSON
     # toJSON :: JSON
     def toJSON:
         self.eval.toJSON
 
-
-    # foldEval :: List Text -> List List Tensor a -> State -> State
-    def foldEval placeholderNames placeholderVals initialState:
-        wrapper = self.wrapper.foldEval placeholderNames placeholderVals initialState
+    # Evaluates TFGraph on given state with list of following placeholders substitutions, ignoring intermediate results.
+    # Arguments: 
+    # `placeholderNames` :: List Text
+    # `placeholderVals` :: List List Tensor a
+    # `epochs` :: Int
+    # `initialState` :: State
+    # `return` :: State
+    # foldEval :: List Text -> List List Tensor a -> Int -> State -> State
+    def foldEval placeholderNames placeholderVals epochs initialState:
+        wrapper = self.wrapper.foldEval placeholderNames placeholderVals epochs initialState
         State wrapper
 
-# makeGraphFromOutputList :: List TFOutput -> TFGraph
-def makeGraphFromOutputList outputList:
-    wrapper = makeGraphWrapperFromOutputList outputList
-    TFGraph wrapper outputList
+# TFGraph building methods.
+class TFGraphMaker:
+    TFGraphMaker
 
-# makeGraphFromOutput :: TFOutput-> TFGraph
-def makeGraphFromOutput output:
-    makeGraphFromOutputList [output]
+    # Creates graph from list of outputs.
+    # Arguments: 
+    # `outputList` :: List TFOutput
+    # `return` :: TFGraph
+    # makeGraphFromOutputList :: List TFOutput -> TFGraph
+    def makeFromOutputList outputList:
+        wrapper = makeGraphWrapperFromOutputList outputList
+        TFGraph wrapper outputList (outputList.getAt 0).typetag
+
+    # Creates graph from single output.
+    # Arguments: 
+    # `output` :: TFOutput
+    # `return` :: TFGraph
+    # makeGraphFromOutput :: TFOutput-> TFGraph
+    def makeFromOutput output:
+        self.makeFromOutputList [output]

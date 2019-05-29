@@ -4,6 +4,7 @@ import Tensorflow.Operations
 
 import Tensorflow.Layers.Input
 import Tensorflow.Layers.Dense
+import Tensorflow.Layers.Dropout
 import Tensorflow.Optimizers.GradientDescent
 import Tensorflow.Optimizers.RMSProp
 import Tensorflow.Losses.MeanError
@@ -16,15 +17,15 @@ def unzip listpair: case listpair of
         (tailx, taily): ((Prepend x tailx), (Prepend y taily))
 
 def generateTest n:
-    xs = randomTensor FloatType [1, n] 2.0.negate 2.0 . toFlatList
-    ys = randomTensor FloatType [1, n] 2.0.negate 2.0 . toFlatList
+    xs = Tensors.random FloatType [1, n] 2.0.negate 2.0 . toFlatList
+    ys = Tensors.random FloatType [1, n] 2.0.negate 2.0 . toFlatList
 
     xys = xs . zip ys
 
     testp = xys . each ((x,y):
         incircle = if x*x + y*y <= 1.0 then 1.0 else 0.0
-        t1 = tensorFromList FloatType [4,1] [x, x*x, y, y*y]
-        t2 = tensorFromList1d FloatType [incircle]
+        t1 = Tensors.fromList FloatType [1, 4] [x, x*x, y, y*y]
+        t2 = Tensors.fromList FloatType [1, 1] [incircle]
         (t1, t2))
 
     unzip testp
@@ -33,28 +34,29 @@ def absPatch x:
     if x < 0.0 then x.negate else x
 
 def exampleClassificationRMSProp:
-    n = 1000
+    n = 100
     print "Loading data"
 
     (x,y) = generateTest n
     (testX, testY) = generateTest n
 
     print "Building net"
-    i = input FloatType [4, 1]
-    d1 = denseWithActivation 3 tanh i
-    d2 = denseWithActivation 1 sigmoid d1
+    i  = Input.create FloatType [4]
+    d1 = Dense.createWithActivation 10 Operations.tanh i
+    d2 = Dropout.create 0.5 d1
+    d3 = Dense.createWithActivation 1 Operations.sigmoid d2
 
     print "Compiling model"
-    opt = rmsPropOptimizer 0.1 0.9 0.9 0.00000001
-    loss = meanSquareError
+    opt  = RMSPropOptimizer.create 0.1 0.9 0.9 0.00000001
+    loss = MeanErrors.meanSquareError
 
-    model = makeModel i d2 opt loss
+    model = Models.make i d3 opt loss
 
     print "Training"
-    fitted = model.train x y
+    (_, fitted) = model.train x y 10 (ValidationFraction 0.1) 0
 
     print "Evaluation"
-    predY = testX . each (tx: fitted.evaluate tx . head . get)
+    predY = testX . each fitted.evaluate
 
     result = (predY . zip testY) . fold 0.0 ((pY, tY): ((absPatch (pY.atIndex 0 - tY.atIndex 0)) . round 0 +) ) # 0 is ok, 1 is fail
 
@@ -63,28 +65,37 @@ def exampleClassificationRMSProp:
     print ("Efficiency: " + (effic.toText) + "%")
 
 def exampleClassificationGradientDescent:
-    n = 1000
+    n = 100
     print "Loading data"
 
     (x,y) = generateTest n
+    (validationX, validationY) = generateTest (n / 10)
     (testX, testY) = generateTest n
 
     print "Building net"
-    i = input FloatType [4, 1]
-    d1 = denseWithActivation 3 tanh i
-    d2 = denseWithActivation 1 sigmoid d1
+    i =  Input.create FloatType [4]
+    d1 = Dense.createWithActivation 3 Operations.tanh i
+    d2 = Dense.createWithActivation 1 Operations.sigmoid d1
 
     print "Compiling model"
-    opt = gradientDescentOptimizer 0.1
-    loss = meanSquareError
+    opt = GradientDescentOptimizer.create 0.1
+    loss = MeanErrors.meanSquareError
 
-    model = makeModel i d2 opt loss
+    model = Models.make i d2 opt loss
 
     print "Training"
-    fitted = model.train x y
+    (history, fitted) = model.train x y 10 (ValidationSet validationX validationY) 2
+
+    print $ "Loss history: " + history.toText
+
+    print "Saving"
+    fitted.saveWeights "classification.tf"
+
+    print "Loading"
+    loaded = model.loadWeights "classification.tf"
 
     print "Evaluation"
-    predY = testX . each (tx: fitted.evaluate tx . head . get)
+    predY = testX . each loaded.evaluate
 
     result = (predY . zip testY) . fold 0.0 ((pY, tY): ((absPatch (pY.atIndex 0 - tY.atIndex 0)) . round 0 +) ) # 0 is ok, 1 is fail
 

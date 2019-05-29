@@ -1,12 +1,27 @@
 import Tensorflow.Operations
 
-def meanSquareError yTrue yPred:
-    diff = yTrue - yPred
-    sq = diff * diff
-    m = mean sq [0]
+# Most common mean error losses.
+class MeanErrors:
+    MeanErrors
 
-def meanAbsoluteError yTrue yPred:
-    diff = yTrue - yPred
-    ab = abs diff
-    m = mean ab [0]
+    # Mean square error loss function.
+    # Arguments:
+    # `yTrue` :: TFOutput
+    # `yPred` :: TFOutput
+    # `return` :: TFOutput
+    # meanSquareError :: TFOutput -> TFOutput -> TFOutput
+    def meanSquareError yTrue yPred:
+        diff = yTrue - yPred
+        out = Operations.mean (diff * diff) [0]
+        out
+
+    # Mean absolute error loss function.
+    # Arguments:
+    # `yTrue` :: TFOutput
+    # `yPred` :: TFOutput
+    # `return` :: TFOutput
+    # meanAbsoluteError :: TFOutput -> TFOutput -> TFOutput
+    def meanAbsoluteError yTrue yPred:
+        out = Operations.mean (Operations.abs (yTrue - yPred)) [0]
+        out
 

@@ -1,5 +1,8 @@
 import Tensorflow.Tests.TensorTest
+import Tensorflow.Tests.TensorSerialization
 import Tensorflow.Tests.Variables
+import Tensorflow.Tests.VisualizeNet
+import Tensorflow.Tests.TensorFromPNG
 
 import Tensorflow.Examples.LowlevelNet
 import Tensorflow.Examples.Classification
@@ -10,27 +13,21 @@ import Tensorflow.Tensor
 import Tensorflow.Operations
 import Tensorflow.GeneratedOps
 
-import Dataframes.Table
-
-def transposeTensor t:
-    c = makeConst t
-    perm = constFromList Int64Type [1,0]
-    transposed = transposeGen "" c perm c.typetag perm.typetag
-    t' = transposed.eval
-    t'
+import Tensorflow.Test
 
 def main:
-    print "hello"
-    0 # vartest
-    0 # lowlevelNetExample
-    0 # exampleClassificationGradientDescent
-    0 # exampleClassificationRMSProp
-    0 # exampleConvolutional
-    0 # tensorTest
-    t = tensorFromList2d FloatType [[1.0,2.0],[3.0,4.0],[5.0,6.0],[7.0,8.0]]
-    print t.toJSON
-    t' = transposeTensor t
-    print t'.toJSON
-    ra = randomTensor FloatType [10] 0.0 10.0
-    print ra.toJSON
-    print "done"
+    testMain
+    vartest
+    lowlevelNetExample
+    exampleClassificationGradientDescent
+    exampleClassificationRMSProp
+    exampleConvolutional
+    tensorTest
+    tensorSerializationTest
+    tensorFromPngTest
+    testMerge
+    testMerge2
+    fromPngDir1 = Tensors.fromPngDir "."
+    print (fromPngDir1 . toText)
+    fromPng1 = Tensors.fromPng "flag.png"
+    toText1 = fromPng1 . toText

@@ -1,0 +1,54 @@
+import Tensorflow.Layers.Merge
+import Tensorflow.Layers.Input
+import Tensorflow.Layers.Dense
+import Tensorflow.Optimizers.GradientDescent
+import Tensorflow.Losses.MeanError
+import Tensorflow.Model
+
+import Tensorflow.Tensor
+import Tensorflow.Types
+
+def testMerge:
+    i =  Input.create FloatType [4]
+    d1 = Dense.create 7 i
+    d2 = Dense.create 4 d1
+    d3 = Dense.create 4 d2
+    a = Merge.add d2 d3
+    out = Dense.create 1 a
+
+    opt = GradientDescentOptimizer.create 0.1
+    loss = MeanErrors.meanSquareError
+
+    model = Models.make i out opt loss
+
+    print out.toJSON
+
+    vars = out.trainableVariables
+    varnames = vars.each (v: v.wrapper.opName)
+    print "These variable names should be unique: "
+    print varnames.toJSON
+
+    0 # Data only for testing that the flow works, we're not building a practical example here
+    testX = Tensors.random FloatType [1, 4] 0.0 1.0
+    testY = Tensors.random FloatType [1, 1] 0.0 1.0
+    fitted = model.train [testX] [testY] 1 NoValidation 0
+    print fitted.toJSON
+
+# this test summons implicit IO again, TODO fix it
+def testMerge2:
+    i =  Input.create FloatType [4]
+    d1 = Dense.create 4 i
+    d2 = Dense.create 1 d1
+
+    opt = GradientDescentOptimizer.create 0.1
+    loss = MeanErrors.meanSquareError
+
+    model = Models.make i d2 opt loss
+
+    print d2.toJSON
+
+    0 # Data only for testing that the flow works, we're not building a practical example here
+    testX = [Tensors.random FloatType [1, 4] 0.0 1.0]
+    testY = [Tensors.random FloatType [1, 1] 0.0 1.0]
+    fitted = model.train testX testY 1 NoValidation 0
+    print fitted.toJSON

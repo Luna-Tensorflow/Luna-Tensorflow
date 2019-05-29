@@ -1,0 +1,191 @@
+import Tensorflow.Tensor
+import Tensorflow.Types
+import Tensorflow.Operations
+import Tensorflow.Variables
+import Tensorflow.Layers.Activation
+import Tensorflow.Layers.Reshape
+import Tensorflow.CWrappers.Helpers
+
+# The type of padding algorithm to use. 
+# "VALID" means no padding. 
+# "SAME" results in padding the input such that the output has the same length as the original input.
+class PaddingType:
+    Valid
+    Same
+
+    def toText: case (self) of
+        Valid: "VALID"
+        Same: "SAME"
+
+# Conv1d layer creation and usage. This layer creates internally a 1D convolution kernel of given parameters that is cross-correlated with the previous layer (of shape 2D - specified input channes, or 1D - unspecified input channels) and using this kernel computes 2D output (with given number of channels and padding algorithm type) for next layer. It internally reshapes the input and invokes Conv2d.
+class Conv1d:
+    Conv1d
+
+    # Internal.
+    def _fitkern size ksize stride:
+        ((size - ksize + 1).toReal / (stride.toReal)).ceiling
+
+    # Conv1d layer constructor.
+    # Arguments:
+    # `kernelW` :: Int
+    # `outChannels` :: Int
+    # `stride` :: Int
+    # `paddingType` :: PaddingType
+    # `parent` :: Layer
+    # `return` :: Layer
+    # create :: Int -> Int -> Int -> PaddingType -> Layer -> Layer
+    def create kernelW outChannels stride paddingType parent:
+        s = parent.shape
+
+        newShape1 = case s of
+            [w]: [1, w, 1]
+            [w, c]: [1, w, c]
+            _: throw $ "conv1d requires parent layer of shape [width] or [width, channels]"
+
+        reshape1 = Reshape.create newShape1 parent
+        conv = Conv2d.create [1, kernelW] outChannels (1, stride) paddingType reshape1
+        [convH, convW, _] = conv.shape
+        reshape2 = Reshape.create [convH * convW, outChannels] conv
+        reshape2
+
+    # Conv1d with activation layer constructor.
+    # Arguments:
+    # `kernelW` :: Int
+    # `outChannels` :: Int
+    # `stride` :: Int
+    # `paddingType` :: PaddingType
+    # `activationFunction` :: TFOutput a -> TFOutput a
+    # `parent` :: Layer
+    # `return` :: Layer
+    # createWithActivation :: Int -> Int -> Int -> PaddingType -> (TFOutput a -> TFOutput a) -> Layer -> Layer
+    def createWithActivation kernelW outChannels stride paddingType activationFunction parent:
+        c = self.create kernelW outChannels stride paddingType parent
+        name = getNextName "Activation"
+        a = ActivationLayer name activationFunction c c.outputType
+        a
+
+# This layer creates a convolution kernel that is convolved (actually cross-correlated) with the previous layer output to produce next layer input.
+class Conv2dLayer a layerT:
+    name :: Text
+    kernelWeights :: TFOutput a
+    outHeight :: Int
+    outWidth :: Int
+    outChannels :: Int
+    kernelHeight :: Int
+    kernelWidth :: Int
+    stride :: Tuple2 Int Int
+    paddingType :: PaddingType
+    parentLayer :: layerT
+
+    # Returns Conv2D layer in Text type.
+    # `return` :: Text
+    # toText :: Text
+    def toText:
+        self.name + self.shape.toText
+
+    # Returns Conv2D layer in JSON type.
+    # `return` :: JSON
+    # toJSON :: JSON
+    def toJSON:
+        name = self.name
+        shape = self.shape
+        parents = [self.parentLayer]
+        props = JSON.empty . insert "kernel" [self.kernelWidth, self.kernelHeight] . insert "stride" self.stride . insert "padding" self.paddingType . insert "out" [self.outHeight, self.outWidth, self.outChannels]
+        type = "Conv2d"
+        JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type . insert "properties" props
+
+    # Returns shape after processing by this layer.
+    # `return` :: List Int
+    # shape :: List Int
+    def shape:
+        [self.outHeight, self.outWidth, self.outChannels]
+
+    # Internal. Helper function to compute Conv2D layer output.
+    def calculateConv parentsOutput:
+        expanded = if self.parentLayer.shape.length == 2 then (Operations.expandDim parentsOutput 1.negate) else parentsOutput #expand channel dim as 1
+        convo = Operations.conv2D expanded self.kernelWeights self.stride self.paddingType
+        convo
+
+    # Helper function to run evaluation of model.
+    # Arguments:
+    # `inp` :: TFOutput a
+    # `return` :: TFOutput a
+    # eval :: TFOutput a -> TFOutput a
+    def eval inp:
+        in = self.parentLayer.eval inp
+        out = self.calculateConv in
+        out
+
+    # Computes output on this layer after feeding with data from previous one.
+    # Arguments:
+    # `inp` :: TFOutput a
+    # `return` :: TFOutput a
+    # forward :: TFOutput a -> TFOutput a
+    def forward inp:
+        in = self.parentLayer.forward inp
+        out = self.calculateConv in
+        out
+
+    # Returns variables to train, up to this layer. This layer has no new variables.
+    # `return` :: List Variable a
+    # trainableVariables :: List Variable a
+    def trainableVariables:
+        Prepend self.kernelWeights.eraseType self.parentLayer.trainableVariables
+
+    # Returns type of output in this layer.
+    # `return` :: TypeTag
+    # outputType :: TypeTag
+    def outputType:
+        self.parentLayer.outputType
+
+# Conv2D layer creation and usage.
+class Conv2d:
+    Conv2d
+
+    # Internal.
+    def _fitkern size ksize stride:
+        ((size - ksize + 1).toReal / (stride.toReal)).ceiling
+
+    # Conv2D layer constructor.
+    # Arguments:
+    # `[kernelHeight, kernelWidth]` :: List Int
+    # `outChannels` :: Int
+    # `(strideY, strideX)` :: Tuple2 Int Int
+    # `paddingType` :: PaddingType
+    # `parent` :: Layer
+    # `return` :: Layer
+    # create :: List Int -> Int -> Tuple2 Int Int -> PaddingType -> Layer -> Layer
+    def create [kernelHeight, kernelWidth] outChannels (strideY, strideX) paddingType parent:
+        [outHeight, outWidth, inChannels] = case parent.shape of
+            [h, w]:  case paddingType of
+                Valid: [self._fitkern h kernelHeight strideY, self._fitkern w kernelWidth strideX, 1]
+                Same: [h, w, 1]
+            [h, w, c]: case paddingType of
+                Valid: [self._fitkern h kernelHeight strideY, self._fitkern w kernelWidth strideX, c]
+                Same:  [h, w, c]
+            _: throw $ "conv2d requires parent layer of shape h x w or h x w x c"
+
+        name = getNextName "Conv2D"
+        vartype = parent.outputType
+
+        winit = Tensors.random vartype [kernelHeight, kernelWidth, inChannels, outChannels] (vartype.fromReal 0.0) (vartype.fromReal 1.0)
+        w = Variables.make (name + "w") winit
+
+        c = Conv2dLayer name w outHeight outWidth outChannels kernelHeight kernelWidth (strideY, strideX) paddingType parent
+        c
+
+    # Conv2D with activation layer constructor.
+    # Arguments:
+    # `kernelHW` :: List Int
+    # `outChannels` :: Int
+    # `stride` :: Tuple2 Int Int
+    # `paddingType` :: PaddingType
+    # `activationFunction` :: TFOutput a -> TFOutput a
+    # `parent` :: Layer
+    # `return` :: Layer
+    # createWithActivation :: List Int -> Int -> Tuple2 Int -> PaddingType -> (TFOutput a -> TFOutput a) -> Layer -> Layer
+    def createWithActivation kernelHW outChannels stride paddingType activationFunction parent:
+        c = self.create kernelHW outChannels stride paddingType parent
+        name = getNextName "Activation"
+        a = ActivationLayer name activationFunction c c.outputType
+        a

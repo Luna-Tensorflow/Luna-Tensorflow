@@ -6,6 +6,7 @@
 void release(void *handle) noexcept
 {
     TRANSLATE_EXCEPTION(nullptr) {
+        (void)_func_;
         // not logged as releaseOwnership logs
         LifetimeManager::instance().releaseOwnership(handle);
     };

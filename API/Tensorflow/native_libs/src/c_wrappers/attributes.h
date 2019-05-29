@@ -41,7 +41,7 @@ TFL_API void add_attr_string_list(std::vector<std::shared_ptr<Attr>>* attr_list,
 TFL_API void add_attr_func_name(std::vector<std::shared_ptr<Attr>>* attr_list, char* name, char* func_name, const char **outError);
 
 #ifdef __cplusplus
-};
+}
 #endif
 
 #endif //TFL_ATTRIBUTES_H

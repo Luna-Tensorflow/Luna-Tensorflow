@@ -3,12 +3,16 @@ compiler: gcc
 os:
   - linux
   - windows
+  - osx
 dist: xenial
+osx_image: xcode10.2
 before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./scripts/before_linux.sh; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./scripts/before_osx.sh; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./scripts/before_windows.sh; fi
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./scripts/deploy_linux.sh; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then ./scripts/deploy_osx.sh; fi
   - if [[ "$TRAVIS_OS_NAME" == "windows" ]]; then ./scripts/deploy_windows.sh; fi
 deploy:
   provider: releases

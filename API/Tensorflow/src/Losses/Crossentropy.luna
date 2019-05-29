@@ -1,23 +1,42 @@
 import Tensorflow.Types
 import Tensorflow.Tensor
 import Tensorflow.Operations
+import Tensorflow.GeneratedOps
 
-def categoricalCrossentropy yTrue yPred:
-    l = log yPred
-    prod = yTrue * l
-    summed = sum prod [0]
-    n = neg summed
+# Most common loss functions.
+class Losses:
+    Losses
 
-def binaryCrossentropy yTrue yPred:
-    t = tensorFromList1d FloatType [1.0]
-    ones = makeConst t
+    # Categorical cross-entropy loss function.
+    # Arguments:
+    # `yTrue` :: TFOutput
+    # `yPred` :: TFOutput
+    # `return` :: TFOutput
+    # categoricalCrossentropy :: TFOutput -> TFOutput -> TFOutput
+    def categoricalCrossentropy yTrue yPred:
+        out = Operations.neg (Operations.sum (yTrue * (Operations.log yPred)) [0])
+        out
 
-    diff1 = ones - yTrue
-    diff2 = ones - yPred
-    ln1 = log yPred
-    ln2 = log diff2
-    prod1 = yTrue * ln1
-    prod2 = diff1 * ln2
-    added = prod1 + prod2
-    m = mean added [0]
-    n = neg m
+    # Binary cross-entropy loss function.
+    # Arguments:
+    # `yTrue` :: TFOutput
+    # `yPred` :: TFOutput
+    # `return` :: TFOutput
+    # binaryCrossentropy :: TFOutput -> TFOutput -> TFOutput
+    def binaryCrossentropy yTrue yPred:
+        t = Tensor.fromList1d FloatType [1.0]
+        ones = Operations.makeConst t
+
+        added = (yTrue * (log yPred)) + ((ones - yTrue) * (log (ones - yPred)))
+        out = Operations.neg (Operations.mean added [0])
+        out
+
+    # Categorical cross-entropy
+    # Arguments:
+    # `labels` :: TFOutput
+    # `features` :: TFOutput
+    # `return` :: TFOutput
+    # categoricalCrossEntropy :: TFOutput -> TFOutput -> TFOutput
+    def categoricalCrossEntropy labels features:
+        (out, _) = softmaxCrossEntropyWithLogitsGen "" features labels features.typetag
+        out

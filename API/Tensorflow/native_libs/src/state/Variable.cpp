@@ -56,9 +56,9 @@ void Variable::add_to_graph(GraphSession &graph)
     }
 }
 
-std::string Variable::get_name()
+const char* Variable::get_name()
 {
-	return name;
+	return name.c_str();
 }
 
 std::shared_ptr<Output> Variable::make_variable(std::string& name,
@@ -78,4 +78,8 @@ size_t Variable::hashcode() const {
 
 std::string Variable::hash_log() const {
     return "Variable: " + std::to_string(hash);
+}
+
+std::shared_ptr<Tensor> Variable::get_default_value() const {
+    return default_value;
 }

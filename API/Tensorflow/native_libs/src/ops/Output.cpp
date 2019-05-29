@@ -1,4 +1,5 @@
 #include "Output.h"
+#include "../graph/GraphSession.h"
 
 Output::Output(std::shared_ptr<Binder> binder, size_t index) : binder(std::move(binder)) {
     hash = std::hash<int>()(index);
@@ -21,12 +22,11 @@ std::shared_ptr<Tensor> Output::eval() const {
     GraphSession graph;
     graph.add_fetched_output(graph.add_output(this));
 
-    Tensor** values = LifetimeManager::instance().addOwnershipOfArray(graph.eval()->outputs);
-
-    auto ptr = values[0];
-    free(values);
-
-    return LifetimeManager::instance().accessOwned(ptr);
+    auto res = graph.eval();
+    if (res->outputs.empty()) {
+        throw std::runtime_error("Internal error: Evaluation yielded no results");
+    }
+    return res->outputs[0];
 }
 
 std::shared_ptr<Binder> Output::get_binder() {

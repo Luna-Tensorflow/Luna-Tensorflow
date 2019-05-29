@@ -6,39 +6,64 @@ import Tensorflow.Graph
 import Tensorflow.GeneratedOps
 import Tensorflow.Tensor
 
+# Optimizer that implements the RMSProp algorithm.
 class RMSProp:
       lr :: Real
       rho :: Real
       momentum :: Real
       epsilon :: Real
 
+      # Returns RMSProp Optimizer in Text type.
+      # `return` :: Text
+      # toText :: Text
       def toText:
           "RMSProp lr=" + self.lr.toText + " rho=" + self.rho.toText + " momentum=" + self.momentum.toText + " epsilon=" + self.epsilon.toText 
 
+      # Returns RMSProp Optimizer in JSON type.
+      # `return` :: JSON
+      # toJSON :: JSON
       def toJSON:
-          0 # TODO maybe some JSON format?
           self.toText.toJSON
 
-      # makeOptimizingGraph :: Operation a -> Operation a -> (Operation a -> Operation a -> Operation b) -> List Variable -> TFGraph
+      # Function to update variables in TFGraph based on expected output, real output and loss function according to the RMSProp.
+      # Arguments:
+      # `yTrue` :: TFOutput a
+      # `yPred` :: TFOutput a
+      # `loss` :: TFOutput a -> TFOutput a -> TFOutput b
+      # `variables` :: List Variable 
+      # `return` :: TFGraph
+      # makeOptimizingGraph :: TFOutput a -> TFOutput a -> (TFOutput a -> TFOutput a -> TFOutput b) -> List Variable -> TFGraph
       def makeOptimizingGraph yTrue yPred loss variables:
           err = loss yTrue yPred
-          grads = gradients [err] variables []
+          grads = Gradients.make [err] variables []
           varsAndGrads = variables.zip grads
 
           def makeAndApplyRMSProp ((v, g), i):
-              lr = constFromScalar v.typetag self.lr
-              rho = constFromScalar v.typetag self.rho
-              momentum = constFromScalar v.typetag self.momentum
-              epsilon = constFromScalar v.typetag self.epsilon
+              lr = Operations.constFromReal v.typetag self.lr
+              rho = Operations.constFromReal v.typetag self.rho
+              momentum = Operations.constFromReal v.typetag self.momentum
+              epsilon = Operations.constFromReal v.typetag self.epsilon
 
-              zerosTensor = zerosLikeGen "" v v.typetag . eval
-              ms = variable ("ms" + i.toText) zerosTensor
-              mom = variable ("mom" + i.toText) zerosTensor
+              zerosTensor = Operations.zerosLike v . eval
+              ms = Variables.make ("ms" + i.toText) zerosTensor
+              mom = Variables.make ("mom" + i.toText) zerosTensor
               applyRMSPropGen "" v ms mom lr rho momentum epsilon g v.typetag False
 
-          errWithSideEffect = sequence' err makeAndApplyRMSProp $ varsAndGrads.zip (0.upto (variables.length - 1))
+          errWithSideEffect = Variables.sequence' err $ varsAndGrads.zip (0.upto (variables.length - 1)) . map makeAndApplyRMSProp
 
-          makeGraphFromOutput errWithSideEffect
+          TFGraphMaker.makeFromOutput errWithSideEffect
 
-def rmsPropOptimizer lr rho momentum epsilon:
-    RMSProp lr rho momentum epsilon
+# RMSProp Optimizer constructing and usage.
+class RMSPropOptimizer:
+    RMSPropOptimizer
+
+    # RMSProp Optimizer constructor.
+    # Arguments:
+    # `lr` :: Real
+    # `rho` :: Real
+    # `momentum` :: Real
+    # `epsilon` :: Real
+    # `return` :: RMSProp
+    # create :: Real -> Real -> Real -> Real -> RMSProp
+    def create lr rho momentum epsilon:
+        RMSProp lr rho momentum epsilon

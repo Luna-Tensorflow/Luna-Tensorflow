@@ -14,19 +14,19 @@ def step func (x, y) [a, b]:
 def gradientDescent lr x y a b:
     meanSqErr = (a * x + b - y) * (a * x + b - y)
 
-    [a + (partial meanSqErr a) * lr, b + (partial meanSqErr b) * lr]
+    [a + (Operations.partial meanSqErr a) * lr, b + (Operations.partial meanSqErr b) * lr]
 
 def testRegression:
     print "Regression"
-    xtensors = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].each (x: tensorFromList1d FloatType [x.toReal])
-    ytensors = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].each (x: tensorFromList1d FloatType [x.toReal])
+    xtensors = [-49,-32,46,-12,18,40,24,29,18,24,12,-41,-39,-24,45,30,-6,-27,-20,21,0,25,14,-11,-22,9,46,-7,-37,-34,-18,-7,30,-10,44,11,36,35,19,24,-29,-28,23,-16,13,-1,21,6,-24,20].each (x: Tensors.fromList1d FloatType [x.toReal])
+    ytensors = [-623,-416,521,-176,186,448,253,318,180,254,112,-524,-500,-321,505,330,-107,-359,-273,220,-30,267,133,-167,-297,76,519,-117,-475,-444,-252,-119,324,-152,492,101,397,387,192,255,-384,-370,246,-226,123,-45,222,37,-321,209].each (x: Tensors.fromList1d FloatType [x.toReal])
 
     train = xtensors . zip ytensors
 
     lifted = lift5 gradientDescent
 
-    zero = tensorFromList1d FloatType [0.0]
-    lr = tensorFromList1d FloatType [(0.0001 . negate)]
+    zero = Tensors.fromList1d FloatType [0.0]
+    lr = Tensors.fromList1d FloatType [(0.0001 . negate)]
 
     t0 = Time.now
     [a, b] = train . fold [zero, zero] (step (lifted lr))
@@ -43,14 +43,14 @@ def testRegression:
 
 def testGradients:
     print "Gradients"
-    a = constFromScalar FloatType 3.0
-    b = constFromScalar FloatType 3.0
-    q = constFromScalar FloatType 2.0
-    p = constFromScalar FloatType 2.0.negate
+    a = Operations.namedConstFromScalar "a" FloatType 3.0
+    b = Operations.namedConstFromScalar "b" FloatType 3.0
+    q = Operations.namedConstFromScalar "q" FloatType 2.0
+    p = Operations.namedConstFromScalar "p" FloatType 2.0.negate
     c = a * b
     d = c * a
     e = a + b
-    gs = gradients [d, e] [a, b] [p, q]
+    gs = Gradients.make [d, e] [a, b] [p, q]
     result = gs.toJSON
     print result
     if (result == [34.0.negate, 16.0.negate].toJSON).not then throw $ "Gradients error: expected [-34,-16], got " + result.toText else None
@@ -61,9 +61,9 @@ def testGradients:
 
 def testUInt8:
     print "UInt8"
-    a = constFromScalar UInt8Type 250
-    b = constFromScalar UInt8Type 10
-    c = add a b
+    a = Operations.constFromScalar UInt8Type 250
+    b = Operations.constFromScalar UInt8Type 10
+    c = Operations.add a b
     print a.toJSON
     print "+"
     print b.toJSON
@@ -77,7 +77,7 @@ def testUInt8:
 
 def testBool:
     print "Bool"
-    a = constFromScalar BoolType True
+    a = Operations.constFromScalar BoolType True
     aVal = a.toJSON
     print aVal
     if (aVal.toText == "true").not then throw $ "Bool error: expected true, got " + aVal.toText else None
@@ -87,7 +87,7 @@ def testBool:
 
 def testMultidimensionalTensors:
     print "Multidimensional tensors"
-    aTensor = tensorFromList Int64Type [2, 3] [1, 2, 3, 4, 5, 6]
+    aTensor = Tensors.fromList Int64Type [2, 3] [1, 2, 3, 4, 5, 6]
     aJSON = aTensor.toJSON
     print aJSON
     if (aJSON.toText == "[[1,2,3],[4,5,6]]").not then throw $ "Multidimensional tensor error: expected [[1,2,3],[4,5,6]], got " + aJSON.toText else None
@@ -96,13 +96,13 @@ def testMultidimensionalTensors:
     print aTensor12
     if (aTensor12 == 6).not then throw "Multidimensional tensor error: expected 6, got " + aTensor12.toText else None
 
-    bTensor = tensorFromList Int64Type [2, 3] [9, 8, 7, 7, 8, 9]
+    bTensor = Tensors.fromList Int64Type [2, 3] [9, 8, 7, 7, 8, 9]
     bJSON = bTensor.toJSON
     print bJSON
     if (bJSON.toText == "[[9,8,7],[7,8,9]]").not then throw $ "Multidimensional tensor error: expected [[9,8,7],[7,8,9]], got " + bJSON.toText else None
 
-    a = makeConst aTensor
-    b = makeConst bTensor
+    a = Operations.makeConst aTensor
+    b = Operations.makeConst bTensor
     c = a + b
     cVal = c.eval
     print cVal.dims
@@ -118,12 +118,12 @@ def testMultidimensionalTensors:
 
 def testString:
     print "String"
-    a = constFromScalar StringType "test"
+    a = Operations.constFromScalar StringType "test"
     aJSON = a.toJSON
     print aJSON
     if (aJSON.toText == '"test"').not then throw $ 'String error: expected "test", got "' + aJSON.toText + '"' else None
 
-    b = add a a
+    b = Operations.add a a
     bJSON = b.toJSON
     print bJSON
     if (bJSON.toText == '"testtest"').not then throw $ 'String error: expected "testtest", got "' + bJSON.toText + '"' else None
@@ -134,12 +134,12 @@ def testString:
 
 def testMultiOutputOp:
     print "MultiOutputOp"
-    aTensor = tensorFromList FloatType [4, 3] (1.upto 12 . map (x: x.toReal))
+    aTensor = Tensors.fromList FloatType [4, 3] (1.upto 12 . map (x: x.toReal))
 
-    a = makeConst aTensor
+    a = Operations.makeConst aTensor
 
-    [q, r] = qr a
-    b = matMul q r
+    [q, r] = Operations.qr a
+    b = Operations.matMul q r
 
     bJSON = b.toJSON
 
@@ -155,7 +155,7 @@ def testMultiOutputOp:
 
 def testAttrs:
     print "Attrs"
-    aTensor = tensorFromList1d FloatType [1.0, 2.0, 3.0]
+    aTensor = Tensors.fromList1d FloatType [1.0, 2.0, 3.0]
 
     a = constGen "testAttrs_a" aTensor FloatType
     aJSON = a.toJSON
@@ -171,7 +171,13 @@ def testAttrs:
     print ""
     print ""
 
-def main:
+def testTensorVis:
+    tensor = Tensors.fromList2d FloatType [[0.0, 0.5, 1.0], [0.2, 0.3, 0.6], [0.7, 0.8, 0.9]]
+    t2 = Tensors.random FloatType [4,80,80] 0.0 1.0
+    t3 = Tensors.random FloatType [20,30,3] 0.0 1.0
+    tp = Tensors.fromPng "logo.png"
+
+def testMain:
     testRegression
     testUInt8
     testBool

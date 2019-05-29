@@ -1,0 +1,35 @@
+import Tensorflow.Tensor
+import Tensorflow.Graph
+import Tensorflow.Types
+import Tensorflow.Variables
+
+def tensorSerializationTest:
+    t1d = Tensors.fromList FloatType [2,2] [1.0, 2.0, 3.0, 4.0]
+    print "Made tensors:"
+    print t1d.toJSON
+
+    print "Saving them"
+    Tensors.save "tensors.tf" t1d
+
+    print "Saved, loading"
+    ret = Tensors.load "tensors.tf" FloatType
+    print "Loaded"
+    print ret.toJSON
+
+    st = StateOps.makeEmpty
+    v1 = Variables.make "v1" t1d
+    v2 = Variables.make "v2" (Tensors.fromList1d StringType ["a", "bb", "ccc"])
+    vars = [v1.eraseType, v2.eraseType]
+    st' = StateOps.setVariableValue st "v2" (Tensors.fromList1d StringType ["a'", "b'b", "c'dd"])
+    print "Saving state"
+    StateOps.saveVariables "state.tf" vars st'
+    print "Saved"
+
+    print "Loading"
+    loaded = StateOps.loadVariables "state.tf" vars StateOps.makeEmpty
+    print "Loaded"
+    v2' = loaded.value StringType "v2"
+    print v2'.toJSON
+    v1' = loaded.value FloatType "v1"
+    print v1'.toJSON
+    

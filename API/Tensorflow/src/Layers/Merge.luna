@@ -1,0 +1,89 @@
+import Tensorflow.Tensor
+import Tensorflow.Types
+import Tensorflow.Operations
+import Tensorflow.Variables
+import Tensorflow.Layers.LayersHelper
+import Tensorflow.CWrappers.Helpers
+
+# Layer that implements merging two previous layers of same shape and types into one new layer, simply adding them up.
+class AddLayer layerA layerB:
+      name :: Text
+      parentLayerA :: layerA # :: Layer
+      parentLayerB :: layerB # :: Layer
+
+      # Returns Add layer in Text type.
+      # `return` :: Text
+      # toText :: Text
+      def toText:
+          self.name + self.shape.toText
+
+      # Returns Add layer in JSON type.
+      # `return` :: JSON
+      # toJSON :: JSON
+      def toJSON:
+          name = self.name
+          shape = self.shape
+          parents = [self.parentLayerA.toJSON, self.parentLayerB.toJSON]
+          type = "Add"
+          JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type
+
+      # Returns shape after processing by this layer. It inherits parents shape.
+      # `return` :: List Int
+      # shape :: List Int
+      def shape:
+          self.parentLayerA . shape
+
+      # Computes output on this layer after feeding with data from previous ones.
+      # Arguments:
+      # `inp` :: TFOutput a
+      # `return` :: TFOutput a
+      # forward :: Operation a -> Operation a
+      def forward inp:
+          inA = self.parentLayerA . forward inp
+          inB = self.parentLayerB . forward inp
+          result = Operations.add inA inB
+          result
+
+      # Helper function to run evaluation of model.
+      # Arguments:
+      # `inp` :: TFOutput a
+      # `return` :: TFOutput a
+      # eval :: Operation a -> Operation a
+      def eval inp:
+          inA = self.parentLayerA . eval inp
+          inB = self.parentLayerB . eval inp
+          result = Operations.add inA inB
+          result
+
+      # Returns variables to train, up to this layer. This layer has no new variables and inherits parents variables without duplications.
+      # `return` :: List Variable a
+      # trainableVariables :: List Variable a
+      def trainableVariables:
+          vars = self.parentLayerA.trainableVariables + self.parentLayerB.trainableVariables
+          unique = LayersHelper.uniqueVariables vars
+          unique
+
+      # Returns type of output in this layer.
+      # `return` :: TypeTag
+      # outputType :: TypeTag
+      def outputType:
+          self.parentLayerA . outputType
+
+# Add layer creation and usage.
+class Marge:
+      Merge
+
+      # Creates a layer that merges two previous layers and returns the result as output. It demands equal shapes and types of previous layers.
+      # layerA :: Layer
+      # layerB :: Layer
+      # `return` :: Layer
+      # add :: Layer -> Layer -> Layer
+      def add layerA layerB:
+        case layerA.shape == layerB.shape of
+          False: throw ("Shape mismatch " + layerA.shape.toText + " /= " + layerB.shape.toText)
+          True:
+            case layerA.outputType.typename == layerB.outputType.typename of
+              False: throw ("Output type mismatch " + layerA.outputType.toText + " /= " + layerB.outputType.toText)
+              True:
+                name = getNextName "Add"
+                AddLayer name layerA layerB

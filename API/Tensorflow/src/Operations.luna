@@ -6,220 +6,481 @@ import Tensorflow.Types
 import Tensorflow.Variables
 import Std.Foreign.C.Value
 
-# not sure if we want separate classes for each op type or one class for all?
-class TFOutput:
-    wrapper :: OutputWrapper
+# Returns sequence between two TFOutputs. It has the same output as its second argument, but augmented so that the side-effects of the first argument are executed if the second argument is computed.
+# Arguments: 
+# `a` :: TFOutput a
+# `b` :: TFOutput a
+# `return` :: TFOutput a
+# >> :: TFOutput a -> TFOutput a -> TFOutput a
+def >> a b:
+    a.>> b
 
-    # ptr :: ManagedPointer None
+class TFOutput a:
+    wrapper :: OutputWrapper
+    typetag :: a
+
+    # Internal.
     def ptr:
         self.wrapper.ptr
 
+    # Evaluates TFOutput.
+    # `return` :: Tensor a
     # eval :: Tensor a
     def eval:
-        self.wrapper.eval
+        managedTensorPtr = self.wrapper.eval
+        Tensors.fromPtr self.typetag managedTensorPtr
 
+    # Returns TFOutput in JSON form.
+    # `return` :: JSON
     # toJSON :: JSON
     def toJSON:
-        self.eval.toJSON
+        catch (self.eval.toJSON) (.toJSON)
 
+    # Returns addition with other TFOutput.
+    # Arguments:
+    # `other` :: TFOutput a
+    # `return` :: TFOutput a
     # + :: TFOutput a -> TFOutput a
     def + other:
-        add self other
+        Operations.add self other
 
+    # Returns multiplication with other TFOutput.
+    # Arguments:
+    # `other` :: TFOutput a
+    # `return` :: TFOutput a
     # * :: TFOutput a -> TFOutput a
     def * other:
-        mul self other
+        Operations.mul self other
 
+    # Returns substraction with other TFOutput.
+    # Arguments:
+    # `other` :: TFOutput a
+    # `return` :: TFOutput a
     # - :: TFOutput a -> TFOutput a
     def - other:
-        sub self other
+        Operations.sub self other
 
+    # Returns division with other TFOutput.
+    # Arguments:
+    # `other` :: TFOutput a
+    # `return` :: TFOutput a
+    # / :: TFOutput a -> TFOutput a
+    def / other:
+        Operations.div self other
+
+    # Returns sequence to other TFOutput. It has the same output as its second argument, but augmented so that the side-effects of the first argument are executed if the second argument is computed.
+    # Arguments:
+    # `other` :: TFOutput a
+    # `return` :: TFOutput a
+    # >> :: TFOutput a -> TFOutput a
     def >> other:
-        sequence self other
+        Variables.sequence self other
 
+    # Returns TFOutput in Text type.
+    # `return` :: Text
     # toText :: Text
     def toText:
-        "Operation TODO" # TODO
+        "TFOutput " + self.typetag.toText
 
-    # not sure if this is pretty to stay, but for now it's very useful
-    def typetag:
-        self.wrapper.typetag
+    # Returns the same graph output node, but with the type erased.
+    # Useful in situations where you need to keep outputs of various types - for example model's variables.
+    # Only use when you know what you are doing.
+    # eraseType :: TFOutput ErasedType
+    def eraseType:
+        TFOutput self.wrapper (TypeTagHelper.eraseType self.typetag)
 
-# makePlaceholder :: TypeTag -> Text -> TFOutput a
-def makePlaceholder typetag name:
-    wrapper = makePlaceholderWrapper typetag name
-    TFOutput wrapper
+# Methods to make TFOutputs and operate on them.
+class Operations:
+    Operations
 
-# makeConst :: Tensor a -> TFOutput a
-def makeConst tensor:
-    wrapper = makeConstWrapper tensor
-    TFOutput wrapper
+    # Casts a TFOutput to another type, checking that it really contains the proper type.
+    # It is meant to be used for casting erased types into concrete ones.
+    # Do not mistake it for Tensorflow cast operations that may convert underlying data, this operation works only on type system level.
+    # output :: TFOutput a - some output that will be converted, usually this would be TFOutput ErasedType
+    # typetag :: b - typetag that represents the type the output will be converted to 
+    # dynamicCast :: TFOutput a -> b -> TFOutput b
+    def dynamicCast output typetag:
+        if TypeTagHelper.isTypeTagInstanceOf output.typetag typetag then TFOutput output.wrapper typetag else (error "dynamicCast failed with type mismatch: " + output.typetag.toText + " /= " + typetag.toText)
 
-# constFromList :: TypeTag a -> List a -> Tensor a
-def constFromList typetag list:
-    tensor = tensorFromList1d typetag list
-    makeConst tensor
+    # Creates placeholder of given type and name.
+    # Arguments: 
+    # `typetag` :: TypeTag
+    # `name` :: Text
+    # `return` :: TFOutput a
+    # makePlaceholder :: TypeTag -> Text -> TFOutput a
+    def makePlaceholder typetag name:
+        wrapper = makePlaceholderWrapper typetag name
+        TFOutput wrapper typetag
 
-# constFromScalar :: a -> Tensor a
-def constFromScalar typetag x:
-    makeConst $ tensorFromList typetag [] [x]
+    # Creates const TFOutput from given tensor.
+    # Arguments: 
+    # `tensor` :: Tensor a
+    # `return` :: TFOutput a
+    # makeConst :: Tensor a -> TFOutput a
+    def makeConst tensor:
+        wrapper = makeConstWrapper tensor ""
+        TFOutput wrapper tensor.typetag
 
-def outputFromPtr typetag ptr:
-    wrapper = outputWrapperFromPtr typetag ptr
-    TFOutput wrapper
+    # Creates a const TFOutput from a given tensor with a given name
+    # Arguments:
+    # `name` :: Text
+    # `tensor` :: Tensor a
+    # `return` :: TFOutput a
+    # namedConst :: Text -> Tensor a -> TFOutput a
+    def namedConst name tensor:
+        wrapper = makeConstWrapper tensor name
+        TFOutput wrapper tensor.typetag
 
-# add :: TFOutput a -> TFOutput a -> TFOutput a
-def add x y:
-    chosenName = ""
-    out = addGen chosenName x y x.wrapper.typetag
-    out
+    # Creates const TFOutput from list of given type.
+    # Arguments:    
+    # `typetag` :: TypeTag
+    # `list` :: List a
+    # `return` :: TFOutput a
+    # constFromList :: TypeTag -> List a -> TFOutput a
+    def constFromList typetag list:
+        tensor = Tensors.fromList1d typetag list
+        self.makeConst tensor
 
-# mul :: TFOutput a -> TFOutput a -> TFOutput a
-def mul x y:
-    chosenName = ""
-    out = mulGen chosenName x y x.wrapper.typetag
-    out
+    # Creates const TFOutput from scalar of given type.
+    # Arguments: 
+    # `typetag` :: TypeTag
+    # `x` :: a
+    # `return` :: TFOutput a
+    # constFromScalar :: TypeTag -> a -> TFOutput a
+    def constFromScalar typetag x:
+        self.makeConst $ Tensors.fromList typetag [] [x]
 
-# sub :: TFOutput a -> TFOutput a -> TFOutput a
-def sub x y:
-    chosenName = ""
-    out = subGen chosenName x y x.wrapper.typetag
-    out
+    # Creates a const TFOutput of a given type from a real value that is converted to that type.
+    # The difference from constFromScalar is that it still works when typetag is ErasedType.
+    # `typetag` :: TypeTag
+    # `x` :: Real
+    # `return` :: TFOutput a
+    # constFromScalar :: TypeTag -> Real -> TFOutput a
+    def constFromReal typetag x:
+        wrapper = makeConstFromRealWrapper x typetag ""
+        TFOutput wrapper typetag
 
-# matMul :: TFOutput a -> TFOutput a -> TFOutput a
-def matMul x y:
-    chosenName = ""
-    out = matMulGen chosenName x y False False x.wrapper.typetag
-    out
+    # Creates const TFOutput from scalar of given type.
+    # Arguments: 
+    # `name` :: Text
+    # `typetag` :: TypeTag
+    # `x` :: a
+    # `return` :: TFOutput a
+    # namedConstFromScalar :: Text -> TypeTag -> a -> TFOutput a
+    def namedConstFromScalar name typetag x:
+        self.namedConst name $ Tensors.fromList typetag [] [x]
 
-# equal :: TFOutput a -> TFOutput a -> TFOutput a
-def equal x y:
-    chosenName = ""
-    out = equalGen chosenName x y x.wrapper.typetag
-    out
+    # Creates from pointer TFOutput of given type.
+    # Arguments: 
+    # `typetag` :: TypeTag
+    # `ptr` :: Pointer None
+    # `return` :: TFOutput a
+    # outputFromPtr :: Typetag -> Pointer None -> TFOutput a
+    def outputFromPtr typetag ptr:
+        wrapper = outputWrapperFromPtr ptr
+        TFOutput wrapper typetag
 
-# tanh :: TFOutput a -> TFOutput a
-def tanh x:
-    chosenName = ""
-    out = tanhGen chosenName x x.wrapper.typetag
-    out
+    # Adds up two TFOutputs.
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `y` :: TFOutput a
+    # `return` :: TFOutput a
+    # add :: TFOutput a -> TFOutput a -> TFOutput a
+    def add x y:
+        out = addGen "" x y x.typetag
+        out
 
-# relu :: TFOutput a -> TFOutput a
-def relu x:
-    chosenName = ""
-    out = reluGen chosenName x x.wrapper.typetag
-    out
+    # Multiplies two TFOutputs.
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `y` :: TFOutput a
+    # `return` :: TFOutput a
+    # mul :: TFOutput a -> TFOutput a -> TFOutput a
+    def mul x y:
+        out = mulGen "" x y x.typetag
+        out
 
-# sigmoid :: TFOutput a -> TFOutput a
-def sigmoid x:
-    chosenName = ""
-    out = sigmoidGen chosenName x x.wrapper.typetag
-    out
+    # Substracts two TFOutputs.
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `y` :: TFOutput a
+    # `return` :: TFOutput a
+    # sub :: TFOutput a -> TFOutput a -> TFOutput a
+    def sub x y:
+        out = subGen "" x y x.typetag
+        out
 
-# sign :: TFOutput a -> TFOutput a
-def sign x:
-    chosenName = ""
-    out = signGen chosenName x x.wrapper.typetag
-    out
+    # Divides two TFOutputs.
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `y` :: TFOutput a
+    # `return` :: TFOutput a
+    # div :: TFOutput a -> TFOutput a -> TFOutput a
+    def div x y:
+        out = divGen "" x y x.typetag
+        out
 
-# exp :: TFOutput a -> TFOutput a
-def exp x:
-    chosenName = ""
-    out = expGen chosenName x x.wrapper.typetag
-    out
+    # Multiplies two TFOutput matrixes.
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `y` :: TFOutput a
+    # `return` :: TFOutput a
+    # matMul :: TFOutput a -> TFOutput a -> TFOutput a
+    def matMul x y:
+        out = matMulGen "" x y False False x.typetag
+        out
 
-# log :: TFOutput a -> TFOutput a
-def log x:
-    chosenName = ""
-    out = logGen chosenName x x.wrapper.typetag
-    out
+    # Check equality between two TFOutputs.
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `y` :: TFOutput a
+    # `return` :: TFOutput a
+    # equal :: TFOutput a -> TFOutput a -> TFOutput a
+    def equal x y:
+        out = equalGen "" x y x.typetag
+        out
 
-# abs :: TFOutput a -> TFOutput a
-def abs x:
-    chosenName = ""
-    out = absGen chosenName x x.wrapper.typetag
-    out
+    # Returns TFOutput with value of hyperbolic tangent on given TFOutput.
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # tanh :: TFOutput a -> TFOutput a
+    def tanh x:
+        out = tanhGen "" x x.typetag
+        out
 
-# neg :: TFOutput a -> TFOutput a
-def neg x:
-    chosenName = ""
-    out = negGen chosenName x x.wrapper.typetag
-    out
+    # Returns TFOutput with value of rectified linear unit on given TFOutput.
+    # Arguments:
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # relu :: TFOutput a -> TFOutput a
+    def relu x:
+        out = reluGen "" x x.typetag
+        out
 
-# sum :: TFOutput a -> TFOutput a
-def sum x dims:
-    chosenName = ""
+    # Returns TFOutput with value of softmax function on given TFOutput.
+    # Arguments:
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # softmax :: TFOutput a -> TFOutput a
+    def softmax x:
+        out = softmaxGen "" x x.typetag
+        out
 
-    t = tensorFromList1d Int32Type dims
-    reductionxindices = makeConst t
+    # Returns TFOutput with value of sigmoid function on given TFOutput.
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # sigmoid :: TFOutput a -> TFOutput a
+    def sigmoid x:
+        out = sigmoidGen "" x x.typetag
+        out
 
-    out = sumGen chosenName x reductionxindices False x.wrapper.typetag Int32Type
-    out
+    # Returns TFOutput with value of signum function on given TFOutput.
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # sign :: TFOutput a -> TFOutput a
+    def sign x:
+        out = signGen "" x x.typetag
+        out
 
-# mean :: TFOutput a -> TFOutput a
-def mean x dims:
-    chosenName = ""
+    # Returns TFOutput with value of exponential function on given TFOutput.
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # exp :: TFOutput a -> TFOutput a
+    def exp x:
+        out = expGen "" x x.typetag
+        out
 
-    t = tensorFromList1d Int32Type dims
-    reductionxindices = makeConst t
-    
-    out = meanGen chosenName x reductionxindices False x.wrapper.typetag Int32Type
-    out
+    # Returns TFOutput with value of natural logatirhm on given TFOutput.
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # log :: TFOutput a -> TFOutput a
+    def log x:
+        out = logGen "" x x.typetag
+        out
 
-# expandDim :: TFOutput a -> Int -> TFOutput a
-def expandDim x dim:
-    chosenName = ""
+    # Returns TFOutput with absolute value of given TFOutput.
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # abs :: TFOutput a -> TFOutput a
+    def abs x:
+        out = absGen "" x x.typetag
+        out
 
-    t = tensorFromList1d Int32Type [dim]
-    tdims = makeConst t
+    # Returns TFOutput with negative value of given TFOutput.
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # neg :: TFOutput a -> TFOutput a
+    def neg x:
+        out = negGen "" x x.typetag
+        out
 
-    out = expandDimsGen chosenName x tdims x.wrapper.typetag Int32Type
-    out
+    # Returns TFOutput with value of computed sum of elements across given dimensions of a tensor. 
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `dims` :: List Int
+    # `return` :: TFOutput a
+    # sum :: TFOutput a -> List Int -> TFOutput a
+    def sum x dims:
+        t = Tensors.fromList1d Int32Type dims
+        reductionxindices = self.makeConst t
 
-# squeeze :: TFOutput a -> List Int -> TFOutput a
-def squeeze x dims:
-    chosenName = ""
-    out = squeezeGen chosenName x x.wrapper.typetag dims
-    out
+        out = sumGen "" x reductionxindices False x.typetag Int32Type
+        out
 
-# qr :: TFOutput a -> TFOutput a
-def qr a:
-    wrappers = makeOutputWrappers "Qr" [a] [a.wrapper.typetag, a.wrapper.typetag] nullPtr ""
-    wrappers.each (wrapper: TFOutput wrapper)
+    # Returns TFOutput with value of mean of elements across given dimensions of a tensor. 
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `dims` :: List Int
+    # `return` :: TFOutput a
+    # mean :: TFOutput a -> List Int -> TFOutput a
+    def mean x dims:
+        t = Tensors.fromList1d Int32Type dims
+        reductionxindices = self.makeConst t
 
-# partial :: (TFOutput a -> TFOutput a) -> TFOutput a
-def partial a b:
-    wrapper = makePartialDerivativeWrapper a.wrapper b.wrapper
-    TFOutput wrapper
+        out = meanGen "" x reductionxindices False x.typetag Int32Type
+        out
 
-# sqnorm :: TFOutput a -> TFOutput a
-def sqnorm a:
-    mult = mul a a
-    dim = constFromScalar Int32Type 1
+    # Returns TFOutput with value of given TFOutput with inserted dimension of 1 into a tensor's shape. 
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `dim` :: Int
+    # `return` :: TFOutput a
+    # expandDim :: TFOutput a -> Int -> TFOutput a
+    def expandDim x dim:
+        t = Tensors.fromList1d Int32Type [dim]
+        tdims = self.makeConst t
 
-    wrapper = makeBinaryOpWrapper "Sum" mult.wrapper dim.wrapper
-    TFOutput wrapper
+        out = expandDimsGen "" x tdims x.typetag Int32Type
+        out
 
-# conv2D :: TFOutput a -> TFOutput a -> Tuple2 Int Int -> Text
-def conv2D input kernel (strideY, strideX) padding:
-    name = ""
-    strides = [1, strideY, strideX, 1]
-    usegpu = True
-    dataFormat = "NHWC"
-    dilations = [1,1,1,1]
+    # Returns TFOutput with value of given TFOutput with removed dimensions of size 1 from the shape of a tensor. 
+    # Arguments: 
+    # `x` :: TFOutput a
+    # `dims` :: List Int
+    # `return` :: TFOutput a
+    # squeeze :: TFOutput a -> List Int -> TFOutput a
+    def squeeze x dims:
+        out = squeezeGen "" x x.typetag dims
+        out
 
-    out = conv2DGen name input kernel input.typetag strides usegpu padding.toText dataFormat dilations
-    out
+    # Arguments:
+    # `a` :: TFOutput a
+    # `return` :: TFOutput a
+    # qr :: TFOutput a -> TFOutput a
+    def qr a:
+        wrappers = makeOutputWrappers "Qr" [a.wrapper] 2 nullPtr ""
+        wrappers.each (wrapper: TFOutput wrapper a.typetag)
 
-# reshape :: TFOutput a -> List Int -> TFOutput a
-def reshapeOp input newdims:
-    name = ""
+    # Arguments:
+    # `a` :: TFOutput a
+    # `b` :: TFOutput a
+    # `return` :: TFOutput a
+    # partial :: TFOutput a -> TFOutput a -> TFOutput a
+    def partial a b:
+        wrapper = makePartialDerivativeWrapper a.wrapper b.wrapper
+        TFOutput wrapper a.typetag
 
-    shapeT = tensorFromList1d Int32Type newdims
-    shape = makeConst shapeT
+    # Arguments:
+    # `a` :: TFOutput a
+    # `return` :: TFOutput a
+    # sqnorm :: TFOutput a -> TFOutput a
+    def sqnorm a:
+        mult = self.mul a a
+        dim = self.constFromScalar Int32Type 1
 
-    out = reshapeGen name input shape input.typetag Int32Type
-    out
+        wrapper = makeBinaryOpWrapper "Sum" mult.wrapper dim.wrapper
+        TFOutput wrapper a.typetag
 
-def >> a b:
-    a.>> b
+    # Returns TFOutput with value of computed 2-D convolution with given 4-D input and filter tensors. 
+    # Arguments: 
+    # `input` :: TFOutput a
+    # `kernel` :: TFOutput a
+    # `(strideY, strideX)` :: Tuple2 Int Int
+    # `padding` :: Text
+    # `return` :: TFOutput a
+    # conv2D :: TFOutput a -> TFOutput a -> Tuple2 Int Int -> PaddingType -> TFOutput a
+    def conv2D input kernel (strideY, strideX) padding:
+        strides = [1, strideY, strideX, 1]
+        usegpu = True
+        dataFormat = "NHWC"
+        dilations = [1,1,1,1]
+
+        out = conv2DGen "" input kernel input.typetag strides usegpu padding.toText dataFormat dilations
+        out
+
+    # Returns TFOutput with value of reshaped tensor from given TFOutput.
+    # Arguments: 
+    # `input` :: TFOutput a
+    # `newdims` :: List Int
+    # `return` :: TFOutput a
+    # reshape :: TFOutput a -> List Int -> TFOutput a
+    def reshape input newdims:
+        shapeT = Tensors.fromList1d Int32Type newdims
+        shape = self.makeConst shapeT
+
+        out = reshapeGen "" input shape input.typetag Int32Type
+        out
+
+    # Returns uniformly random TFOutput of given type and shape.
+    # Arguments: 
+    # `shape` :: List Int
+    # `typetag` :: TypeTag
+    # `return` :: TFOutput a
+    # randomUniform :: List Int -> TypeTag -> TFOutput a
+    def randomUniform shape typetag:
+        attrListPtr = callHandlingError "attr_list_init" (Pointer None) []
+        attrList = ManagedPointer None . fromPointer releaseMethod attrListPtr
+        CString.with "dtype" nameCStr:
+            callHandlingError "add_attr_type" None [attrList.toCArg, nameCStr.toCArg, CInt32.fromInt typetag.num . toCArg]
+        wrappers = makeOutputWrappers "RandomUniform" [shape] 2 attrList ""
+        TFOutput wrappers.head.get typetag
+
+    # Arguments:
+    # `input` :: TFOutput a
+    # `dimension` :: Int
+    # `return` :: TFOutput Int32Type
+    # argMax :: TFOutput a -> Int -> TFOutput Int32Type
+    def argMax input dimension:
+        dim = Operations.constFromScalar Int32Type dimension
+        out = argMaxGen "" input dim input.typetag dim.typetag Int32Type
+
+    # Arguments:
+    # `input` :: TFOutput a
+    # `return` :: TFOutput Int32Type
+    # size :: TFOutput a -> TFOutput Int32Type
+    def size input:
+        out = sizeGen "" input input.typetag Int32Type
+        out
+
+    # Arguments
+    # `x` :: TFOutput a
+    # `dstType` :: b
+    # `return` :: TFOutput b
+    # cast :: TFOutput a -> b -> TFOutput b
+    def cast x dstType:
+        out = castGen "" x x.typetag dstType False
+
+    # Returns TFOutput filled with zeros with given type and shape of a given TFOutput
+    # Arguments:
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # zerosLike :: TFOutput a -> TFOutput a
+    def zerosLike x:
+        out = zerosLikeGen "" x x.typetag
+        out
+
+    # Returns TFOutput filled with ones with given type and shape of a given TFOutput
+    # Arguments:
+    # `x` :: TFOutput a
+    # `return` :: TFOutput a
+    # onesLike :: TFOutput a -> TFOutput a
+    def onesLike x:
+        out = onesLikeGen "" x x.typetag
+        out

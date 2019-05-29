@@ -1,51 +1,64 @@
-import Tensorflow.CWrappers.Tensor
-
-import Std.Foreign
-import Std.Foreign.C.Value
-
 import Tensorflow.CWrappers.Helpers
+import Tensorflow.CWrappers.Tensor
+import Tensorflow.GeneratedOps
+import Tensorflow.Types
+import Tensorflow.CWrappers.Helpers
+import Tensorflow.GeneratedOps
+import Tensorflow.Operations
 
-
-# Private, splitInPacksOf :: Int -> List a -> List List a
+# Internal.
+# Arguments:
+# len :: Int
+# list :: List a
+# `return` :: List List a
+# splitInPacksOf :: Int -> List a -> List List a
 def splitInPacksOf len list:
     if list.isEmpty then Empty else Prepend (list.take len) (splitInPacksOf len (list.drop len))
 
-# For now we assume tensors are 1D
-# Tensor T
+# Tensor structure, which is TF container unit, used in computations.
 class Tensor a:
     wrapper :: TensorWrapper a
 
-    # ptr :: ManagedPointer None
+    # Internal.
     def ptr:
         self.wrapper.ptr
 
+    # Returns tensor's shape.
+    # `return` :: List Int
     # dims :: List Int
     def dims:
         self.wrapper.dims
 
-    # at :: List Int -> T
+    # Returns value of tensor at given list of indices.
+    # Arguments: 
+    # indices :: List Int
+    # `return` :: a
+    # at :: List Int -> a
     def at indices:
         self.wrapper.at indices
 
-    # atIndex :: Int -> T
+
+    # Returns value of tensor at given index.
+    # Arguments: 
+    # index :: Int
+    # `return` :: a
+    # atIndex :: Int -> a
     def atIndex index:
         self.wrapper.atIndex index
 
-    # toList :: List T
-    def toList:
-        throw "Function toList is deprecated and will be removed" # TODO remove
-
-    # toFlatList :: List T
+    # Returns flatten list from tensor.
+    # `return` :: List a
+    # toList :: List a
     def toFlatList:
         self.wrapper.toFlatList
 
+    # Returns Tensor in JSON type.
+    # `return` :: JSON
     # toJSON :: JSON
     def toJSON:
         dims = self.dims
         flat = self.toFlatList
 
-        None # these nones before comments are due to a parser error, TODO remove them later
-        None # toNested :: List Int -> List a -> JSON
         def toNested dims list:
             case dims of
                 Empty:
@@ -62,76 +75,188 @@ class Tensor a:
         res
 
     # toText :: Text
+    # `return` :: Text
     def toText:
         "Tensor " + (self.dims.toText)
 
+    def typetag:
+        self.wrapper.typetag
 
-# tensorFromPtr :: TypeTag a -> Pointer None -> Tensor a
-def tensorFromPtr typetag tensorPtr:
-    managedTensorPtr = ManagedPointer None . fromPointer releaseMethod tensorPtr
+# Creating tensors and operations on them.
+class Tensors:
+    Tensors
 
-    wrapper = TensorWrapper managedTensorPtr typetag
-    Tensor wrapper
+    # Creates tensor of given type from pointer to other tensor.
+    # Arguments: 
+    # `typetag` :: TypeTag
+    # `tensorPtr` :: ManagedPointer None
+    # `return` :: Tensor a
+    # fromPtr :: TypeTag a -> ManagedPointer None -> Tensor a
+    def fromPtr typetag managedTensorPtr:
+        wrapper = TensorWrapper managedTensorPtr typetag
+        Tensor wrapper
 
-# tensorFromList1d :: TypeTag a -> List a -> Tensor a
-def tensorFromList1d typetag list:
-    wrapper = createTensorWrapper typetag [list.length] list
-    Tensor wrapper
+    # Creates 1D tensor of given type, from given list of values.
+    # Arguments: 
+    # `typetag` :: TypeTag
+    # `list` :: List a
+    # `return` :: Tensor a
+    # fromList1d :: TypeTag -> List a -> Tensor a
+    def fromList1d typetag list:
+        wrapper = createTensorWrapper typetag [list.length] list
+        Tensor wrapper
 
-# tensorFromList2d :: TypeTag a -> List (List a) -> Tensor a
-def tensorFromList2d typetag list:
-    lengths = list.each (l: l.length)
-    w = list.length
-    h = lengths.getAt 0
-    if (lengths.all (l: l == h)).not then throw "tensorFromList2d: All lists have to be of equal lengts" else None
-    flat = list.concat
-    tensorFromList typetag [w, h] flat
+    # Creates 2D tensor of given type, from given 2D list of values.
+    # Arguments: 
+    # `typetag` :: TypeTag
+    # `list` :: List (List a)
+    # `return` :: Tensor a
+    # fromList2d :: TypeTag -> List (List a) -> Tensor a
+    def fromList2d typetag list:
+        lengths = list.each (l: l.length)
+        w = list.length
+        h = lengths.getAt 0
+        if (lengths.all (l: l == h)).not then throw "tensorFromList2d: All lists have to be of equal lengts" else None
+        flat = list.concat
+        self.fromList typetag [w, h] flat
 
-# tensorFromList :: TypeTag a -> List Int -> List a -> Tensor a
-def tensorFromList typetag dims list:
-    wrapper = createTensorWrapper typetag dims list
-    Tensor wrapper
+    # Creates const tensor of given type and dimensions, from list of values.
+    # Arguments: 
+    # `typetag` :: TypeTag
+    # `dims` :: List Int
+    # `list` :: List a
+    # `return` :: Tensor a
+    # fromList :: TypeTag -> List Int -> List a -> Tensor a
+    def fromList typetag dims list:
+        wrapper = createTensorWrapper typetag dims list
+        Tensor wrapper
 
-# randomTensor :: TypeTag a -> List Int -> a -> a -> Tensor a
-def randomTensor typetag dims minVal maxVal:
-    wrapper = createRandomTensorWrapper typetag dims minVal maxVal
-    Tensor wrapper
+    # Creates random tensor with given type and dimensions.
+    # Arguments: 
+    # `typetag` :: TypeTag
+    # `dims` :: List Int
+    # `minVal` :: a
+    # `maxVal` :: a
+    # `return` :: Tensor a
+    # random :: TypeTag -> List Int -> a -> a -> Tensor a
+    def random typetag dims minVal maxVal:
+        wrapper = createRandomTensorWrapper typetag dims minVal maxVal
+        Tensor wrapper
 
-# zeros :: Typetag a -> List Int -> Tensor a
-def zeros typetag dims:
-    wrapper = createConstTensorWrapper typetag dims 0
-    Tensor wrapper
+    # Creates const tensor of zeros with given type and dimensions.
+    # Arguments: 
+    # `typetag` :: TypeTag
+    # `dims` :: List Int
+    # `return` :: Tensor a
+    # zeros :: Typetag a -> List Int -> Tensor a
+    def zeros typetag dims:
+        wrapper = createConstTensorWrapper typetag dims (typetag.fromReal 0.0)
+        Tensor wrapper
 
-# zerosLike :: Typetag a -> Tensor a -> Tensor a
-def zerosLike typetag x:
-    wrapper = createConstTensorWrapper typetag x.dims 0
-    Tensor wrapper
+    # Creates const tensor of ones with given type and dimensions.
+    # Arguments: 
+    # `typetag` :: TypeTag
+    # `dims` :: List Int
+    # `return` :: Tensor a
+    # ones :: Typetag a -> List Int -> Tensor a
+    def ones typetag dims:
+        wrapper = createConstTensorWrapper typetag dims (typetag.fromReal 1.0)
+        Tensor wrapper
 
-# ones :: Typetag a -> List Int -> Tensor a
-def ones typetag dims:
-    wrapper = createConstTensorWrapper typetag dims 1
-    Tensor wrapper
+    # Transposes a tensor (TODO better description)
+    # Arguments:
+    # `t` :: Tensor a
+    # `return` :: Tensor a
+    # transpose :: Tensor a -> Tensor a
+    def transpose t:
+        c = Operations.makeConst t
+        perm = Operations.constFromList Int64Type [1,0]
+        transposed = transposeGen "" c perm c.typetag perm.typetag
+        t' = transposed.eval
+        t'
 
-# onesLike :: Typetag a -> Tensor a -> Tensor a
-def onesLike typetag x:
-    wrapper = createConstTensorWrapper typetag x.dims 1
-    Tensor wrapper
+    # Converts tensor to 2D list, but only if it's of expected shape.
+    # Arguments: 
+    # `tensor` :: Tensor a
+    # `return` :: List (List a)
+    # to2dList :: Tensor a -> List (List a)
+    def to2dList tensor:
+        dims = tensor.dims
+        if (dims.length == 2).not then throw "Only tensors with shape [w,h] can be converted to a 2d list" else None
+        [w,h] = dims
+        flat = tensor.toFlatList
+        res = splitInPacksOf h flat
+        res
 
-# eye :: Typetag a -> List Int -> Int -> Tensor a
-#def eye typetag dims k:
-#    wrapper = createEyeTensorWrapper typetag dims k
-#    Tensor wrapper
+    # Saves given tensor to file.
+    # Arguments:
+    # `filename` :: Text
+    # `tensor` :: Tensor a
+    # `return` :: ()
+    # save :: Text -> Tensor a -> ()
+    def save filename tensor:
+        saveTensorsWrapper filename [tensor.wrapper.ptr]
 
-# eyeLike :: Typetag a -> Tensor a -> Int -> Tensor a
-#def eyeLike typetag x k:
-#    wrapper = createEyeTensorWrapper typetag x.dims k
-#    Tensor wrapper
+    # Loads from file tensor of given type.
+    # Arguments:
+    # `filename` :: Text
+    # 'typetag' :: Typetag
+    # `return` :: Tensor a
+    # load :: Text -> Typetag -> Tensor a
+    def load filename typetag:
+        [ptr] = loadTensorsWrapper filename 1
+        Tensor (TensorWrapper ptr typetag)
 
-# tensorTo2dList :: Tensor a -> List (List a)
-def tensorTo2dList tensor:
-    dims = tensor.dims
-    if (dims.length == 2).not then throw "Only tensors with shape [w,h] can be converted to a 2d list" else None
-    [w,h] = dims
-    flat = tensor.toFlatList
-    res = splitInPacksOf h flat
-    res
+    # Loads tensor from PNG file in RGB format
+    # Arguments:
+    # `filename` :: Text
+    # `return` :: Tensor a
+    # fromPng :: Text -> Tensor a
+    def fromPng filename:
+        wrapper = fromPngWrapper filename
+        res = Tensor wrapper
+        res
+
+    # Loads all PNG files in RGB format in specified directory
+    # Arguments:
+    # `filename` :: Text
+    # `return` :: List (Tensor FloatType)
+    # fromPng :: Text -> List (Tensor FloatType)
+    def fromPngDir dirname:
+        wrappers = (fromPngDirWrappers dirname) . each (x: TensorWrapper x FloatType)
+        wrappers . each(x: Tensor x)
+
+
+    # Converts a Dataframes Table consisting of only float values into a 2D float tensor
+    # Arguments:
+    # `table` :: Dataframes.Table.Table
+    # `return` :: Tensor FloatType
+    # fromTable :: Table -> Tensor FloatType
+    def fromTable table:
+        lst = table.toList . each (col: col.toList)
+        t = Tensors.fromList2d FloatType lst
+        t
+
+    # Converts a Dataframes Table into a list of 1d tensors, each tensor representing a row from the table
+    # Arguments:
+    # `table` :: Dataframes.Table.Table
+    # `return` :: List (Tensor FloatType)
+    # fromTableRows :: Table -> List (Tensor FloatType)
+    def fromTableRows table:
+        t1 = Tensors.fromTable table
+        t2 = Tensors.transpose t1
+        lst' = Tensors.to2dList t2
+        cols = table.columnNames.length
+        shape = [cols, 1]
+        samples = lst'.each(l: Tensors.fromList FloatType shape l)
+        samples
+
+    # Convert a list of tensors of the same shape and type to a tensor
+    # Arguments:
+    # `tensors` :: List (Tensor a)
+    # `return` :: Tensor a
+    # batchFromList :: List (Tensor a) -> Tensor a
+    def batchFromList tensors:
+        wrappers = tensors.each tensor: tensor.wrapper
+        retWrapper = batchTensorWrappers wrappers
+        Tensor retWrapper

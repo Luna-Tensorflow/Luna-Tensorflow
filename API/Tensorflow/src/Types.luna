@@ -3,6 +3,37 @@ import Std.Foreign
 
 import Tensorflow.CWrappers.Helpers
 
+class TypeTagHelper:
+    # Converts a normal typetag into an erased version.
+    # eraseTypeTag :: a -> ErasedType
+    def eraseType typetag:
+        ErasedType typetag.typename typetag.num
+
+    # Checks whether two typetags are referring to the same type.
+    # May be used to check if some instance of a dynamic TypeTag is convertible to some concrete typetag.
+    # isTypeTagInstanceOf :: a -> b -> Bool
+    def isTypeTagInstanceOf t1 t2:
+        t1.num == t2.num
+
+class ErasedType:
+    typename :: Text
+    num :: Int
+
+    def toText:
+        "Erased(" + self.typename + ")"
+    def ctype:
+        throw "Erased types cannot be converted from/to actual values. To do so you have to manually cast to a concrete type (caused by .ctype)"
+    def fromC val:
+        throw "Erased types cannot be converted from/to actual values. To do so you have to manually cast to a concrete type (caused by .fromC)"
+    def toC val:
+        throw "Erased types cannot be converted from/to actual values. To do so you have to manually cast to a concrete type (caused by .toC)"
+    def cleanupLuna val:
+        throw "Erased types cannot be converted from/to actual values. To do so you have to manually cast to a concrete type (caused by .cleanupLuna)"
+    def cleanupC val:
+        throw "Erased types cannot be converted from/to actual values. To do so you have to manually cast to a concrete type (caused by .cleanupC)"
+    def fromReal x:
+        throw "Erased types cannot be converted from/to actual values. To do so you have to manually cast to a concrete type (caused by .fromReal)"
+
 class FloatType:
     def typename:
         "TF_FLOAT"
@@ -18,6 +49,10 @@ class FloatType:
         None
     def num:
         1
+    def toText:
+        self.typename
+    def fromReal x:
+        x
 
 class DoubleType:
     def typename:
@@ -34,6 +69,10 @@ class DoubleType:
         None
     def num:
         2
+    def toText:
+        self.typename
+    def fromReal x:
+        x
 
 class Int8Type:
     def typename:
@@ -50,6 +89,10 @@ class Int8Type:
         None
     def num:
         6
+    def toText:
+        self.typename
+    def fromReal x:
+        x.floor
 
 class Int16Type:
     def typename:
@@ -66,6 +109,10 @@ class Int16Type:
         None
     def num:
         5
+    def toText:
+        self.typename
+    def fromReal x:
+        x.floor
 
 class Int32Type:
     def typename:
@@ -82,6 +129,10 @@ class Int32Type:
         None
     def num:
         3
+    def toText:
+        self.typename
+    def fromReal x:
+        x.floor
 
 class Int64Type:
     def typename:
@@ -98,6 +149,10 @@ class Int64Type:
         None
     def num:
         9
+    def toText:
+        self.typename
+    def fromReal x:
+        x.floor
 
 class UInt8Type:
     def typename:
@@ -114,6 +169,10 @@ class UInt8Type:
         None
     def num:
         4
+    def toText:
+        self.typename
+    def fromReal x:
+        x.floor
 
 class UInt16Type:
     def typename:
@@ -130,6 +189,10 @@ class UInt16Type:
         None
     def num:
         17
+    def toText:
+        self.typename
+    def fromReal x:
+        x.floor
 
 class UInt32Type:
     def typename:
@@ -146,6 +209,10 @@ class UInt32Type:
         None
     def num:
         22
+    def toText:
+        self.typename
+    def fromReal x:
+        x.floor
 
 class UInt64Type:
     def typename:
@@ -162,6 +229,10 @@ class UInt64Type:
         None
     def num:
         23
+    def toText:
+        self.typename
+    def fromReal x:
+        x.floor
 
 class BoolType:
     def typename:
@@ -180,6 +251,10 @@ class BoolType:
         None
     def num:
         10
+    def toText:
+        self.typename
+    def fromReal x:
+        if x > 0 then True else False
 
 class StringType:
     def typename:
@@ -197,3 +272,7 @@ class StringType:
         callHandlingError "free_pointer" None [val'.toCArg]
     def num:
         7
+    def toText:
+        self.typename
+    def fromReal x:
+        x.toText

@@ -5,13 +5,13 @@ import Tensorflow.Graph
 import Tensorflow.Variables
 
 def vartest:
-    defaultValue = tensorFromList1d FloatType [1.0]
-    x = variable "x" defaultValue
-    c = constFromList FloatType [23.0]
-    u1 = assign x c
+    defaultValue = Tensors.fromList1d FloatType [1.0]
+    x = Variables.make "x" defaultValue
+    c = Operations.constFromList FloatType [23.0]
+    u1 = Variables.assign x c
 
-    g = makeGraphFromOutput u1
-    st1 = makeEmptyState
+    g = TFGraphMaker.makeFromOutput u1
+    st1 = StateOps.makeEmpty
     (u2, st2) = g.eval st1
 
     val = st2.value FloatType "x"
@@ -19,8 +19,8 @@ def vartest:
 
     y = x + c
 
-    0 # print y.toJSON # evals in default context, so should return 24 # TODO debug why this doesn't compile
+    print y.toJSON # evals in default context, so should return 24
 
-    g2 = makeGraphFromOutput y
+    g2 = TFGraphMaker.makeFromOutput y
     (xout, st3) = g2.eval st2
     print xout.toJSON # should print 23+23 = 46, as it evals after the assignment (st2)
