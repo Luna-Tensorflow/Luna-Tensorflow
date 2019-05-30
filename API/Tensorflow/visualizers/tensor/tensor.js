@@ -98,9 +98,9 @@
         var side = (canvasSize - 4) / Math.max(w,h);
         // border :  ctx.fillRect(0,0,4 + h * side,4 + w * side);
         ctx.fillRect(0,0,2,4 + w * side);
-        ctx.fillRect(2 + w * side,0,2,4 + w * side);
+        ctx.fillRect(2 + h * side,0,2,4 + w * side);
         ctx.fillRect(0,0,4 + h * side,2);
-        ctx.fillRect(0,2 + h * side,4 + h * side,2);
+        ctx.fillRect(0,2 + w * side,4 + h * side,2);
         for (var x = 0; x < w; ++x) {
             for (var y = 0; y < h; ++y) {
                 var v = data[x][y];
