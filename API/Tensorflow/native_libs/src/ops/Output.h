@@ -6,14 +6,14 @@
 
 #include "../helpers/utils.h"
 #include "../tensor/Tensor.h"
-#include "Binder.h"
+#include "Node.h"
 
 class GraphSession;
-class Binder;
+class Node;
 
 /*
  * An Output represents one of the outputs of the computation
- * represented by it's parent Node (now: Binder).
+ * represented by it's parent Node.
  * When creating a Node, we fetch its Outputs and may use them as inputs into other operations.
  * Outputs are what is provided for a graph during evaluation to compute.
  *
@@ -22,19 +22,19 @@ class Binder;
  */
 class Output {
 public:
-    Output(std::shared_ptr<Binder> binder, size_t index);
+    Output(std::shared_ptr<Node> binder, size_t index);
 
     TF_Output add_to_graph(GraphSession& graph) const;
 
     size_t hashcode() const;
 
     std::shared_ptr<Tensor> eval() const;
-    std::shared_ptr<Binder> get_binder();
+    std::shared_ptr<Node> get_binder();
 
     ~Output();
 private:
     size_t hash;
-    std::shared_ptr<Binder> binder;
+    std::shared_ptr<Node> binder;
 };
 
 #endif //TFL_OUTPUT_H

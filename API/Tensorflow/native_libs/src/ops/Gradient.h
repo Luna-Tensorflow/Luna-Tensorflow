@@ -9,7 +9,7 @@
 #include "../helpers/utils.h"
 #include "Output.h"
 
-class Gradient : public Binder {
+class Gradient : public Node {
 private:
     Gradient(std::vector<std::shared_ptr<Output>> ys,
             std::vector<std::shared_ptr<Output>> xs,

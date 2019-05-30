@@ -4,11 +4,11 @@
 #include <string>
 #include <memory>
 
-#include "../ops/Binder.h"
+#include "API/Tensorflow/native_libs/src/ops/Node.h"
 #include "../ops/Output.h"
 #include "../tensor/Tensor.h"
 
-class Variable : public Binder {
+class Variable : public Node {
 public:
     // result of this function lives only as long as the object itself
     const char* get_name() override;

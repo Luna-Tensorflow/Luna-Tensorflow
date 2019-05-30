@@ -9,9 +9,9 @@
 #include "../helpers/utils.h"
 #include "Output.h"
 #include "Attr.h"
-#include "Binder.h"
+#include "Node.h"
 
-class Operation : public Binder {
+class Operation : public Node {
 private:
     Operation(std::string name, std::vector<std::shared_ptr<Output>> inputs,
             std::vector<std::shared_ptr<Attr>> attrs, std::string chosen_name);

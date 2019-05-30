@@ -1,7 +1,7 @@
 #include "Output.h"
 #include "../graph/GraphSession.h"
 
-Output::Output(std::shared_ptr<Binder> binder, size_t index) : binder(std::move(binder)) {
+Output::Output(std::shared_ptr<Node> binder, size_t index) : binder(std::move(binder)) {
     hash = std::hash<int>()(index);
     hash = hash_combine(hash, this->binder->hashcode());
 }
@@ -29,7 +29,7 @@ std::shared_ptr<Tensor> Output::eval() const {
     return res->outputs[0];
 }
 
-std::shared_ptr<Binder> Output::get_binder() {
+std::shared_ptr<Node> Output::get_binder() {
     return binder;
 }
 

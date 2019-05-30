@@ -24,9 +24,9 @@ public:
  *  but Node's lifetime should be bound to the Outputs
  *  in such a way that it won't prevent from their deallocation.
  */
-class Binder : public Hashable {
+class Node : public Hashable {
 protected:
-    Binder() = default;
+    Node() = default;
 
 public:
     /*
@@ -39,7 +39,7 @@ public:
     	return nullptr;
     }
 
-    virtual ~Binder() = default;
+    virtual ~Node() = default;
 };
 
 #endif //TFL_BINDER_H

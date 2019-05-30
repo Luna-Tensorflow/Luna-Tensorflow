@@ -1,10 +1,10 @@
 #ifndef TFL_ASSIGN_H
 #define TFL_ASSIGN_H
 
-#include "../ops/Binder.h"
+#include "API/Tensorflow/native_libs/src/ops/Node.h"
 #include "Variable.h"
 
-class Sequence : public Binder {
+class Sequence : public Node {
 public:
 	static std::shared_ptr<Output> make_sequence(std::shared_ptr<Output> sideeffect,
 																std::shared_ptr<Output> value);
