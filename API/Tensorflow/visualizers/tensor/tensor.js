@@ -96,20 +96,28 @@
         var canvasSize = 200;
         ctx.fillStyle = '#BBCC00';
         var side = (canvasSize - 4) / Math.max(w,h);
+        var sideW = side;
+        var sideH = side;
+        if (w == 1 && sideW < 10) {
+            sideW = 10;
+        }
+        if (h == 1 && sideH < 10) {
+            sideH = 10;
+        }
         // border :  ctx.fillRect(0,0,4 + h * side,4 + w * side);
-        ctx.fillRect(0,0,2,4 + w * side);
-        ctx.fillRect(2 + h * side,0,2,4 + w * side);
-        ctx.fillRect(0,0,4 + h * side,2);
-        ctx.fillRect(0,2 + w * side,4 + h * side,2);
+        ctx.fillRect(0,0,2,4 + w * sideW);
+        ctx.fillRect(2 + h * sideH,0,2,4 + w * sideW);
+        ctx.fillRect(0,0,4 + h * sideH,2);
+        ctx.fillRect(0,2 + w * sideW,4 + h * sideH,2);
         for (var x = 0; x < w; ++x) {
             for (var y = 0; y < h; ++y) {
                 var v = data[x][y];
                 ctx.fillStyle = valueToColor(v);
-                ctx.fillRect(y * side + 2, x * side + 2, side, side);
+                ctx.fillRect(y * sideH + 2, x * sideW + 2, sideH, sideW);
                 if (addText && side > 30) {
                     // for small pictures (so pixels are big), add text values
                     ctx.fillStyle = '#00AA00';
-                    ctx.fillText(trunc(v), y * side + 10, x * side + 15);
+                    ctx.fillText(trunc(v), y * sideW + 10, x * sideH + 15);
                 }
             }
         }
