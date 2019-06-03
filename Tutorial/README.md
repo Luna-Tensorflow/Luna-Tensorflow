@@ -2,7 +2,7 @@
 
 # Luna-Tensorflow Fashion MNIST Tutorial 
 
-Based on: https://www.tensorflow.org/tutorials/keras/basic_classification
+Based on: <a href="https://www.tensorflow.org/tutorials/keras/basic_classification">Keras classification tutorial</a>.
 
 </center>
 
