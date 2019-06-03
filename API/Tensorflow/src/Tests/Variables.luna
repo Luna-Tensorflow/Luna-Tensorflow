@@ -5,6 +5,8 @@ import Tensorflow.Graph
 import Tensorflow.Variables
 
 def vartest:
+    print "Var"
+
     defaultValue = Tensors.fromList1d FloatType [1.0]
     x = Variables.make "x" defaultValue
     c = Operations.constFromList FloatType [23.0]
@@ -15,12 +17,24 @@ def vartest:
     (u2, st2) = g.eval st1
 
     val = st2.value FloatType "x"
-    print val.toJSON # should print 23
+
+    vJSON = val.toJSON
+
+    if (vJSON == [23].toJSON).not then throw $ "Var error: expected 23, got " + vJSON.toText else None
 
     y = x + c
 
-    print y.toJSON # evals in default context, so should return 24
+    yJSON = y.toJSON
+
+    if (yJSON == [24].toJSON).not then throw $ "Var error: expected 24, got " + yJSON.toText else None
 
     g2 = TFGraphMaker.makeFromOutput y
     (xout, st3) = g2.eval st2
-    print xout.toJSON # should print 23+23 = 46, as it evals after the assignment (st2)
+
+    xoutJSON = xout.toJSON
+
+    if (xoutJSON == [[46]].toJSON).not then throw $ "Var error: expected 46, got " + xoutJSON.toText else None
+
+    print "Var OK"
+    print ""
+    print ""

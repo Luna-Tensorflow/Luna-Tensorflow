@@ -1,0 +1,47 @@
+import Tensorflow.Types
+import Tensorflow.Tensor
+import Tensorflow.Operations
+
+import Tensorflow.Layers.Input
+import Tensorflow.Layers.Conv
+import Tensorflow.Layers.Reshape
+import Tensorflow.Optimizers.GradientDescent
+import Tensorflow.Losses.MeanError
+import Tensorflow.Losses.Crossentropy
+import Tensorflow.Model
+
+def testConvolutional:
+    print "Convolutional"
+
+    h = 5
+    w = 10
+    picture = Tensors.random FloatType [h, w] 1.0.negate 1.0
+
+    i =  Input.create FloatType [h, w]
+    c1 = Conv2d.createWithActivation [4, 5] 1 (1, 2) Valid Operations.tanh i
+    r =  Reshape.create [2, 1.negate] c1
+
+    opt = GradientDescentOptimizer.create 0.1
+    loss = MeanErrors.meanSquareError
+
+    model = Models.make i r opt loss
+
+    res = model . evaluate $ Tensors.batchFromList [picture]
+
+    picture = Tensors.random FloatType [w] 1.0.negate 1.0
+
+    i =  Input.create FloatType [w]
+
+    c1 = Conv1d.createWithActivation 5 1 2 Valid Operations.tanh i
+    r =  Reshape.create [3] c1
+
+    opt = GradientDescentOptimizer.create 0.1
+    loss = MeanErrors.meanSquareError
+
+    model = Models.make i r opt loss
+
+    res = model . evaluate $ Tensors.batchFromList [picture]
+
+    print "Convolutional OK"
+    print ""
+    print ""

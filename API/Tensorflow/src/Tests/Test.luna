@@ -8,6 +8,15 @@ import Tensorflow.Gradient
 import Tensorflow.Types
 import Tensorflow.GeneratedOps
 
+import Tensorflow.Tests.HighlevelNets
+import Tensorflow.Tests.LowlevelNet
+import Tensorflow.Tests.Convolutional
+import Tensorflow.Tests.TensorFromPNG
+import Tensorflow.Tests.TensorSerialization
+import Tensorflow.Tests.TensorTest
+import Tensorflow.Tests.Variables
+import Tensorflow.Tests.Merge
+
 def step func (x, y) [a, b]:
     func x y a b
 
@@ -171,12 +180,6 @@ def testAttrs:
     print ""
     print ""
 
-def testTensorVis:
-    tensor = Tensors.fromList2d FloatType [[0.0, 0.5, 1.0], [0.2, 0.3, 0.6], [0.7, 0.8, 0.9]]
-    t2 = Tensors.random FloatType [4,80,80] 0.0 1.0
-    t3 = Tensors.random FloatType [20,30,3] 0.0 1.0
-    tp = Tensors.fromPng "logo.png"
-
 def testMain:
     testRegression
     testUInt8
@@ -186,3 +189,14 @@ def testMain:
     testMultidimensionalTensors
     testMultiOutputOp
     testAttrs
+    vartest
+    testLowlevelNet
+    testClassificationGradientDescent
+    testClassificationRMSProp
+    testConvolutional
+    tensorTest
+    tensorSerializationTest
+    tensorFromPngTest
+    tensorFromPngDirTest
+    testMerge
+    testMerge2

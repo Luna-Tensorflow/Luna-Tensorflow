@@ -4,32 +4,33 @@ import Tensorflow.Types
 import Tensorflow.Variables
 
 def tensorSerializationTest:
-    t1d = Tensors.fromList FloatType [2,2] [1.0, 2.0, 3.0, 4.0]
-    print "Made tensors:"
-    print t1d.toJSON
+    print "TensorSerialization"
 
-    print "Saving them"
+    t1d = Tensors.fromList FloatType [2,2] [1.0, 2.0, 3.0, 4.0]
+
     Tensors.save "tensors.tf" t1d
 
-    print "Saved, loading"
     ret = Tensors.load "tensors.tf" FloatType
-    print "Loaded"
-    print ret.toJSON
+    retJSON = ret.toJSON
+    if (retJSON == [[1,2],[3,4]].toJSON).not then throw $ "TensorSerialization error: expected [[1,2],[3,4]], got " + retJSON.toText else None
 
     st = StateOps.makeEmpty
     v1 = Variables.make "v1" t1d
     v2 = Variables.make "v2" (Tensors.fromList1d StringType ["a", "bb", "ccc"])
     vars = [v1.eraseType, v2.eraseType]
     st' = StateOps.setVariableValue st "v2" (Tensors.fromList1d StringType ["a'", "b'b", "c'dd"])
-    print "Saving state"
     StateOps.saveVariables "state.tf" vars st'
-    print "Saved"
 
-    print "Loading"
     loaded = StateOps.loadVariables "state.tf" vars StateOps.makeEmpty
-    print "Loaded"
+
     v2' = loaded.value StringType "v2"
-    print v2'.toJSON
+    v2JSON = v2'.toJSON
+    if (v2JSON == ["a'","b'b","c'dd"].toJSON).not then throw $ "TensorSerialization error: expected " + ["a'","b'b","c'dd"].toJSON.toText + ", got " + v2JSON.toText else None
+
     v1' = loaded.value FloatType "v1"
-    print v1'.toJSON
-    
+    v1JSON = v1'.toJSON
+    if (v1JSON == [[1,2],[3,4]].toJSON).not then throw $ "TensorSerialization error: expected [[1,2],[3,4]], got " + v1JSON.toText else None
+
+    print "TensorSerialization OK"
+    print ""
+    print ""
