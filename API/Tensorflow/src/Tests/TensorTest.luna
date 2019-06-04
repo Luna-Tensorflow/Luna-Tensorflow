@@ -3,28 +3,53 @@ import Tensorflow.Types
 import Tensorflow.Operations
 
 def tensorTest:
+    print "Tensor"
+
     t1d = Tensors.fromList1d FloatType [1.0, 2.0, 3.0, 4.0]
-    print "1d"
-    print t1d.toFlatList
-    print t1d.toJSON
 
-    print "2d"
+    t1dFlatList = t1d.toFlatList
+    if (t1dFlatList == [1.0, 2.0, 3.0, 4.0]).not then throw $ "Tensor error: expected [1.0, 2.0, 3.0, 4.0], got " + t1dFlatList.toText else None
+
+    t1dJSON = t1d.toJSON
+    if (t1dJSON == [1,2,3,4].toJSON).not then throw $ "Tensor error: expected [1,2,3,4], got " + t1dJSON.toText else None
+
+
     t2d = Tensors.fromList2d StringType [["a","b"],["c","dd"]]
-    print t2d.toFlatList
-    print t2d.toJSON
-    l2d = Tensors.to2dList t2d
-    print l2d
 
-    print "3d"
+    t2dFlatList = t2d.toFlatList
+    if (t2dFlatList == ["a", "b", "c", "dd"]).not then throw $ "Tensor error: expected [a, b, c, dd], got " + t2dFlatList.toText else None
+
+    t2dJSON = t2d.toJSON
+    if (t2dJSON == [["a","b"],["c","dd"]].toJSON).not then throw $ 'Tensor error: expected [["a","b"],["c","dd"]], got ' + t2dJSON.toText else None
+
+    l2d = Tensors.to2dList t2d
+    if (l2d == [["a", "b"], ["c", "dd"]]).not then throw $ "Tensor error: expected [[a, b], [c, dd]], got " + l2d.toText else None
+
+
     t3d = Tensors.fromList Int32Type [2,2,3] [1,2,3,4,5,6,7,8,9,10,11,12]
-    print t3d.toFlatList
-    print t3d.toJSON
+
+    t3dFlatList = t3d.toFlatList
+    if (t3dFlatList == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]).not then throw $ "Tensor error: expected [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], got " + t3dFlatList.toText else None
+
+    t3dJSON = t3d.toJSON
+    if (t3dJSON == [[[1,2,3],[4,5,6]],[[7,8,9],[10,11,12]]].toJSON).not then throw $ "Tensor error: expected [[[1,2,3],[4,5,6]],[[7,8,9],[10,11,12]]], got " + t3dJSON.toText else None
 
     t1 = Tensors.ones Int32Type [5, 5]
-    print t1.toJSON
+    t1JSON = t1.toJSON
+    if (t1JSON == [[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]].toJSON).not then throw $ "Tensor error: expected [[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]], got " + t1JSON.toText else None
+
     t2 = Tensors.zeros Int32Type [3, 3]
-    print t2.toJSON
+    t2JSON = t2.toJSON
+    if (t2JSON == [[0,0,0],[0,0,0],[0,0,0]].toJSON).not then throw $ "Tensor error: expected [[0,0,0],[0,0,0],[0,0,0]], got " + t2JSON.toText else None
+
     t3 = Operations.onesLike (Operations.makeConst t2) . eval
-    print t3.toJSON
+    t3JSON = t3.toJSON
+    if (t3JSON == [[1,1,1],[1,1,1],[1,1,1]].toJSON).not then throw $ "Tensor error: expected [[1,1,1],[1,1,1],[1,1,1]], got " + t3JSON.toText else None
+
     t4 = Operations.zerosLike (Operations.makeConst t1) . eval
-    print t4.toJSON
+    t4JSON = t4.toJSON
+    if (t4JSON == [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]].toJSON).not then throw $ "Tensor error: expected [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]], got " + t4JSON.toText else None
+
+    print "Tensor OK"
+    print ""
+    print ""

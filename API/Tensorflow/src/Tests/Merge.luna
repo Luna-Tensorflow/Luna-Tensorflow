@@ -1,0 +1,76 @@
+import Tensorflow.Layers.Merge
+import Tensorflow.Layers.Input
+import Tensorflow.Layers.Dense
+import Tensorflow.Optimizers.GradientDescent
+import Tensorflow.Losses.MeanError
+import Tensorflow.Model
+
+import Tensorflow.Tensor
+import Tensorflow.Types
+
+def unique l:
+    l . groupBy id . all $ x: x.second.length == 1
+
+def testMerge:
+    print "Merge"
+
+    i =  Input.create FloatType [4]
+    d1 = Dense.create 7 i
+    d2 = Dense.create 4 d1
+    d3 = Dense.create 4 d2
+    a = Merge.add d2 d3
+    out = Dense.create 1 a
+
+    opt = GradientDescentOptimizer.create 0.1
+    loss = MeanErrors.meanSquareError
+
+    model = Models.make i out opt loss
+
+    expectedOutText = '{"name":"Dense_7","shape":[1],"parents":[{"name":"Add_0","shape":[4],"parents":[{"name":"Dense_5","shape":[4],"parents":[{"name":"Dense_4","shape":[7],"parents":[{"name":"Input_4","shape":[4],"parents":[],"type":"Input"}],"type":"Dense"}],"type":"Dense"},{"name":"Dense_6","shape":[4],"parents":[{"name":"Dense_5","shape":[4],"parents":[{"name":"Dense_4","shape":[7],"parents":[{"name":"Input_4","shape":[4],"parents":[],"type":"Input"}],"type":"Dense"}],"type":"Dense"}],"type":"Dense"}],"type":"Add"}],"type":"Dense"}'
+    outText = out.toJSON.toText
+    if (outText == expectedOutText).not then throw $ "Merge error: expected " + expectedOutText + ", got " + outText else None
+
+    vars = out.trainableVariables
+    varnames = vars.each (v: v.wrapper.opName)
+    if (unique varnames).not then throw $ "Merge error: trainable variables' names are not unique: " + varnames.toText else None
+
+    0 # Data only for testing that the flow works, we're not building a practical example here
+    testX = Tensors.random FloatType [1, 4] 0.0 1.0
+    testY = Tensors.random FloatType [1, 1] 0.0 1.0
+    fitted = model.train [testX] [testY] 1 NoValidation 0 . second
+
+    expectedFittedText = '{"name":"Dense_7","shape":[1],"parents":[{"name":"Add_0","shape":[4],"parents":[{"name":"Dense_5","shape":[4],"parents":[{"name":"Dense_4","shape":[7],"parents":[{"name":"Input_4","shape":[4],"parents":[],"type":"Input"}],"type":"Dense"}],"type":"Dense"},{"name":"Dense_6","shape":[4],"parents":[{"name":"Dense_5","shape":[4],"parents":[{"name":"Dense_4","shape":[7],"parents":[{"name":"Input_4","shape":[4],"parents":[],"type":"Input"}],"type":"Dense"}],"type":"Dense"}],"type":"Dense"}],"type":"Add"}],"type":"Dense"}'
+    fittedText = fitted.toJSON.toText
+    if (fittedText == expectedFittedText).not then throw $ "Merge error: expected " + expectedFittedText + ", got " + fittedText else None
+
+    print "Merge OK"
+    print ""
+    print ""
+
+def testMerge2:
+    print "Merge2"
+
+    i =  Input.create FloatType [4]
+    d1 = Dense.create 4 i
+    d2 = Dense.create 1 d1
+
+    opt = GradientDescentOptimizer.create 0.1
+    loss = MeanErrors.meanSquareError
+
+    model = Models.make i d2 opt loss
+
+    expectedD2Text = '{"name":"Dense_9","shape":[1],"parents":[{"name":"Dense_8","shape":[4],"parents":[{"name":"Input_5","shape":[4],"parents":[],"type":"Input"}],"type":"Dense"}],"type":"Dense"}'
+    d2Text = d2.toJSON.toText
+    if (d2Text == expectedD2Text).not then throw $ "Merge2 error: expected " + expectedD2Text + ", got " + d2Text else None
+
+    0 # Data only for testing that the flow works, we're not building a practical example here
+    testX = [Tensors.random FloatType [1, 4] 0.0 1.0]
+    testY = [Tensors.random FloatType [1, 1] 0.0 1.0]
+    fitted = model.train testX testY 1 NoValidation 0 . second
+
+    expectedFittedText = '{"name":"Dense_9","shape":[1],"parents":[{"name":"Dense_8","shape":[4],"parents":[{"name":"Input_5","shape":[4],"parents":[],"type":"Input"}],"type":"Dense"}],"type":"Dense"}'
+    fittedText = fitted.toJSON.toText
+    if (fittedText == expectedFittedText).not then throw $ "Merge2 error: expected " + expectedFittedText + ", got " + fittedText else None
+    print "Merge2 OK"
+    print ""
+    print ""

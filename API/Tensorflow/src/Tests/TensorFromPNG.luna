@@ -1,6 +1,25 @@
 import Tensorflow.Tensor
 
 def tensorFromPngTest:
+    print "TensorFromPng"
+
     tensor = Tensors.fromPng "flag.png"
-    print ("Sizes: " + tensor.toText)
-    print (tensor.toJSON)
+
+    tensorText = tensor.toText
+    if (tensorText == "Tensor [12, 20, 3]").not then throw $ "TensorFromPng error: expected Tensor [12, 20, 3], got " + tensorText else None
+
+    print "TensorFromPng OK"
+    print ""
+    print ""
+
+def tensorFromPngDirTest:
+    print "TensorFromPngDir"
+
+    fromPngDir1 = Tensors.fromPngDir "."
+
+    fromPngDirText = fromPngDir1.toText
+    if (fromPngDirText == "[Tensor [200, 200, 3], Tensor [12, 20, 3], Tensor [28, 28, 3]]").not then throw $ "TensorFromPngDir error: expected [Tensor [200, 200, 3], Tensor [12, 20, 3], Tensor [28, 28, 3]], got " + fromPngDirText else None
+
+    print "TensorFromPngDir OK"
+    print ""
+    print ""

@@ -1,0 +1,83 @@
+import Tensorflow.Types
+import Tensorflow.Tensor
+import Tensorflow.Operations
+
+import Tensorflow.Layers.Input
+import Tensorflow.Layers.Dense
+import Tensorflow.Layers.Dropout
+import Tensorflow.Optimizers.GradientDescent
+import Tensorflow.Optimizers.RMSProp
+import Tensorflow.Losses.MeanError
+import Tensorflow.Losses.Crossentropy
+import Tensorflow.Model
+import Tensorflow.Examples.Classification
+
+def testClassificationRMSProp:
+    print "ClassificationRMSProp"
+
+    n = 100
+
+    (x,y) = generateTest n
+    (testX, testY) = generateTest n
+
+    i  = Input.create FloatType [4]
+    d1 = Dense.createWithActivation 10 Operations.tanh i
+    d2 = Dropout.create 0.5 d1
+    d3 = Dense.createWithActivation 1 Operations.sigmoid d2
+
+    opt  = RMSPropOptimizer.create 0.1 0.9 0.9 0.00000001
+    loss = MeanErrors.meanSquareError
+
+    model = Models.make i d3 opt loss
+
+    (_, fitted) = model.train x y 10 (ValidationFraction 0.1) 0
+
+    predY = testX . each fitted.evaluate
+
+    result = (predY . zip testY) . fold 0.0 ((pY, tY): ((absPatch (pY.atIndex 0 - tY.atIndex 0)) . round 0 +) ) # 0 is ok, 1 is fail
+
+    maxn = n . toReal
+    effic = (maxn - result) / maxn
+
+    if effic < 0.7 then throw $ "ClassificationRMSProp error: accuracy below 70%" else None
+
+    print "ClassificationRMSProp OK"
+    print ""
+    print ""
+
+def testClassificationGradientDescent:
+    print "ClassificationGradientDescent"
+
+    n = 100
+
+    (x,y) = generateTest n
+    (validationX, validationY) = generateTest (n / 10)
+    (testX, testY) = generateTest n
+
+    i =  Input.create FloatType [4]
+    d1 = Dense.createWithActivation 3 Operations.tanh i
+    d2 = Dense.createWithActivation 1 Operations.sigmoid d1
+
+    opt = GradientDescentOptimizer.create 0.1
+    loss = MeanErrors.meanSquareError
+
+    model = Models.make i d2 opt loss
+
+    (history, fitted) = model.train x y 10 (ValidationSet validationX validationY) 2
+
+    fitted.saveWeights "classification.tf"
+
+    loaded = model.loadWeights "classification.tf"
+
+    predY = testX . each loaded.evaluate
+
+    result = (predY . zip testY) . fold 0.0 ((pY, tY): ((absPatch (pY.atIndex 0 - tY.atIndex 0)) . round 0 +) ) # 0 is ok, 1 is fail
+
+    maxn = n . toReal
+    effic = (maxn - result) / maxn
+
+    if effic < 0.7 then throw $ "ClassificationGradientDescent error: accuracy below 70%" else None
+
+    print "ClassificationGradientDescent OK"
+    print ""
+    print ""
