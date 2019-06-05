@@ -7,27 +7,17 @@ import Tensorflow.GeneratedOps
 class Losses:
     Losses
 
-    # Categorical cross-entropy loss function.
-    # Arguments:
-    # `yTrue` :: TFOutput
-    # `yPred` :: TFOutput
-    # `return` :: TFOutput
-    # categoricalCrossentropy :: TFOutput -> TFOutput -> TFOutput
-    def categoricalCrossentropy yTrue yPred:
-        out = Operations.neg (Operations.sum (yTrue * (Operations.log yPred)) [0])
-        out
-
     # Binary cross-entropy loss function.
     # Arguments:
     # `yTrue` :: TFOutput
     # `yPred` :: TFOutput
     # `return` :: TFOutput
-    # binaryCrossentropy :: TFOutput -> TFOutput -> TFOutput
-    def binaryCrossentropy yTrue yPred:
-        t = Tensor.fromList1d FloatType [1.0]
+    # binaryCrossEntropy :: TFOutput -> TFOutput -> TFOutput
+    def binaryCrossEntropy yTrue yPred:
+        t = Tensors.fromList FloatType [] [1.0]
         ones = Operations.makeConst t
 
-        added = (yTrue * (log yPred)) + ((ones - yTrue) * (log (ones - yPred)))
+        added = (yTrue * (Operations.log yPred)) + ((ones - yTrue) * (Operations.log (ones - yPred)))
         out = Operations.neg (Operations.mean added [0])
         out
 
