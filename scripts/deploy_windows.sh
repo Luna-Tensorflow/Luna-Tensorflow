@@ -4,6 +4,7 @@ cd build
 cmake --build .
 cd ../release/
 cp -rv ../API/Tensorflow/src/ . # copy Luna srcs and metadata
+cp -rv ../API/Tensorflow/visualizers/ . # copy Luna srcs and metadata
 cp -rv ../API/Tensorflow/.luna-package/ .
 cp -v ../API/Tensorflow/native_libs/windows/libTFL.dll native_libs/windows/
 cp -v ../tensorflow/lib/tensorflow.dll native_libs/windows/libtensorflow.so # weird naming but that's what libTFL.dll requires
