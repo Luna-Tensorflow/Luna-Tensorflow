@@ -9,7 +9,7 @@ The following project is the binding of the <a href="https://www.tensorflow.org/
 
 ## Getting the sources:
 ```
-git clone -b APIv1 https://github.com/Luna-Tensorflow/Luna-Tensorflow.git
+git clone https://github.com/Luna-Tensorflow/Luna-Tensorflow.git
 ```
 
 ## Building the internal C++ library:
