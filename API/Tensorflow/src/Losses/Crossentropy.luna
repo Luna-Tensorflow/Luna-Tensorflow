@@ -28,5 +28,5 @@ class Losses:
     # `return` :: TFOutput
     # categoricalCrossEntropy :: TFOutput -> TFOutput -> TFOutput
     def categoricalCrossEntropy labels features:
-        (out, _) = softmaxCrossEntropyWithLogitsGen "" features labels features.typetag
+        (out, _) = GeneratedOps.softmaxCrossEntropyWithLogits "" features labels features.typetag
         out

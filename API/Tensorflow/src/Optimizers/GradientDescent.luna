@@ -37,7 +37,7 @@ class GradientDescent:
 
           def makeAndApplyGradientDescent (v, g):
               lr = Operations.constFromReal v.typetag self.lr
-              applyGradientDescentGen "" v lr g v.typetag False
+              GeneratedOps.applyGradientDescent "" v lr g v.typetag False
 
           errWithSideEffect = Variables.sequence' err $ varsAndGrads.map makeAndApplyGradientDescent
 

@@ -187,7 +187,7 @@ class Operations:
     # `return` :: TFOutput a
     # add :: TFOutput a -> TFOutput a -> TFOutput a
     def add x y:
-        out = addGen "" x y x.typetag
+        out = GeneratedOps.add "" x y x.typetag
         out
 
     # Multiplies two TFOutputs.
@@ -197,7 +197,7 @@ class Operations:
     # `return` :: TFOutput a
     # mul :: TFOutput a -> TFOutput a -> TFOutput a
     def mul x y:
-        out = mulGen "" x y x.typetag
+        out = GeneratedOps.mul "" x y x.typetag
         out
 
     # Substracts two TFOutputs.
@@ -207,7 +207,7 @@ class Operations:
     # `return` :: TFOutput a
     # sub :: TFOutput a -> TFOutput a -> TFOutput a
     def sub x y:
-        out = subGen "" x y x.typetag
+        out = GeneratedOps.sub "" x y x.typetag
         out
 
     # Divides two TFOutputs.
@@ -217,7 +217,7 @@ class Operations:
     # `return` :: TFOutput a
     # div :: TFOutput a -> TFOutput a -> TFOutput a
     def div x y:
-        out = divGen "" x y x.typetag
+        out = GeneratedOps.div "" x y x.typetag
         out
 
     # Multiplies two TFOutput matrixes.
@@ -227,7 +227,7 @@ class Operations:
     # `return` :: TFOutput a
     # matMul :: TFOutput a -> TFOutput a -> TFOutput a
     def matMul x y:
-        out = matMulGen "" x y False False x.typetag
+        out = GeneratedOps.matMul "" x y False False x.typetag
         out
 
     # Check equality between two TFOutputs.
@@ -237,7 +237,7 @@ class Operations:
     # `return` :: TFOutput a
     # equal :: TFOutput a -> TFOutput a -> TFOutput a
     def equal x y:
-        out = equalGen "" x y x.typetag
+        out = GeneratedOps.equal "" x y x.typetag
         out
 
     # Returns TFOutput with value of hyperbolic tangent on given TFOutput.
@@ -246,7 +246,7 @@ class Operations:
     # `return` :: TFOutput a
     # tanh :: TFOutput a -> TFOutput a
     def tanh x:
-        out = tanhGen "" x x.typetag
+        out = GeneratedOps.tanh "" x x.typetag
         out
 
     # Returns TFOutput with value of rectified linear unit on given TFOutput.
@@ -255,7 +255,7 @@ class Operations:
     # `return` :: TFOutput a
     # relu :: TFOutput a -> TFOutput a
     def relu x:
-        out = reluGen "" x x.typetag
+        out = GeneratedOps.relu "" x x.typetag
         out
 
     # Returns TFOutput with value of softmax function on given TFOutput.
@@ -264,7 +264,7 @@ class Operations:
     # `return` :: TFOutput a
     # softmax :: TFOutput a -> TFOutput a
     def softmax x:
-        out = softmaxGen "" x x.typetag
+        out = GeneratedOps.softmax "" x x.typetag
         out
 
     # Returns TFOutput with value of sigmoid function on given TFOutput.
@@ -273,7 +273,7 @@ class Operations:
     # `return` :: TFOutput a
     # sigmoid :: TFOutput a -> TFOutput a
     def sigmoid x:
-        out = sigmoidGen "" x x.typetag
+        out = GeneratedOps.sigmoid "" x x.typetag
         out
 
     # Returns TFOutput with value of signum function on given TFOutput.
@@ -282,7 +282,7 @@ class Operations:
     # `return` :: TFOutput a
     # sign :: TFOutput a -> TFOutput a
     def sign x:
-        out = signGen "" x x.typetag
+        out = GeneratedOps.sign "" x x.typetag
         out
 
     # Returns TFOutput with value of exponential function on given TFOutput.
@@ -291,7 +291,7 @@ class Operations:
     # `return` :: TFOutput a
     # exp :: TFOutput a -> TFOutput a
     def exp x:
-        out = expGen "" x x.typetag
+        out = GeneratedOps.exp "" x x.typetag
         out
 
     # Returns TFOutput with value of natural logatirhm on given TFOutput.
@@ -300,7 +300,7 @@ class Operations:
     # `return` :: TFOutput a
     # log :: TFOutput a -> TFOutput a
     def log x:
-        out = logGen "" x x.typetag
+        out = GeneratedOps.log "" x x.typetag
         out
 
     # Returns TFOutput with absolute value of given TFOutput.
@@ -309,7 +309,7 @@ class Operations:
     # `return` :: TFOutput a
     # abs :: TFOutput a -> TFOutput a
     def abs x:
-        out = absGen "" x x.typetag
+        out = GeneratedOps.abs "" x x.typetag
         out
 
     # Returns TFOutput with negative value of given TFOutput.
@@ -318,7 +318,7 @@ class Operations:
     # `return` :: TFOutput a
     # neg :: TFOutput a -> TFOutput a
     def neg x:
-        out = negGen "" x x.typetag
+        out = GeneratedOps.neg "" x x.typetag
         out
 
     # Returns TFOutput with value of computed sum of elements across given dimensions of a tensor. 
@@ -331,7 +331,7 @@ class Operations:
         t = Tensors.fromList1d Int32Type dims
         reductionxindices = self.makeConst t
 
-        out = sumGen "" x reductionxindices False x.typetag Int32Type
+        out = GeneratedOps.sum "" x reductionxindices False x.typetag Int32Type
         out
 
     # Returns TFOutput with value of mean of elements across given dimensions of a tensor. 
@@ -344,7 +344,7 @@ class Operations:
         t = Tensors.fromList1d Int32Type dims
         reductionxindices = self.makeConst t
 
-        out = meanGen "" x reductionxindices False x.typetag Int32Type
+        out = GeneratedOps.mean "" x reductionxindices False x.typetag Int32Type
         out
 
     # Returns TFOutput with value of given TFOutput with inserted dimension of 1 into a tensor's shape. 
@@ -357,7 +357,7 @@ class Operations:
         t = Tensors.fromList1d Int32Type [dim]
         tdims = self.makeConst t
 
-        out = expandDimsGen "" x tdims x.typetag Int32Type
+        out = GeneratedOps.expandDims "" x tdims x.typetag Int32Type
         out
 
     # Returns TFOutput with value of given TFOutput with removed dimensions of size 1 from the shape of a tensor. 
@@ -367,7 +367,7 @@ class Operations:
     # `return` :: TFOutput a
     # squeeze :: TFOutput a -> List Int -> TFOutput a
     def squeeze x dims:
-        out = squeezeGen "" x x.typetag dims
+        out = GeneratedOps.squeeze "" x x.typetag dims
         out
 
     # Arguments:
@@ -412,7 +412,7 @@ class Operations:
         dataFormat = "NHWC"
         dilations = [1,1,1,1]
 
-        out = conv2DGen "" input kernel input.typetag strides usegpu padding.toText dataFormat dilations
+        out = GeneratedOps.conv2D "" input kernel input.typetag strides usegpu padding.toText dataFormat dilations
         out
 
     # Returns TFOutput with value of reshaped tensor from given TFOutput.
@@ -425,7 +425,7 @@ class Operations:
         shapeT = Tensors.fromList1d Int32Type newdims
         shape = self.makeConst shapeT
 
-        out = reshapeGen "" input shape input.typetag Int32Type
+        out = GeneratedOps.reshape "" input shape input.typetag Int32Type
         out
 
     # Returns uniformly random TFOutput of given type and shape.
@@ -449,14 +449,14 @@ class Operations:
     # argMax :: TFOutput a -> Int -> TFOutput Int32Type
     def argMax input dimension:
         dim = Operations.constFromScalar Int32Type dimension
-        out = argMaxGen "" input dim input.typetag dim.typetag Int32Type
+        out = GeneratedOps.argMax "" input dim input.typetag dim.typetag Int32Type
 
     # Arguments:
     # `input` :: TFOutput a
     # `return` :: TFOutput Int32Type
     # size :: TFOutput a -> TFOutput Int32Type
     def size input:
-        out = sizeGen "" input input.typetag Int32Type
+        out = GeneratedOps.size "" input input.typetag Int32Type
         out
 
     # Arguments
@@ -465,7 +465,7 @@ class Operations:
     # `return` :: TFOutput b
     # cast :: TFOutput a -> b -> TFOutput b
     def cast x dstType:
-        out = castGen "" x x.typetag dstType False
+        out = GeneratedOps.cast "" x x.typetag dstType False
 
     # Returns TFOutput filled with zeros with given type and shape of a given TFOutput
     # Arguments:
@@ -473,7 +473,7 @@ class Operations:
     # `return` :: TFOutput a
     # zerosLike :: TFOutput a -> TFOutput a
     def zerosLike x:
-        out = zerosLikeGen "" x x.typetag
+        out = GeneratedOps.zerosLike "" x x.typetag
         out
 
     # Returns TFOutput filled with ones with given type and shape of a given TFOutput
@@ -482,5 +482,5 @@ class Operations:
     # `return` :: TFOutput a
     # onesLike :: TFOutput a -> TFOutput a
     def onesLike x:
-        out = onesLikeGen "" x x.typetag
+        out = GeneratedOps.onesLike "" x x.typetag
         out

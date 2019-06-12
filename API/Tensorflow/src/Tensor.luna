@@ -171,7 +171,7 @@ class Tensors:
     def transpose t:
         c = Operations.makeConst t
         perm = Operations.constFromList Int64Type [1,0]
-        transposed = transposeGen "" c perm c.typetag perm.typetag
+        transposed = GeneratedOps.transpose "" c perm c.typetag perm.typetag
         t' = transposed.eval
         t'
 
