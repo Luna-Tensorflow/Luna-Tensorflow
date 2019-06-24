@@ -53,7 +53,7 @@ class Adam:
               zerosTensor = Operations.zerosLike v . eval
               m = Variables.make ("m" + i.toText) zerosTensor
               vAdam = Variables.make ("v" + i.toText) zerosTensor
-              applyAdamGen "" v m vAdam beta1Power beta2Power lr beta1 beta2 epsilon g v.typetag False self.useNesterov
+              GeneratedOps.applyAdam "" v m vAdam beta1Power beta2Power lr beta1 beta2 epsilon g v.typetag False self.useNesterov
 
           errWithSideEffect = Variables.sequence' err $ varsAndGrads.zip (0.upto (variables.length - 1)) . map makeAndApplyAdam
 

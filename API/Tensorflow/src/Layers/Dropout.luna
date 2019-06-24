@@ -46,7 +46,7 @@ class DropoutLayer layerT:
 
         keepProb = Operations.constFromScalar FloatType (1.0 - self.rate)
         shiftedUniform = keepProb + uniform
-        mask = floorGen "" shiftedUniform FloatType
+        mask = GeneratedOps.floor "" shiftedUniform FloatType
 
         out = (myin * mask) / keepProb
         out

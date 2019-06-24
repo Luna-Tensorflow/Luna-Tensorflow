@@ -17,8 +17,8 @@ def tensorFromPngDirTest:
 
     fromPngDir1 = Tensors.fromPngDir "."
 
-    fromPngDirText = fromPngDir1.toText
-    if (fromPngDirText == "[Tensor [200, 200, 3], Tensor [12, 20, 3], Tensor [28, 28, 3]]").not then throw $ "TensorFromPngDir error: expected [Tensor [200, 200, 3], Tensor [12, 20, 3], Tensor [28, 28, 3]], got " + fromPngDirText else None
+    fromPngDirTexts = fromPngDir1.each (t: t.toText) . sort . toText
+    if (fromPngDirTexts == "[Tensor [12, 20, 3], Tensor [200, 200, 3], Tensor [28, 28, 3]]").not then throw $ "TensorFromPngDir error: expected [Tensor [12, 20, 3], Tensor [200, 200, 3], Tensor [28, 28, 3]], got " + fromPngDirTexts else None
 
     print "TensorFromPngDir OK"
     print ""

@@ -79,7 +79,7 @@ def exampleClassificationGradientDescent:
 
     print "Compiling model"
     opt = GradientDescentOptimizer.create 0.1
-    loss = MeanErrors.meanSquareError
+    loss = Losses.binaryCrossEntropy
 
     model = Models.make i d2 opt loss
 
