@@ -20,9 +20,9 @@ cd build
 cmake ../src
 make
 ```
+On Windows, alternatively you can open API/Tensorflow/native_libs/src in CLion and build it using built-in CMake.
 
 ## Running Luna
-On Windows, alternatively you can open FFiExample/native_libs/src in CLion and build it using built-in CMake.
 Then you can launch Main.luna in the Luna Studio or from command line:
 ```
 cd API/Tensorflow
