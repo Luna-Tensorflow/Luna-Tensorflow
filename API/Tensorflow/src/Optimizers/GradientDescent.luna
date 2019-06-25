@@ -11,24 +11,31 @@ class GradientDescent:
       lr :: Real
 
       # Returns Gradient Descent Optimizer in Text type.
+      #
       # `return` :: Text
+      #
       # toText :: Text
       def toText:
           "Gradient Descent " + self.lr.toText
 
       # Returns Gradient Descent Optimizer in JSON type.
+      #
       # `return` :: JSON
+      #
       # toJSON :: JSON
       def toJSON:
           self.toText.toJSON
 
       # Function to update variables in TFGraph based on expected output, real output and loss function according to the Gradient Descent.
+      #
       # Arguments:
-      # `yTrue` :: TFOutput a
-      # `yPred` :: TFOutput a
-      # `loss` :: TFOutput a -> TFOutput a -> TFOutput b
-      # `variables` :: List (TFOutput ErasedType)
+      # * `yTrue` :: TFOutput a
+      # * `yPred` :: TFOutput a
+      # * `loss` :: TFOutput a -> TFOutput a -> TFOutput b
+      # * `variables` :: List (TFOutput ErasedType)
+      #
       # `return` :: TFGraph
+      #
       # makeOptimizingGraph :: TFOutput a -> TFOutput a -> (TFOutput a -> TFOutput a -> TFOutput b) -> List (TFOutput ErasedType) -> TFGraph
       def makeOptimizingGraph yTrue yPred loss variables:
           err = loss yTrue yPred
@@ -48,9 +55,12 @@ class GradientDescentOptimizer:
     GradientDescentOptimizer
 
     # Gradient Descent constructor.
+    #
     # Arguments:
-    # `lr` :: Real
+    # * `lr` :: Real
+    #
     # `return` :: GradientDescent
+    #
     # create :: Real -> GradientDescent
     def create lr:
         GradientDescent lr

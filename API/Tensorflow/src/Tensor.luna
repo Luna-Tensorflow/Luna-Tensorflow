@@ -7,10 +7,13 @@ import Tensorflow.GeneratedOps
 import Tensorflow.Operations
 
 # Internal.
+#
 # Arguments:
-# len :: Int
-# list :: List a
+# * `len` :: Int
+# * `list` :: List a
+#
 # `return` :: List List a
+#
 # splitInPacksOf :: Int -> List a -> List List a
 def splitInPacksOf len list:
     if list.isEmpty then Empty else Prepend (list.take len) (splitInPacksOf len (list.drop len))
@@ -24,36 +27,48 @@ class Tensor a:
         self.wrapper.ptr
 
     # Returns tensor's shape.
+    #
     # `return` :: List Int
+    #
     # dims :: List Int
     def dims:
         self.wrapper.dims
 
     # Returns value of tensor at given list of indices.
+    #
     # Arguments: 
-    # indices :: List Int
+    # * `indices` :: List Int
+    #
     # `return` :: a
+    #
     # at :: List Int -> a
     def at indices:
         self.wrapper.at indices
 
 
     # Returns value of tensor at given index.
+    #
     # Arguments: 
-    # index :: Int
+    # * `index` :: Int
+    #
     # `return` :: a
+    #
     # atIndex :: Int -> a
     def atIndex index:
         self.wrapper.atIndex index
 
     # Returns flatten list from tensor.
+    #
     # `return` :: List a
+    #
     # toList :: List a
     def toFlatList:
         self.wrapper.toFlatList
 
     # Returns Tensor in JSON type.
+    #
     # `return` :: JSON
+    #
     # toJSON :: JSON
     def toJSON:
         dims = self.dims
@@ -75,6 +90,7 @@ class Tensor a:
         res
 
     # toText :: Text
+    #
     # `return` :: Text
     def toText:
         "Tensor " + (self.dims.toText)
@@ -87,30 +103,39 @@ class Tensors:
     Tensors
 
     # Creates tensor of given type from pointer to other tensor.
+    #
     # Arguments: 
-    # `typetag` :: TypeTag
-    # `tensorPtr` :: ManagedPointer None
+    # * `typetag` :: TypeTag
+    # * `tensorPtr` :: ManagedPointer None
+    #
     # `return` :: Tensor a
+    #
     # fromPtr :: TypeTag a -> ManagedPointer None -> Tensor a
     def fromPtr typetag managedTensorPtr:
         wrapper = TensorWrapper managedTensorPtr typetag
         Tensor wrapper
 
     # Creates 1D tensor of given type, from given list of values.
+    #
     # Arguments: 
-    # `typetag` :: TypeTag
-    # `list` :: List a
+    # * `typetag` :: TypeTag
+    # * `list` :: List a
+    #
     # `return` :: Tensor a
+    #
     # fromList1d :: TypeTag -> List a -> Tensor a
     def fromList1d typetag list:
         wrapper = createTensorWrapper typetag [list.length] list
         Tensor wrapper
 
     # Creates 2D tensor of given type, from given 2D list of values.
+    #
     # Arguments: 
-    # `typetag` :: TypeTag
-    # `list` :: List (List a)
+    # * `typetag` :: TypeTag
+    # * `list` :: List (List a)
+    #
     # `return` :: Tensor a
+    #
     # fromList2d :: TypeTag -> List (List a) -> Tensor a
     def fromList2d typetag list:
         lengths = list.each (l: l.length)
@@ -121,52 +146,67 @@ class Tensors:
         self.fromList typetag [w, h] flat
 
     # Creates const tensor of given type and dimensions, from list of values.
+    #
     # Arguments: 
-    # `typetag` :: TypeTag
-    # `dims` :: List Int
-    # `list` :: List a
+    # * `typetag` :: TypeTag
+    # * `dims` :: List Int
+    # * `list` :: List a
+    #
     # `return` :: Tensor a
+    #
     # fromList :: TypeTag -> List Int -> List a -> Tensor a
     def fromList typetag dims list:
         wrapper = createTensorWrapper typetag dims list
         Tensor wrapper
 
     # Creates random tensor with given type and dimensions.
+    #
     # Arguments: 
-    # `typetag` :: TypeTag
-    # `dims` :: List Int
-    # `minVal` :: a
-    # `maxVal` :: a
+    # * `typetag` :: TypeTag
+    # * `dims` :: List Int
+    # * `minVal` :: a
+    # * `maxVal` :: a
+    #
     # `return` :: Tensor a
+    #
     # random :: TypeTag -> List Int -> a -> a -> Tensor a
     def random typetag dims minVal maxVal:
         wrapper = createRandomTensorWrapper typetag dims minVal maxVal
         Tensor wrapper
 
     # Creates const tensor of zeros with given type and dimensions.
+    #
     # Arguments: 
-    # `typetag` :: TypeTag
-    # `dims` :: List Int
+    # * `typetag` :: TypeTag
+    # * `dims` :: List Int
+    #
     # `return` :: Tensor a
+    #
     # zeros :: Typetag a -> List Int -> Tensor a
     def zeros typetag dims:
         wrapper = createConstTensorWrapper typetag dims (typetag.fromReal 0.0)
         Tensor wrapper
 
     # Creates const tensor of ones with given type and dimensions.
+    #
     # Arguments: 
-    # `typetag` :: TypeTag
-    # `dims` :: List Int
+    # * `typetag` :: TypeTag
+    # * `dims` :: List Int
+    #
     # `return` :: Tensor a
+    #
     # ones :: Typetag a -> List Int -> Tensor a
     def ones typetag dims:
         wrapper = createConstTensorWrapper typetag dims (typetag.fromReal 1.0)
         Tensor wrapper
 
-    # Transposes a tensor (TODO better description)
+    # Performs a regular matrix transpose on 2D input Tensors.
+    #
     # Arguments:
-    # `t` :: Tensor a
+    # * `t` :: Tensor a
+    #
     # `return` :: Tensor a
+    #
     # transpose :: Tensor a -> Tensor a
     def transpose t:
         c = Operations.makeConst t
@@ -176,9 +216,12 @@ class Tensors:
         t'
 
     # Converts tensor to 2D list, but only if it's of expected shape.
+    #
     # Arguments: 
-    # `tensor` :: Tensor a
+    # * `tensor` :: Tensor a
+    #
     # `return` :: List (List a)
+    #
     # to2dList :: Tensor a -> List (List a)
     def to2dList tensor:
         dims = tensor.dims
@@ -189,58 +232,76 @@ class Tensors:
         res
 
     # Saves given tensor to file.
+    #
     # Arguments:
-    # `filename` :: Text
-    # `tensor` :: Tensor a
+    # * `filename` :: Text
+    # * `tensor` :: Tensor a
+    #
     # `return` :: ()
+    #
     # save :: Text -> Tensor a -> ()
     def save filename tensor:
         saveTensorsWrapper filename [tensor.wrapper.ptr]
 
     # Loads from file tensor of given type.
+    #
     # Arguments:
-    # `filename` :: Text
-    # 'typetag' :: Typetag
+    # * `filename` :: Text
+    # * 'typetag' :: Typetag
+    #
     # `return` :: Tensor a
+    #
     # load :: Text -> Typetag -> Tensor a
     def load filename typetag:
         [ptr] = loadTensorsWrapper filename 1
         Tensor (TensorWrapper ptr typetag)
 
-    # Loads tensor from PNG file in RGB format
+    # Loads tensor from PNG file in RGB format.
+    #
     # Arguments:
-    # `filename` :: Text
+    # * `filename` :: Text
+    #
     # `return` :: Tensor a
+    #
     # fromPng :: Text -> Tensor a
     def fromPng filename:
         wrapper = fromPngWrapper filename
         res = Tensor wrapper
         res
 
-    # Loads all PNG files in RGB format in specified directory
+    # Loads all PNG files in RGB format in specified directory.
+    #
     # Arguments:
-    # `filename` :: Text
+    # * `filename` :: Text
+    #
     # `return` :: List (Tensor FloatType)
+    #
     # fromPng :: Text -> List (Tensor FloatType)
     def fromPngDir dirname:
         wrappers = (fromPngDirWrappers dirname) . each (x: TensorWrapper x FloatType)
         wrappers . each(x: Tensor x)
 
 
-    # Converts a Dataframes Table consisting of only float values into a 2D float tensor
+    # Converts a Dataframes Table consisting of only float values into a 2D float tensor.
+    #
     # Arguments:
-    # `table` :: Dataframes.Table.Table
+    # * `table` :: Dataframes.Table.Table
+    #
     # `return` :: Tensor FloatType
+    #
     # fromTable :: Table -> Tensor FloatType
     def fromTable table:
         lst = table.toList . each (col: col.toList)
         t = Tensors.fromList2d FloatType lst
         t
 
-    # Converts a Dataframes Table into a list of 1d tensors, each tensor representing a row from the table
+    # Converts a Dataframes Table into a list of 1d tensors, each tensor representing a row from the table.
+    #
     # Arguments:
-    # `table` :: Dataframes.Table.Table
+    # * `table` :: Dataframes.Table.Table
+    #
     # `return` :: List (Tensor FloatType)
+    #
     # fromTableRows :: Table -> List (Tensor FloatType)
     def fromTableRows table:
         t1 = Tensors.fromTable table
@@ -251,10 +312,13 @@ class Tensors:
         samples = lst'.each(l: Tensors.fromList FloatType shape l)
         samples
 
-    # Convert a list of tensors of the same shape and type to a tensor
+    # Convert a list of tensors of the same shape and type to a tensor.
+    #
     # Arguments:
-    # `tensors` :: List (Tensor a)
+    # * `tensors` :: List (Tensor a)
+    #
     # `return` :: Tensor a
+    #
     # batchFromList :: List (Tensor a) -> Tensor a
     def batchFromList tensors:
         wrappers = tensors.each tensor: tensor.wrapper

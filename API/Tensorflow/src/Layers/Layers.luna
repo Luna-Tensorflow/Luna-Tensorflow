@@ -5,6 +5,14 @@ class Layers:
       Layers
 
       # Evaluates the model up to the provided layer using the provided state and input.
+      #
+      # Arguments:
+      # * `layer` :: Layer a
+      # * `state` :: State
+      # * `input` :: Tensor a
+      #
+      # `return` :: Tensor a
+      #
       # eval :: Layer a -> State -> Tensor a -> Tensor a
       def eval layer state input:
           inp = Operations.makeConst input
@@ -14,6 +22,14 @@ class Layers:
           res.getAt 0
 
       # Evaluates the model up to the provided layer using state from a fitted model and provided input.
+      #
+      # Arguments:
+      # * `layer` :: Layer a
+      # * `model` :: Model
+      # * `input` :: Tensor a
+      # 
+      # `return` :: Tensor a
+      #
       # evalFromModel :: Layer a -> Model -> Tensor a -> Tensor a
       def evalFromModel layer model input:
           res = Layers.eval layer model.state input

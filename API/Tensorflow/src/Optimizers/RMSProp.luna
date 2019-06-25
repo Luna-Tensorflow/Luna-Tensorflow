@@ -14,24 +14,31 @@ class RMSProp:
       epsilon :: Real
 
       # Returns RMSProp Optimizer in Text type.
+      #
       # `return` :: Text
+      #
       # toText :: Text
       def toText:
           "RMSProp lr=" + self.lr.toText + " rho=" + self.rho.toText + " momentum=" + self.momentum.toText + " epsilon=" + self.epsilon.toText 
 
       # Returns RMSProp Optimizer in JSON type.
+      #
       # `return` :: JSON
+      #
       # toJSON :: JSON
       def toJSON:
           self.toText.toJSON
 
       # Function to update variables in TFGraph based on expected output, real output and loss function according to the RMSProp.
+      #
       # Arguments:
-      # `yTrue` :: TFOutput a
-      # `yPred` :: TFOutput a
-      # `loss` :: TFOutput a -> TFOutput a -> TFOutput b
-      # `variables` :: List Variable 
+      # * `yTrue` :: TFOutput a
+      # * `yPred` :: TFOutput a
+      # * `loss` :: TFOutput a -> TFOutput a -> TFOutput b
+      # * `variables` :: List Variable 
+      #
       # `return` :: TFGraph
+      #
       # makeOptimizingGraph :: TFOutput a -> TFOutput a -> (TFOutput a -> TFOutput a -> TFOutput b) -> List Variable -> TFGraph
       def makeOptimizingGraph yTrue yPred loss variables:
           err = loss yTrue yPred
@@ -58,12 +65,15 @@ class RMSPropOptimizer:
     RMSPropOptimizer
 
     # RMSProp Optimizer constructor.
+    #
     # Arguments:
-    # `lr` :: Real
-    # `rho` :: Real
-    # `momentum` :: Real
-    # `epsilon` :: Real
+    # * `lr` :: Real
+    # * `rho` :: Real
+    # * `momentum` :: Real
+    # * `epsilon` :: Real
+    #
     # `return` :: RMSProp
+    #
     # create :: Real -> Real -> Real -> Real -> RMSProp
     def create lr rho momentum epsilon:
         RMSProp lr rho momentum epsilon

@@ -17,25 +17,32 @@ class Adam:
       useNesterov :: Bool
 
       # Returns Adam Optimizer in Text type.
+      #
       # `return` :: Text
+      #
       # toText :: Text
       def toText:
           "Adam beta1Power=" + self.beta1Power.toText + " beta2Power=" + self.beta2Power.toText + " lr=" + self.lr.toText +
                   " beta1=" + self.lr.toText + " beta2=" + self.beta2.toText + " epsilon=" + self.epsilon.toText
 
       # Returns Adam Optimizer in JSON type.
+      #
       # `return` :: JSON
+      #
       # toJSON :: JSON
       def toJSON:
           self.toText.toJSON
 
       # Function to update variables in TFGraph based on expected output, real output and loss function according to the Adam.
+      #
       # Arguments:
-      # `yTrue` :: TFOutput a
-      # `yPred` :: TFOutput a
-      # `loss` :: TFOutput a -> TFOutput a -> TFOutput b
-      # `variables` :: List Variable 
+      # * `yTrue` :: TFOutput a
+      # * `yPred` :: TFOutput a
+      # * `loss` :: TFOutput a -> TFOutput a -> TFOutput b
+      # * `variables` :: List Variable 
+      #
       # `return` :: TFGraph
+      #
       # makeOptimizingGraph :: TFOutput a -> TFOutput a -> (TFOutput a -> TFOutput a -> TFOutput b) -> List Variable -> TFGraph
       def makeOptimizingGraph yTrue yPred loss variables:
           err = loss yTrue yPred
@@ -64,15 +71,18 @@ class AdamOptimizer:
     AdamOptimizer
 
     # Adam Oprimizer constructor.
+    #
     # Arguments:
-    # `beta1Power` :: Real
-    # `beta2Power` :: Real
-    # `lr` :: Real
-    # `beta1` :: Real
-    # `beta2` :: Real
-    # `epsilon` :: Real
-    # `useNesterov :: Bool
+    # * `beta1Power` :: Real
+    # * `beta2Power` :: Real
+    # * `lr` :: Real
+    # * `beta1` :: Real
+    # * `beta2` :: Real
+    # * `epsilon` :: Real
+    # * `useNesterov :: Bool
+    #
     # `return` :: Adam
+    #
     # create :: Real -> Real -> Real -> Real -> Real -> Bool -> Adam
     def create beta1Power beta2Power lr beta1 beta2 epsilon useNesterov:
         Adam beta1Power beta2Power lr beta1 beta2 epsilon useNesterov

@@ -12,13 +12,17 @@ class AddLayer layerA layerB:
       parentLayerB :: layerB # :: Layer
 
       # Returns Add layer in Text type.
+      #
       # `return` :: Text
+      #
       # toText :: Text
       def toText:
           self.name + self.shape.toText
 
       # Returns Add layer in JSON type.
+      #
       # `return` :: JSON
+      #
       # toJSON :: JSON
       def toJSON:
           name = self.name
@@ -28,15 +32,20 @@ class AddLayer layerA layerB:
           JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type
 
       # Returns shape after processing by this layer. It inherits parents shape.
+      #
       # `return` :: List Int
+      #
       # shape :: List Int
       def shape:
           self.parentLayerA . shape
 
       # Computes output on this layer after feeding with data from previous ones.
+      #
       # Arguments:
-      # `inp` :: TFOutput a
+      # * `inp` :: TFOutput a
+      #
       # `return` :: TFOutput a
+      #
       # forward :: Operation a -> Operation a
       def forward inp:
           inA = self.parentLayerA . forward inp
@@ -45,9 +54,12 @@ class AddLayer layerA layerB:
           result
 
       # Helper function to run evaluation of model.
+      #
       # Arguments:
-      # `inp` :: TFOutput a
+      # * `inp` :: TFOutput a
+      #
       # `return` :: TFOutput a
+      #
       # eval :: Operation a -> Operation a
       def eval inp:
           inA = self.parentLayerA . eval inp
@@ -56,7 +68,9 @@ class AddLayer layerA layerB:
           result
 
       # Returns variables to train, up to this layer. This layer has no new variables and inherits parents variables without duplications.
+      #
       # `return` :: List Variable a
+      #
       # trainableVariables :: List Variable a
       def trainableVariables:
           vars = self.parentLayerA.trainableVariables + self.parentLayerB.trainableVariables
@@ -64,7 +78,9 @@ class AddLayer layerA layerB:
           unique
 
       # Returns type of output in this layer.
+      #
       # `return` :: TypeTag
+      #
       # outputType :: TypeTag
       def outputType:
           self.parentLayerA . outputType
@@ -74,9 +90,13 @@ class Marge:
       Merge
 
       # Creates a layer that merges two previous layers and returns the result as output. It demands equal shapes and types of previous layers.
-      # layerA :: Layer
-      # layerB :: Layer
+      #
+      # Arguments:
+      # * `layerA` :: Layer
+      # * `layerB` :: Layer
+      #
       # `return` :: Layer
+      #
       # add :: Layer -> Layer -> Layer
       def add layerA layerB:
         case layerA.shape == layerB.shape of

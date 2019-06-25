@@ -11,13 +11,17 @@ class ActivationLayer a layerT:
     outputType :: a # this type is forced in construction to unify activationFunction type
 
     # Returns Activation layer in Text type.
+    #
     # `return` :: Text
+    #
     # toText :: Text
     def toText:
         self.name + self.shape.toText
 
     # Returns Activation layer in JSON type.
+    #
     # `return` :: JSON
+    #
     # toJSON :: JSON
     def toJSON:
         name = self.name
@@ -27,15 +31,20 @@ class ActivationLayer a layerT:
         JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type
 
     # Returns shape after processing by this layer. It inherits parent's shape.
+    #
     # `return` :: List Int
+    #
     # shape :: List Int
     def shape:
         self.parentLayer.shape
 
     # Computes output on this layer after feeding with data from previous one.
+    #
     # Arguments:
-    # `inp` :: TFOutput a
+    # * `inp` :: TFOutput a
+    #
     # `return` :: TFOutput a
+    #
     # forward :: TFOutput a -> TFOutput a
     def forward inp:
         myin = self.parentLayer.forward inp
@@ -43,9 +52,12 @@ class ActivationLayer a layerT:
         out
 
     # Helper function to run evaluation of model.
+    #
     # Arguments:
-    # `inp` :: TFOutput a
+    # * `inp` :: TFOutput a
+    #
     # `return` :: TFOutput a
+    #
     # eval :: TFOutput a -> TFOutput a
     def eval inp:
         myin = self.parentLayer.eval inp
@@ -53,13 +65,17 @@ class ActivationLayer a layerT:
         out
 
     # Returns variables to train, up to this layer. This layer has no new variables and inherits parent's variables.
+    #
     # `return` :: List Variable a
+    #
     # trainableVariables :: List (TFOutput ErasedType)
     def trainableVariables:
         self.parentLayer.trainableVariables
 
     # Returns type of output in this layer.
+    #
     # `return` :: TypeTag
+    #
     # outputType :: TypeTag
     # def outputType:
     #     self.parentLayer.outputType
@@ -68,10 +84,14 @@ class ActivationLayer a layerT:
 class Activation:
       Activation
 
-      # Creates a layer that applies given function to its input and returns the result as output
-      # activationFunction :: TFOutput a -> TFOutput a
-      # parent :: Layer a
+      # Creates a layer that applies given function to its input and returns the result as output.
+      # 
+      # Arguments:
+      # * `activationFunction` :: TFOutput a -> TFOutput a
+      # * `parent` :: Layer a
+      #
       # `return` :: Layer a
+      #
       # create :: (TFOutput a -> TFOutput a) -> Layer a -> Layer a
       def create activationFunction parent:
           name = getNextName "Activation"

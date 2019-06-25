@@ -11,30 +11,39 @@ class Variables:
     Variables
 
     # Creates variable of given name and tensor value.
+    #
     # Arguments: 
-    # `name` :: Text
-    # `defaultValue` :: Tensor a
+    # * `name` :: Text
+    # * `defaultValue` :: Tensor a
+    #
     # `return` :: TFOutput a
+    #
     # make :: Text -> Tensor a -> TFOutput a
     def make name defaultValue:
         wrapper = makeVariableWrapper name defaultValue
         TFOutput wrapper defaultValue.typetag
 
     # Assigns given value to existing variable.
+    #
     # Arguments: 
-    # `var` :: TFOutput a
-    # `val` :: TFOutput b
+    # * `var` :: TFOutput a
+    # * `val` :: TFOutput b
+    #
     # `return` :: TFOutput a
+    #
     # assign :: TFOutput a -> TFOutput b -> TFOutput a
     def assign var val:
         assignOp = GeneratedOps.assign "" var val var.typetag False False
         assignOp
 
     # Returns the same output as its second argument, but augmented so that the side-effects of the first argument are executed if the second argument is computed.
+    #
     # Arguments: 
-    # `sideeffect` :: TFOutput a
-    # `value` :: TFOutput b
+    # * `sideeffect` :: TFOutput a
+    # * `value` :: TFOutput b
+    #
     # `return` :: TFOutput b
+    #
     # sequence :: TFOutput a -> TFOutput b -> TFOutput b
     def sequence sideeffect value:
         seqWrapper = makeSequence sideeffect value
@@ -49,17 +58,22 @@ class Variables:
         f (a, b)
 
     # Applies function f on each element of the list and passes sideefects to accumulator.
+    #
     # Arguments: 
-    # `initial` :: TFOutput a
-    # `f` :: TFOutput a -> TFOutput b 
-    # `list` :: List (TFOutput b)
+    # * `initial` :: TFOutput a
+    # * `f` :: TFOutput a -> TFOutput b 
+    # * `list` :: List (TFOutput b)
+    #
     # `return` :: TFOutput b
+    #
     # sequence :: TFOutput a -> (TFOutput a -> TFOutput b) -> List (TFOutput b) -> TFOutput b
     def sequence' initial list:
         list . foldLeft initial (elem: elem >> )
 
     # This is an operation that is meant to have no value, it may be used to build graphs that consist of only side effects. For now it's implemented as a constant, but it should be rewritten so that no TF operations can be done on it besides providing it as a first argument of apply and output to compute in a graph.
+    #
     # `return` :: ()
+    #
     # unitOp :: ()
     def unitOp:
         op = constFromScalar FloatType 1.0

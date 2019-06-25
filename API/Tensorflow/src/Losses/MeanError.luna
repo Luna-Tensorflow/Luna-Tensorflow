@@ -5,10 +5,13 @@ class MeanErrors:
     MeanErrors
 
     # Mean square error loss function.
+    #
     # Arguments:
-    # `yTrue` :: TFOutput
-    # `yPred` :: TFOutput
+    # * `yTrue` :: TFOutput
+    # * `yPred` :: TFOutput
+    #
     # `return` :: TFOutput
+    #
     # meanSquareError :: TFOutput -> TFOutput -> TFOutput
     def meanSquareError yTrue yPred:
         diff = yTrue - yPred
@@ -16,10 +19,13 @@ class MeanErrors:
         out
 
     # Mean absolute error loss function.
+    #
     # Arguments:
-    # `yTrue` :: TFOutput
-    # `yPred` :: TFOutput
+    # * `yTrue` :: TFOutput
+    # * `yPred` :: TFOutput
+    #
     # `return` :: TFOutput
+    #
     # meanAbsoluteError :: TFOutput -> TFOutput -> TFOutput
     def meanAbsoluteError yTrue yPred:
         out = Operations.mean (Operations.abs (yTrue - yPred)) [0]

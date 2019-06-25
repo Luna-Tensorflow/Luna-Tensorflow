@@ -12,13 +12,17 @@ class ReshapeLayer layerT:
       parentLayer :: layerT # :: Layer
 
       # Returns Reshape layer in Text type.
+      #
       # `return` :: Text
+      #
       # toText :: Text
       def toText:
           self.name + self.shape.toText
 
       # Returns Reshape layer in JSON type.
+      #
       # `return` :: JSON
+      #
       # toJSON :: JSON
       def toJSON:
           name = self.name
@@ -28,15 +32,20 @@ class ReshapeLayer layerT:
           JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type
 
       # Returns shape after processing by this layer.
+      #
       # `return` :: List Int
+      #
       # shape :: List Int
       def shape:
           self.resultDims
 
       # Computes output on this layer after feeding with data from previous one.
+      #
       # Arguments:
-      # `inp` :: TFOutput a
+      # * `inp` :: TFOutput a
+      #
       # `return` :: TFOutput a
+      #
       # forward :: TFOutput a -> TFOutput a
       def forward inp:
           myin = self.parentLayer.forward inp
@@ -44,9 +53,12 @@ class ReshapeLayer layerT:
           reshaped
 
       # Helper function to run evaluation of model.
+      #
       # Arguments:
-      # `inp` :: TFOutput a
+      # * `inp` :: TFOutput a
+      #
       # `return` :: TFOutput a
+      #
       # eval :: TFOutput a -> TFOutput a
       def eval inp:
           myin = self.parentLayer.eval inp
@@ -54,13 +66,17 @@ class ReshapeLayer layerT:
           reshaped
 
       # Returns variables to train, up to this layer. This layer has no new variables and inherits parent's variables.
+      #
       # `return` :: List Variable a
+      #
       # trainableVariables :: List Variable a
       def trainableVariables:
           self.parentLayer.trainableVariables
 
       # Returns type of output in this layer.
+      #
       # `return` :: TypeTag
+      #
       # outputType :: TypeTag
       def outputType:
           self.parentLayer.outputType
@@ -70,10 +86,13 @@ class Reshape:
     Reshape
 
     # Reshape layer constructor.
+    #
     # Arguments:
-    # `newdims :: List Int
-    # `parent` :: Layer
+    # * `newdims :: List Int
+    # * `parent` :: Layer
+    #
     # `return` :: Layer
+    #
     # create :: List Int -> Layer -> Layer
     def create newdims parent:
         nNegOnes = newdims . filter (e: e == 1.negate) . length
@@ -89,9 +108,12 @@ class Reshape:
                     r
 
     # Reshape layer that flatten previous layer to 1D vector.
+    #
     # Arguments:
-    # `parent` :: Layer
+    # * `parent` :: Layer
+    #
     # `return` :: Layer
+    #
     # flatten :: Layer -> Layer
     def flatten parent:
         r = Reshape.create [1.negate] parent

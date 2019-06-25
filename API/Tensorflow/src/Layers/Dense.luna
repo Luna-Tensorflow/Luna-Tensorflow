@@ -16,13 +16,17 @@ class DenseLayer a layerT:
       parentLayer :: layerT
 
       # Returns Dense layer in Text type.
+      #
       # `return` :: Text
+      #
       # toText :: Text
       def toText:
           self.name + self.shape.toText
 
       # Returns Dropout layer in JSON type.
+      #
       # `return` :: JSON
+      #
       # toJSON :: JSON
       def toJSON:
           name = self.name
@@ -32,15 +36,20 @@ class DenseLayer a layerT:
           JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type
 
       # Returns shape after processing by this layer.
+      #
       # `return` :: List Int
+      #
       # shape :: List Int
       def shape:
           [self.nOutputs]
 
       # Computes output on this layer after feeding with data from previous one.
+      #
       # Arguments:
-      # `inp` :: TFOutput a
+      # * `inp` :: TFOutput a
+      #
       # `return` :: TFOutput a
+      #
       # forward :: TFOutput a -> TFOutput a
       def forward inp:
           in = self.parentLayer.forward inp
@@ -49,9 +58,12 @@ class DenseLayer a layerT:
           result
 
       # Helper function to run evaluation of model.
+      #
       # Arguments:
-      # `inp` :: TFOutput a
+      # * `inp` :: TFOutput a
+      #
       # `return` :: TFOutput a
+      #
       # eval :: TFOutput a -> TFOutput a
       def eval inp:
           in = self.parentLayer.eval inp
@@ -60,7 +72,9 @@ class DenseLayer a layerT:
           result
 
       # Returns variables to train, up to this layer.
+      #
       # `return` :: List Variable a
+      #
       # trainableVariables :: List Variable a
       def trainableVariables:
           [self.weights.eraseType, self.biases.eraseType] + self.parentLayer.trainableVariables
@@ -70,10 +84,13 @@ class Dense:
     Dense
 
     # Dense layer constructor.
+    #
     # Arguments:
-    # `nOutputs` :: Int
-    # `parent` :: Layer
+    # * `nOutputs` :: Int
+    # * `parent` :: Layer
+    #
     # `return` :: Layer
+    #
     # create :: Int -> Layer -> Layer
     def create nOutputs parent:
         nInputs = case parent.shape of
@@ -93,11 +110,14 @@ class Dense:
         d
 
     # Dense with activation layer function constructor.
+    #
     # Arguments:
-    # `nOutputs` :: Int
-    # `activationFunction` :: TFOutput a -> TFOutput a
-    # `parent` :: Layer
+    # * `nOutputs` :: Int
+    # * `activationFunction` :: TFOutput a -> TFOutput a
+    # * `parent` :: Layer
+    #
     # `return` :: Layer
+    #
     # createWithActivation :: Int -> (TFOutput a -> TFOutput a) -> Layer -> Layer
     def createWithActivation nOutputs activationFunction parent:
         d = self.create nOutputs parent

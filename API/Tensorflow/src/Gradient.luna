@@ -9,11 +9,14 @@ class Gradients:
     Gradients
 
     # Constructs symbolic derivatives of sum of ys w.r.t. x in xs, where dxs are initial gradients.
+    #
     # Arguments: 
-    # `ys` :: TFOutput a
-    # `xs` :: TFOutput a
-    # `dxs` :: TFOutput a - initial gradients.
+    # * `ys` :: TFOutput a
+    # * `xs` :: TFOutput a
+    # * `dxs` :: TFOutput a - initial gradients.
+    #
     # `return` :: TFOutput a
+    #
     # make :: TFOutput a -> TFOutput a -> TFOutput a -> TFOutput a
     def make ys xs dxs:
         None # TODO check if argument types match

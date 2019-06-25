@@ -5,12 +5,13 @@ import Tensorflow.CWrappers.Helpers
 
 class TypeTagHelper:
     # Converts a normal typetag into an erased version.
+    #
     # eraseTypeTag :: a -> ErasedType
     def eraseType typetag:
         ErasedType typetag.typename typetag.num
 
-    # Checks whether two typetags are referring to the same type.
-    # May be used to check if some instance of a dynamic TypeTag is convertible to some concrete typetag.
+    # Checks whether two typetags are referring to the same type. May be used to check if some instance of a dynamic TypeTag is convertible to some concrete typetag.
+    #
     # isTypeTagInstanceOf :: a -> b -> Bool
     def isTypeTagInstanceOf t1 t2:
         t1.num == t2.num

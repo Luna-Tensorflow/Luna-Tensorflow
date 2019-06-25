@@ -10,13 +10,17 @@ class InputLayer a:
       shape :: List Int
 
       # Returns Input layer in Text type.
+      #
       # `return` :: Text
+      #
       # toText :: Text
       def toText:
           self.name + self.shape.toText
 
       # Returns Input layer in JSON type.
+      #
       # `return` :: JSON
+      #
       # toJSON :: JSON
       def toJSON:
           name = self.name
@@ -26,29 +30,39 @@ class InputLayer a:
           JSON.empty . insert "name" name . insert "shape" shape . insert "parents" parents . insert "type" type
 
       # Computes output on this layer, simply returns same input.
+      #
       # Arguments:
-      # `inp` :: TFOutput a
+      # * `inp` :: TFOutput a
+      #
       # `return` :: TFOutput a
+      #
       # forward :: TFOutput a -> TFOutput a
       def forward inp:
           inp
 
       # Helper function to run evaluation of model.
+      #
       # Arguments:
-      # `inp` :: TFOutput a
+      # * `inp` :: TFOutput a
+      #
       # `return` :: TFOutput a
+      #
       # eval :: TFOutput a -> TFOutput a
       def eval inp:
           inp
 
       # Returns variables to train, up to this layer, which is empty List.
+      #
       # `return` :: List (TFOutput ErasedType)
+      #
       # trainableVariables :: List (TFOutput ErasedType)
       def trainableVariables:
           []
 
       # Returns type of output in this layer.
+      #
       # `return` :: TypeTag
+      #
       # outputType :: TypeTag
       def outputType:
           self.typetag
@@ -58,10 +72,13 @@ class Input:
     Input
 
     # Input layer constructor.
+    #
     # Arguments:
-    # `typetag` :: TypeTag
-    # `shape` :: List Int
+    # * `typetag` :: TypeTag
+    # * `shape` :: List Int
+    #
     # `return` :: InputLayer
+    #
     # create :: TypeTag -> List Int -> InputLayer
     def create typetag shape:
         name = getNextName "Input"
