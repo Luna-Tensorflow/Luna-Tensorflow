@@ -6,4 +6,4 @@ scripts/
 state.tf
 tensors.tf
 classification.tf
-tensorflow
+/tensorflow
