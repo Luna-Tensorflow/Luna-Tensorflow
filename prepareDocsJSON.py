@@ -8,6 +8,7 @@ toDel = [
 	'Tensorflow.Patches',
 	'Tensorflow.TestVisual',
 	'Tensorflow.Tests',
+	'Tensorflow.FixTypes',
 ]
 
 with open('data/doc.json', 'r') as f:

@@ -79,7 +79,7 @@ class AdamOptimizer:
     # * `beta1` :: Real
     # * `beta2` :: Real
     # * `epsilon` :: Real
-    # * `useNesterov :: Bool
+    # * `useNesterov` :: Bool
     #
     # `return` :: Adam
     #

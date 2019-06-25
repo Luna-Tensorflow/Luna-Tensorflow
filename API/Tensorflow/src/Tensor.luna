@@ -247,7 +247,7 @@ class Tensors:
     #
     # Arguments:
     # * `filename` :: Text
-    # * 'typetag' :: Typetag
+    # * `typetag` :: Typetag
     #
     # `return` :: Tensor a
     #

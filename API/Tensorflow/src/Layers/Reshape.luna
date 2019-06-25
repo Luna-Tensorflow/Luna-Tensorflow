@@ -88,7 +88,7 @@ class Reshape:
     # Reshape layer constructor.
     #
     # Arguments:
-    # * `newdims :: List Int
+    # * `newdims` :: List Int
     # * `parent` :: Layer
     #
     # `return` :: Layer

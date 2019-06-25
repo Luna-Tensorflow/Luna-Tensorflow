@@ -50,7 +50,7 @@ class TFOutput a:
     #
     # `return` :: TFOutput a
     #
-    # + :: TFOutput a -> TFOutput a
+    # \+ :: TFOutput a -> TFOutput a
     def + other:
         Operations.add self other
 
@@ -61,7 +61,7 @@ class TFOutput a:
     #
     # `return` :: TFOutput a
     #
-    # * :: TFOutput a -> TFOutput a
+    # \* :: TFOutput a -> TFOutput a
     def * other:
         Operations.mul self other
 
@@ -72,7 +72,7 @@ class TFOutput a:
     #
     # `return` :: TFOutput a
     #
-    # - :: TFOutput a -> TFOutput a
+    # \- :: TFOutput a -> TFOutput a
     def - other:
         Operations.sub self other
 
@@ -621,7 +621,7 @@ class Operations:
     # Returns TFOutput filled with ones with given type and shape of a given TFOutput.
     #
     # Arguments:
-    # * x` :: TFOutput a
+    # * `x` :: TFOutput a
     #
     # `return` :: TFOutput a
     #
